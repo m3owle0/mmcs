@@ -1928,12 +1928,27 @@
         height: 100vh !important;
         background: rgba(0, 0, 0, 0.95) !important;
         backdrop-filter: blur(8px) !important;
-        display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         z-index: 10000 !important;
         padding: 20px !important;
         box-sizing: border-box !important;
+      }
+
+      /* Show login modal when it has .show class */
+      html.is-mobile .login-modal-bg.show,
+      html.is-mobile .login-modal-bg.show:not(.hidden),
+      body.is-mobile .login-modal-bg.show,
+      body.is-mobile .login-modal-bg.show:not(.hidden) {
+        display: flex !important;
+      }
+
+      /* Hide login modal when it has .hidden class or doesn't have .show */
+      html.is-mobile .login-modal-bg.hidden,
+      html.is-mobile .login-modal-bg:not(.show),
+      body.is-mobile .login-modal-bg.hidden,
+      body.is-mobile .login-modal-bg:not(.show) {
+        display: none !important;
       }
 
       html.is-mobile .login-modal,
@@ -2500,7 +2515,15 @@
 
       function setLoginLocked(locked) {
         document.body.classList.toggle('login-locked', locked);
-        loginModal.style.display = locked ? 'flex' : 'none';
+        if (locked) {
+          loginModal.classList.add('show');
+          loginModal.classList.remove('hidden');
+          loginModal.style.display = 'flex';
+        } else {
+          loginModal.classList.remove('show');
+          loginModal.classList.add('hidden');
+          loginModal.style.display = 'none';
+        }
         if (!locked) {
           try {
             sessionStorage.setItem(LOGIN_SESSION_KEY, '1');
@@ -2568,9 +2591,13 @@
 
       // Lock on load if not logged in
       if (!isLoggedIn()) {
+        loginModal.classList.add('show');
+        loginModal.classList.remove('hidden');
         setLoginLocked(true);
         setTimeout(() => passwordInput.focus(), 100);
       } else {
+        loginModal.classList.remove('show');
+        loginModal.classList.add('hidden');
         setLoginLocked(false);
       }
     })();
