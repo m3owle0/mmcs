@@ -1335,11 +1335,22 @@
       /* Mobile: Full-width, stacked layout - Complete reformat */
       html.is-mobile,
       body.is-mobile {
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
-        height: auto;
-        min-height: 100vh;
-        overflow-y: auto;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+        position: relative !important;
+      }
+
+      /* Ensure body can scroll and show all content */
+      html.is-mobile body,
+      body.is-mobile {
+        overflow: visible !important;
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        display: block !important;
       }
 
       html.is-mobile .container,
@@ -1388,15 +1399,24 @@
         height: auto !important;
         max-height: none !important;
         overflow-y: visible !important;
+        overflow: visible !important;
         border-right: none !important;
         border-top: 2px solid rgba(255,255,255,0.1) !important;
         border-bottom: none !important;
         padding: 14px 10px !important;
         margin-top: 16px !important;
         margin-bottom: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
         transform: none !important;
         left: auto !important;
         top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        z-index: auto !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
 
       html.is-mobile h1,
@@ -1704,28 +1724,37 @@
         display: none !important;
       }
 
-      html.is-mobile .container,
-      html.is-mobile .sidebar,
-      html.is-mobile .wishlist-section,
-      body.is-mobile .container,
-      body.is-mobile .sidebar,
-      body.is-mobile .wishlist-section {
-        order: 0 !important;
+      /* Ensure body displays all children in order */
+      html.is-mobile body,
+      body.is-mobile {
+        display: flex !important;
+        flex-direction: column !important;
       }
 
+      /* Stack order: sidebar first, then container, then wishlist */
       html.is-mobile .sidebar,
       body.is-mobile .sidebar {
         order: 1 !important;
+        display: block !important;
       }
 
       html.is-mobile .container,
       body.is-mobile .container {
         order: 2 !important;
+        display: block !important;
       }
 
       html.is-mobile .wishlist-section,
       body.is-mobile .wishlist-section {
         order: 3 !important;
+        display: block !important;
+      }
+
+      /* Ensure login modal is on top */
+      html.is-mobile #login-modal-bg,
+      body.is-mobile #login-modal-bg {
+        position: fixed !important;
+        z-index: 10000 !important;
       }
 
       /* Mobile-specific form and control improvements */
@@ -1777,6 +1806,37 @@
       body.is-mobile * {
         max-width: 100% !important;
         box-sizing: border-box !important;
+      }
+
+      /* Ensure all list items and content are visible */
+      html.is-mobile .saved-searches-list,
+      html.is-mobile .saved-folder-list,
+      html.is-mobile .wishlist-list,
+      body.is-mobile .saved-searches-list,
+      body.is-mobile .saved-folder-list,
+      body.is-mobile .wishlist-list {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+
+      /* Ensure all sections inside container are visible */
+      html.is-mobile .container > *,
+      body.is-mobile .container > * {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+
+      html.is-mobile .markets,
+      body.is-mobile .markets {
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
 
       /* Better mobile scrolling */
