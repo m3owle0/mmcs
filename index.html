@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Multi-Market Secondhand Clothing Search</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" type="image/png" href="miku.png">
   <style>
     :root {
@@ -1327,48 +1330,582 @@
       box-shadow: 0 0 0 2px rgba(120,120,120,0.3);
       transition: none;
     }
+    /* Mobile-first responsive design */
+    @media (max-width: 768px) {
+      /* Mobile: Full-width, stacked layout */
+      body {
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .container {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+        max-width: 100vw;
+        width: 100%;
+        min-width: 0;
+        max-height: none;
+        height: auto;
+        margin: 0;
+        padding: 16px 12px;
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+      }
+
+      .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        max-height: 50vh;
+        overflow-y: auto;
+        box-shadow: none;
+        border-right: none;
+        border-bottom: 1.5px solid #232323;
+        padding: 12px 10px;
+        margin-bottom: 12px;
+        font-size: 0.95em;
+      }
+
+      .wishlist-section {
+        position: relative;
+        width: 100%;
+        height: auto;
+        max-height: 50vh;
+        overflow-y: auto;
+        border-right: none;
+        border-top: 1.5px solid #232323;
+        padding: 12px 10px;
+        margin-top: 12px;
+      }
+
+      h1 {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+      }
+
+      h2 {
+        font-size: 1.1em;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+
+      input[type="text"] {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 14px 12px;
+        min-width: 0;
+        width: 100%;
+      }
+
+      .market-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .markets {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .market-btn {
+        min-width: 0;
+        width: 100%;
+        padding: 14px 12px;
+        font-size: 0.95em;
+        touch-action: manipulation; /* Faster tap response */
+      }
+
+      .add-market-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .add-market-btn {
+        min-width: 0;
+        width: 100%;
+        padding: 12px;
+        font-size: 0.9em;
+      }
+
+      #open-all-btn,
+      .section-openall-btn {
+        width: 100%;
+        padding: 14px;
+        font-size: 0.95em;
+        margin-bottom: 8px;
+      }
+
+      .section-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .randomize-section {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+      }
+
+      .randomize-select,
+      #sidebar-randomize-btn,
+      #theme-editor-btn,
+      #monitor-view-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 0.9em;
+      }
+
+      .sidebar-add-row,
+      .sidebar-folder-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .sidebar-add-input,
+      .sidebar-folder-input {
+        width: 100%;
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 12px;
+      }
+
+      .sidebar-add-btn,
+      .sidebar-folder-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 1em;
+      }
+
+      .sidebar-import-export-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .sidebar-exp-btn,
+      .sidebar-imp-btn,
+      .sidebar-reset-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 0.9em;
+      }
+
+      .saved-search-term {
+        padding: 12px 10px;
+        font-size: 0.95em;
+        min-height: 44px; /* iOS touch target minimum */
+        display: flex;
+        align-items: center;
+      }
+
+      .saved-folder-item {
+        padding: 12px 10px;
+        min-height: 44px;
+      }
+
+      .custom-market-modal {
+        max-width: 95vw;
+        width: 95vw;
+        padding: 20px 16px;
+        margin: 10px;
+      }
+
+      .monitor-modal {
+        width: 100vw;
+        height: 100vh;
+        max-width: 100vw;
+        max-height: 100vh;
+        border-radius: 0;
+        padding: 12px;
+      }
+
+      .monitor-board {
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .monitor-col {
+        min-width: 100%;
+        max-width: 100%;
+        margin-bottom: 12px;
+      }
+
+      .wishlist-add-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .wishlist-add-input {
+        width: 100%;
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 12px;
+      }
+
+      .wishlist-add-btn {
+        width: 100%;
+        padding: 12px;
+      }
+
+      .wishlist-item {
+        padding: 10px;
+        font-size: 0.9em;
+      }
+
+      .wishlist-link {
+        max-width: 100%;
+        word-break: break-all;
+      }
+
+      .tip {
+        font-size: 0.9em;
+        line-height: 1.5;
+      }
+
+      .special-group {
+        padding: 12px 8px;
+      }
+
+      /* Disable dragging on mobile */
+      .drag-handle {
+        cursor: default;
+        pointer-events: none;
+      }
+
+      .container.minimized,
+      .sidebar.minimized,
+      .wishlist-section.minimized {
+        width: 100% !important;
+        height: auto !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        transform: none !important;
+      }
+
+      /* Better touch targets */
+      button,
+      .market-btn,
+      .sidebar-add-btn,
+      .sidebar-folder-btn,
+      .edit-btn,
+      .remove-btn {
+        min-height: 44px;
+        touch-action: manipulation;
+      }
+
+      /* Hide resize handles on mobile */
+      .resize-handle {
+        display: none;
+      }
+
+      /* Adjust panel controls for mobile */
+      .panel-controls {
+        top: 8px;
+        right: 8px;
+      }
+
+      .panel-close {
+        width: 32px;
+        height: 32px;
+        font-size: 1.2em;
+      }
+
+      /* Login modal */
+      .login-modal-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      }
+
+      .login-modal {
+        background: rgba(20, 20, 20, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 18px;
+        padding: 32px 28px;
+        width: min(400px, 90vw);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        text-align: center;
+      }
+
+      .login-title {
+        font-size: 1.5em;
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 8px;
+        letter-spacing: 0.02em;
+      }
+
+      .login-subtitle {
+        color: #b0b0b0;
+        font-size: 0.95em;
+        margin-bottom: 24px;
+      }
+
+      .login-input {
+        width: 100%;
+        background: rgba(30, 32, 34, 0.93);
+        border: 1.5px solid #2a2d2f;
+        color: #e3e3e3;
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 1em;
+        outline: none;
+        margin-bottom: 16px;
+        box-sizing: border-box;
+      }
+
+      .login-input:focus {
+        border-color: rgba(0, 230, 214, 0.55);
+        background: rgba(40, 42, 44, 0.98);
+      }
+
+      .login-btn {
+        width: 100%;
+        background: #232323;
+        color: #e3e3e3;
+        border: none;
+        border-radius: 10px;
+        padding: 14px;
+        font-size: 1em;
+        font-weight: 800;
+        cursor: pointer;
+        transition: background 0.18s, transform 0.13s;
+      }
+
+      .login-btn:hover {
+        background: #444;
+        transform: translateY(-1px);
+      }
+
+      .login-error {
+        color: #ff6b6b;
+        font-size: 0.9em;
+        margin-top: 12px;
+        display: none;
+      }
+
+      body.login-locked .sidebar,
+      body.login-locked .container,
+      body.login-locked .wishlist-section,
+      body.login-locked .minimized-panels {
+        pointer-events: none;
+        filter: blur(3px);
+        opacity: 0.4;
+      }
+
+      /* Landscape orientation on mobile */
+      @media (max-width: 768px) and (orientation: landscape) {
+        .sidebar {
+          max-height: 40vh;
+        }
+
+        .wishlist-section {
+          max-height: 40vh;
+        }
+
+        .container {
+          padding: 12px 10px;
+        }
+
+        h1 {
+          font-size: 1.3em;
+          margin-bottom: 8px;
+        }
+      }
+
+      /* Very small screens */
+      @media (max-width: 360px) {
+        .container {
+          padding: 12px 8px;
+        }
+
+        h1 {
+          font-size: 1.3em;
+        }
+
+        .market-btn {
+          font-size: 0.85em;
+          padding: 12px 8px;
+        }
+
+        .sidebar {
+          font-size: 0.9em;
+          padding: 10px 8px;
+        }
+      }
+    }
+
+    /* Login modal */
+    .login-modal-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.92);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .login-modal {
+      background: rgba(20, 20, 20, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 32px 28px;
+      width: min(400px, 90vw);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      text-align: center;
+    }
+
+    .login-title {
+      font-size: 1.5em;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    .login-subtitle {
+      color: #b0b0b0;
+      font-size: 0.9em;
+      margin-bottom: 24px;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(30, 32, 34, 0.93);
+      border: 1.5px solid #2a2d2f;
+      color: #e3e3e3;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 1em;
+      outline: none;
+      margin-bottom: 16px;
+      box-sizing: border-box;
+    }
+
+    .login-input:focus {
+      border-color: rgba(0, 230, 214, 0.55);
+      background: rgba(40, 42, 44, 0.98);
+    }
+
+    .login-btn {
+      width: 100%;
+      background: #232323;
+      color: #e3e3e3;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 1em;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .login-btn:hover {
+      background: #444;
+      transform: translateY(-1px);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-error {
+      color: #ff6b6b;
+      font-size: 0.9em;
+      margin-top: 12px;
+      display: none;
+    }
+
+    body.login-locked .sidebar,
+    body.login-locked .container,
+    body.login-locked .wishlist-section,
+    body.login-locked .minimized-panels {
+      pointer-events: none;
+      filter: blur(3px);
+      opacity: 0.4;
+    }
+
+    @media (max-width: 768px) {
+      .login-modal {
+        padding: 24px 20px;
+        width: 95vw;
+      }
+
+      .login-title {
+        font-size: 1.3em;
+      }
+
+      .login-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 16px;
+      }
+
+      .login-btn {
+        padding: 16px;
+        font-size: 1em;
+      }
+    }
+
     @media (max-width: 1200px) {
       .wishlist-section { display: none; }
       .container { margin-right: 0; }
       .custom-market-modal-bg { justify-content: center; align-items: center; }
       .custom-market-modal { margin: auto; }
     }
-    @media (max-width: 1000px) {
-      .sidebar {
-        position: static;
-        width: 100%;
-        height: auto;
-        box-shadow: none;
-        border-right: none;
-        border-bottom: 1.5px solid #232323;
-        padding: 13px 8px 7px 8px;
-        margin-bottom: 18px;
-        max-width: 100vw;
-      }
-      .container { max-width: 98vw; margin: 0.5em; }
-      .custom-market-modal-bg { justify-content: center !important; align-items: center !important; }
-      .custom-market-modal { margin: auto !important; }
-    }
-    @media (max-width: 700px) {
-      .market-row, .markets { flex-direction: column; gap: 8px; }
-      .market-btn { min-width: 0; width: 100%; }
-      .add-market-btn { min-width: 0; width: 100%; }
-      input[type="text"] { min-width: 0; }
-      .special-group { padding: 10px 4px 6px 4px; }
-      #open-all-btn { max-width: 100%; }
-      .sidebar { padding: 9px 3px 7px 6px; font-size: 0.97em; }
-      .custom-market-modal-bg { justify-content: center !important; align-items: center !important; }
-      .custom-market-modal { margin: auto !important; }
-    }
+
     @media (min-width: 1200px) {
-  .container {
-    margin-left: 320px;  /* Increased from 255px for more space from sidebar */
-    margin-right: 405px; /* Keeps it visually centered */
-  }
-}
+      .container {
+        margin-left: 320px;
+        margin-right: 405px;
+      }
+    }
+
+    /* Tablet adjustments */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .container {
+        max-width: 95vw;
+        margin: 0 auto;
+        padding: 24px 16px;
+      }
+
+      .sidebar {
+        width: 280px;
+      }
+
+      .wishlist-section {
+        width: 300px;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Login Modal -->
+  <div id="login-modal-bg" class="login-modal-bg">
+    <div class="login-modal">
+      <div class="login-title">Access Required</div>
+      <div class="login-subtitle">Enter password to continue</div>
+      <form id="login-form" autocomplete="off">
+        <input type="password" id="login-password-input" class="login-input" placeholder="Password" autocomplete="off" autofocus />
+        <button type="submit" class="login-btn">Log In</button>
+        <div id="login-error" class="login-error">Incorrect password</div>
+      </form>
+    </div>
+  </div>
+
   <div class="minimized-panels" id="minimized-panels"></div>
   <div class="sidebar" id="sidebar">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
@@ -1536,6 +2073,92 @@
   </div>
 
   <script>
+    // Login system (password obfuscated)
+    (function() {
+      const loginModal = document.getElementById('login-modal-bg');
+      const loginForm = document.getElementById('login-form');
+      const passwordInput = document.getElementById('login-password-input');
+      const loginError = document.getElementById('login-error');
+      const LOGIN_SESSION_KEY = 'mmcs_auth_session';
+
+      // Obfuscated password check (not plain text in source)
+      function checkPassword(input) {
+        if (!input || input.length !== 8) return false;
+        // Password stored as char codes, reversed, then checked
+        const codes = [110, 105, 109, 100, 97, 111, 101, 108];
+        const expected = codes.map(c => String.fromCharCode(c)).reverse().join('');
+        return input.toLowerCase() === expected.toLowerCase();
+      }
+
+      function setLoginLocked(locked) {
+        document.body.classList.toggle('login-locked', locked);
+        loginModal.style.display = locked ? 'flex' : 'none';
+        if (!locked) {
+          try {
+            sessionStorage.setItem(LOGIN_SESSION_KEY, '1');
+          } catch {}
+        }
+      }
+
+      function isLoggedIn() {
+        try {
+          return sessionStorage.getItem(LOGIN_SESSION_KEY) === '1';
+        } catch {
+          return false;
+        }
+      }
+
+      loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const password = passwordInput.value.trim();
+        loginError.style.display = 'none';
+
+        if (checkPassword(password)) {
+          setLoginLocked(false);
+          passwordInput.value = '';
+        } else {
+          loginError.style.display = 'block';
+          passwordInput.value = '';
+          passwordInput.focus();
+        }
+      });
+
+      // Lock on load if not logged in
+      if (!isLoggedIn()) {
+        setLoginLocked(true);
+        setTimeout(() => passwordInput.focus(), 100);
+      } else {
+        setLoginLocked(false);
+      }
+    })();
+
+    // Mobile detection and optimization
+    (function() {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                       (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) ||
+                       ('ontouchstart' in window);
+      
+      if (isMobile) {
+        document.documentElement.classList.add('is-mobile');
+        document.body.classList.add('is-mobile');
+        
+        // Prevent double-tap zoom on buttons
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+          const now = Date.now();
+          if (now - lastTouchEnd <= 300) {
+            e.preventDefault();
+          }
+          lastTouchEnd = now;
+        }, false);
+        
+        // Optimize scroll performance
+        document.addEventListener('touchmove', function(e) {
+          // Allow native scrolling
+        }, { passive: true });
+      }
+    })();
+
     // Compatibility helper: older code still calls scopedKey(...) in a few places.
     function scopedKey(baseKey) { return baseKey; }
 
