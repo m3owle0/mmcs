@@ -3610,14 +3610,24 @@
         
         this.isProcessing = true;
         
+        // Check if mobile
+        const isMobile = document.body.classList.contains('is-mobile') || 
+                        window.innerWidth <= 768 ||
+                        ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+        
         // Open all links simultaneously
         this.queue.forEach(url => {
-          // Use window.open for first tab, then window.open with _blank for others
-          const newWindow = window.open();
-          if (newWindow) {
-            newWindow.location.href = url;
+          if (isMobile) {
+            // On mobile, always open in new tab to keep the search page open
+            window.open(url, '_blank', 'noopener,noreferrer');
           } else {
-            window.open(url, '_blank');
+            // Desktop: Use window.open for first tab, then window.open with _blank for others
+            const newWindow = window.open();
+            if (newWindow) {
+              newWindow.location.href = url;
+            } else {
+              window.open(url, '_blank');
+            }
           }
         });
         
@@ -4085,6 +4095,17 @@
     // Note: browsers only allow scripts to close windows they opened.
     let monitorPopup = null;
     function openInMonitorPopup(url) {
+      // Check if mobile
+      const isMobile = document.body.classList.contains('is-mobile') || 
+                      window.innerWidth <= 768 ||
+                      ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+      
+      if (isMobile) {
+        // On mobile, always open in new tab to keep the search page open
+        window.open(url, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      
       try {
         if (monitorPopup && !monitorPopup.closed) {
           // Reuse the same popup window.
