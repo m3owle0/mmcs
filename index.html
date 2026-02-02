@@ -1330,73 +1330,101 @@
       box-shadow: 0 0 0 2px rgba(120,120,120,0.3);
       transition: none;
     }
-    /* Mobile-first responsive design */
-    @media (max-width: 768px) {
-      /* Mobile: Full-width, stacked layout */
-      body {
+    /* Mobile-first responsive design - Complete reformat */
+    @media (max-width: 768px), (max-width: 1024px) and (pointer: coarse) {
+      /* Mobile: Full-width, stacked layout - Complete reformat */
+      html.is-mobile,
+      body.is-mobile {
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
-      }
-
-      .container {
-        position: relative;
-        left: auto;
-        top: auto;
-        transform: none;
-        max-width: 100vw;
-        width: 100%;
-        min-width: 0;
-        max-height: none;
         height: auto;
-        margin: 0;
-        padding: 16px 12px;
-        border-radius: 0;
-        box-shadow: none;
-        border: none;
-      }
-
-      .sidebar {
-        position: relative;
-        width: 100%;
-        height: auto;
-        max-height: 50vh;
+        min-height: 100vh;
         overflow-y: auto;
-        box-shadow: none;
-        border-right: none;
-        border-bottom: 1.5px solid #232323;
-        padding: 12px 10px;
-        margin-bottom: 12px;
-        font-size: 0.95em;
       }
 
-      .wishlist-section {
-        position: relative;
-        width: 100%;
-        height: auto;
-        max-height: 50vh;
-        overflow-y: auto;
-        border-right: none;
-        border-top: 1.5px solid #232323;
-        padding: 12px 10px;
-        margin-top: 12px;
+      html.is-mobile .container,
+      body.is-mobile .container {
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        transform: none !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-height: none !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 12px 10px !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        display: block !important;
+        flex-direction: column !important;
       }
 
-      h1 {
-        font-size: 1.5em;
-        margin-bottom: 10px;
+      html.is-mobile .sidebar,
+      body.is-mobile .sidebar {
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+        box-shadow: none !important;
+        border-right: none !important;
+        border-bottom: 2px solid rgba(255,255,255,0.1) !important;
+        padding: 14px 10px !important;
+        margin-bottom: 16px !important;
+        margin-top: 0 !important;
+        font-size: 0.95em !important;
+        transform: none !important;
+        left: auto !important;
+        top: auto !important;
       }
 
-      h2 {
-        font-size: 1.1em;
-        margin-top: 20px;
-        margin-bottom: 10px;
+      html.is-mobile .wishlist-section,
+      body.is-mobile .wishlist-section {
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+        border-right: none !important;
+        border-top: 2px solid rgba(255,255,255,0.1) !important;
+        border-bottom: none !important;
+        padding: 14px 10px !important;
+        margin-top: 16px !important;
+        margin-bottom: 0 !important;
+        transform: none !important;
+        left: auto !important;
+        top: auto !important;
       }
 
-      input[type="text"] {
-        font-size: 16px; /* Prevents zoom on iOS */
-        padding: 14px 12px;
-        min-width: 0;
-        width: 100%;
+      html.is-mobile h1,
+      body.is-mobile h1 {
+        font-size: 1.4em !important;
+        margin-bottom: 12px !important;
+        margin-top: 0 !important;
+        line-height: 1.2 !important;
+      }
+
+      html.is-mobile h2,
+      body.is-mobile h2 {
+        font-size: 1.15em !important;
+        margin-top: 24px !important;
+        margin-bottom: 12px !important;
+        line-height: 1.3 !important;
+      }
+
+      html.is-mobile input[type="text"],
+      body.is-mobile input[type="text"] {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 16px 14px !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        border-radius: 10px !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
       }
 
       .market-row {
@@ -1417,24 +1445,33 @@
         touch-action: manipulation; /* Faster tap response */
       }
 
-      .add-market-row {
-        flex-direction: column;
-        gap: 8px;
+      html.is-mobile .add-market-row,
+      body.is-mobile .add-market-row {
+        flex-direction: column !important;
+        gap: 10px !important;
+        margin-bottom: 20px !important;
       }
 
-      .add-market-btn {
-        min-width: 0;
-        width: 100%;
-        padding: 12px;
-        font-size: 0.9em;
+      html.is-mobile .add-market-btn,
+      body.is-mobile .add-market-btn {
+        min-width: 0 !important;
+        width: 100% !important;
+        padding: 14px 12px !important;
+        font-size: 0.9em !important;
+        min-height: 44px !important;
+        box-sizing: border-box !important;
       }
 
-      #open-all-btn,
-      .section-openall-btn {
-        width: 100%;
-        padding: 14px;
-        font-size: 0.95em;
-        margin-bottom: 8px;
+      html.is-mobile #open-all-btn,
+      html.is-mobile .section-openall-btn,
+      body.is-mobile #open-all-btn,
+      body.is-mobile .section-openall-btn {
+        width: 100% !important;
+        padding: 16px !important;
+        font-size: 0.95em !important;
+        margin-bottom: 10px !important;
+        min-height: 48px !important;
+        box-sizing: border-box !important;
       }
 
       .section-header-row {
@@ -1458,78 +1495,111 @@
         font-size: 0.9em;
       }
 
-      .sidebar-add-row,
-      .sidebar-folder-row {
-        flex-direction: column;
-        gap: 8px;
+      html.is-mobile .sidebar-add-row,
+      html.is-mobile .sidebar-folder-row,
+      body.is-mobile .sidebar-add-row,
+      body.is-mobile .sidebar-folder-row {
+        flex-direction: column !important;
+        gap: 10px !important;
+        margin-bottom: 12px !important;
       }
 
-      .sidebar-add-input,
-      .sidebar-folder-input {
-        width: 100%;
-        font-size: 16px; /* Prevents zoom on iOS */
-        padding: 12px;
+      html.is-mobile .sidebar-add-input,
+      html.is-mobile .sidebar-folder-input,
+      body.is-mobile .sidebar-add-input,
+      body.is-mobile .sidebar-folder-input {
+        width: 100% !important;
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 14px 12px !important;
+        min-height: 44px !important;
+        box-sizing: border-box !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
       }
 
-      .sidebar-add-btn,
-      .sidebar-folder-btn {
-        width: 100%;
-        padding: 12px;
-        font-size: 1em;
+      html.is-mobile .sidebar-add-btn,
+      html.is-mobile .sidebar-folder-btn,
+      body.is-mobile .sidebar-add-btn,
+      body.is-mobile .sidebar-folder-btn {
+        width: 100% !important;
+        padding: 14px 12px !important;
+        font-size: 1em !important;
+        min-height: 44px !important;
+        box-sizing: border-box !important;
       }
 
-      .sidebar-import-export-row {
-        flex-direction: column;
-        gap: 8px;
+      html.is-mobile .sidebar-import-export-row,
+      body.is-mobile .sidebar-import-export-row {
+        flex-direction: column !important;
+        gap: 10px !important;
+        margin-bottom: 12px !important;
       }
 
-      .sidebar-exp-btn,
-      .sidebar-imp-btn,
-      .sidebar-reset-btn {
-        width: 100%;
-        padding: 12px;
-        font-size: 0.9em;
+      html.is-mobile .sidebar-exp-btn,
+      html.is-mobile .sidebar-imp-btn,
+      html.is-mobile .sidebar-reset-btn,
+      body.is-mobile .sidebar-exp-btn,
+      body.is-mobile .sidebar-imp-btn,
+      body.is-mobile .sidebar-reset-btn {
+        width: 100% !important;
+        padding: 14px 12px !important;
+        font-size: 0.9em !important;
+        min-height: 44px !important;
+        box-sizing: border-box !important;
       }
 
-      .saved-search-term {
-        padding: 12px 10px;
-        font-size: 0.95em;
-        min-height: 44px; /* iOS touch target minimum */
-        display: flex;
-        align-items: center;
+      html.is-mobile .saved-search-term,
+      body.is-mobile .saved-search-term {
+        padding: 14px 12px !important;
+        font-size: 0.95em !important;
+        min-height: 48px !important; /* iOS touch target minimum */
+        display: flex !important;
+        align-items: center !important;
+        margin-bottom: 6px !important;
       }
 
-      .saved-folder-item {
-        padding: 12px 10px;
-        min-height: 44px;
+      html.is-mobile .saved-folder-item,
+      body.is-mobile .saved-folder-item {
+        padding: 14px 12px !important;
+        min-height: 48px !important;
+        margin-bottom: 6px !important;
       }
 
-      .custom-market-modal {
-        max-width: 95vw;
-        width: 95vw;
-        padding: 20px 16px;
-        margin: 10px;
+      html.is-mobile .custom-market-modal,
+      body.is-mobile .custom-market-modal {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        padding: 20px 14px !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        max-height: 100vh !important;
+        overflow-y: auto !important;
       }
 
-      .monitor-modal {
-        width: 100vw;
-        height: 100vh;
-        max-width: 100vw;
-        max-height: 100vh;
-        border-radius: 0;
-        padding: 12px;
+      html.is-mobile .monitor-modal,
+      body.is-mobile .monitor-modal {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        padding: 10px !important;
+        margin: 0 !important;
       }
 
-      .monitor-board {
-        flex-direction: column;
-        overflow-y: auto;
-        overflow-x: hidden;
+      html.is-mobile .monitor-board,
+      body.is-mobile .monitor-board {
+        flex-direction: column !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding: 0 !important;
       }
 
-      .monitor-col {
-        min-width: 100%;
-        max-width: 100%;
-        margin-bottom: 12px;
+      html.is-mobile .monitor-col,
+      body.is-mobile .monitor-col {
+        min-width: 100% !important;
+        max-width: 100% !important;
+        margin-bottom: 16px !important;
       }
 
       .wishlist-add-row {
@@ -1568,178 +1638,408 @@
       }
 
       /* Disable dragging on mobile */
-      .drag-handle {
-        cursor: default;
-        pointer-events: none;
+      html.is-mobile .drag-handle,
+      body.is-mobile .drag-handle {
+        cursor: default !important;
+        pointer-events: none !important;
+        display: none !important;
       }
 
-      .container.minimized,
-      .sidebar.minimized,
-      .wishlist-section.minimized {
+      html.is-mobile .container.minimized,
+      html.is-mobile .sidebar.minimized,
+      html.is-mobile .wishlist-section.minimized,
+      body.is-mobile .container.minimized,
+      body.is-mobile .sidebar.minimized,
+      body.is-mobile .wishlist-section.minimized {
         width: 100% !important;
         height: auto !important;
         min-width: 0 !important;
         min-height: 0 !important;
         transform: none !important;
+        position: relative !important;
       }
 
       /* Better touch targets */
-      button,
-      .market-btn,
-      .sidebar-add-btn,
-      .sidebar-folder-btn,
-      .edit-btn,
-      .remove-btn {
-        min-height: 44px;
-        touch-action: manipulation;
+      html.is-mobile button,
+      html.is-mobile .market-btn,
+      html.is-mobile .sidebar-add-btn,
+      html.is-mobile .sidebar-folder-btn,
+      html.is-mobile .edit-btn,
+      html.is-mobile .remove-btn,
+      body.is-mobile button,
+      body.is-mobile .market-btn,
+      body.is-mobile .sidebar-add-btn,
+      body.is-mobile .sidebar-folder-btn,
+      body.is-mobile .edit-btn,
+      body.is-mobile .remove-btn {
+        min-height: 44px !important;
+        touch-action: manipulation !important;
+        -webkit-tap-highlight-color: rgba(255,255,255,0.1) !important;
       }
 
       /* Hide resize handles on mobile */
-      .resize-handle {
-        display: none;
+      html.is-mobile .resize-handle,
+      body.is-mobile .resize-handle {
+        display: none !important;
       }
 
       /* Adjust panel controls for mobile */
-      .panel-controls {
-        top: 8px;
-        right: 8px;
+      html.is-mobile .panel-controls,
+      body.is-mobile .panel-controls {
+        top: 10px !important;
+        right: 10px !important;
       }
 
-      .panel-close {
-        width: 32px;
-        height: 32px;
-        font-size: 1.2em;
+      html.is-mobile .panel-close,
+      body.is-mobile .panel-close {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 1.3em !important;
+        min-height: 36px !important;
       }
 
-      /* Login modal */
-      .login-modal-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.9);
-        backdrop-filter: blur(8px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
+      /* Mobile-specific layout adjustments */
+      html.is-mobile .minimized-panels,
+      body.is-mobile .minimized-panels {
+        display: none !important;
       }
 
-      .login-modal {
-        background: rgba(20, 20, 20, 0.98);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 18px;
-        padding: 32px 28px;
-        width: min(400px, 90vw);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-        text-align: center;
+      html.is-mobile .container,
+      html.is-mobile .sidebar,
+      html.is-mobile .wishlist-section,
+      body.is-mobile .container,
+      body.is-mobile .sidebar,
+      body.is-mobile .wishlist-section {
+        order: 0 !important;
       }
 
-      .login-title {
-        font-size: 1.5em;
-        font-weight: 900;
-        color: #fff;
-        margin-bottom: 8px;
-        letter-spacing: 0.02em;
+      html.is-mobile .sidebar,
+      body.is-mobile .sidebar {
+        order: 1 !important;
       }
 
-      .login-subtitle {
-        color: #b0b0b0;
-        font-size: 0.95em;
-        margin-bottom: 24px;
+      html.is-mobile .container,
+      body.is-mobile .container {
+        order: 2 !important;
       }
 
-      .login-input {
-        width: 100%;
-        background: rgba(30, 32, 34, 0.93);
-        border: 1.5px solid #2a2d2f;
-        color: #e3e3e3;
-        border-radius: 10px;
-        padding: 14px 16px;
-        font-size: 1em;
-        outline: none;
-        margin-bottom: 16px;
-        box-sizing: border-box;
+      html.is-mobile .wishlist-section,
+      body.is-mobile .wishlist-section {
+        order: 3 !important;
       }
 
-      .login-input:focus {
-        border-color: rgba(0, 230, 214, 0.55);
-        background: rgba(40, 42, 44, 0.98);
+      /* Mobile-specific form and control improvements */
+      html.is-mobile label,
+      body.is-mobile label {
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        -webkit-tap-highlight-color: rgba(255,255,255,0.1) !important;
       }
 
-      .login-btn {
-        width: 100%;
-        background: #232323;
-        color: #e3e3e3;
-        border: none;
-        border-radius: 10px;
-        padding: 14px;
-        font-size: 1em;
-        font-weight: 800;
-        cursor: pointer;
-        transition: background 0.18s, transform 0.13s;
+      html.is-mobile input[type="checkbox"],
+      html.is-mobile input[type="radio"],
+      body.is-mobile input[type="checkbox"],
+      body.is-mobile input[type="radio"] {
+        width: 20px !important;
+        height: 20px !important;
+        min-width: 20px !important;
+        min-height: 20px !important;
+        cursor: pointer !important;
       }
 
-      .login-btn:hover {
-        background: #444;
-        transform: translateY(-1px);
+      html.is-mobile select,
+      body.is-mobile select {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 14px 12px !important;
+        min-height: 44px !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
       }
 
-      .login-error {
-        color: #ff6b6b;
-        font-size: 0.9em;
-        margin-top: 12px;
-        display: none;
+      /* Mobile-specific spacing improvements */
+      html.is-mobile .section-header-row h2,
+      body.is-mobile .section-header-row h2 {
+        margin-top: 0 !important;
       }
 
-      body.login-locked .sidebar,
-      body.login-locked .container,
-      body.login-locked .wishlist-section,
-      body.login-locked .minimized-panels {
-        pointer-events: none;
-        filter: blur(3px);
-        opacity: 0.4;
+      html.is-mobile .markets + .section-header-row,
+      body.is-mobile .markets + .section-header-row {
+        margin-top: 28px !important;
+      }
+
+      /* Prevent horizontal scroll on mobile */
+      html.is-mobile *,
+      body.is-mobile * {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+
+      /* Better mobile scrolling */
+      html.is-mobile,
+      body.is-mobile {
+        -webkit-overflow-scrolling: touch !important;
+        scroll-behavior: smooth !important;
+      }
+
+      /* Mobile-specific text improvements */
+      html.is-mobile .tip,
+      html.is-mobile .wishlist-tip,
+      body.is-mobile .tip,
+      body.is-mobile .wishlist-tip {
+        font-size: 0.85em !important;
+        line-height: 1.6 !important;
+        padding: 12px !important;
+        margin: 12px 0 !important;
+      }
+
+      /* Mobile button row improvements */
+      html.is-mobile div[style*="display: flex"],
+      body.is-mobile div[style*="display: flex"] {
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+      }
+
+      /* Mobile-specific modal improvements */
+      html.is-mobile #custom-market-modal-bg,
+      body.is-mobile #custom-market-modal-bg {
+        padding: 0 !important;
+        align-items: flex-start !important;
+        overflow-y: auto !important;
+      }
+
+      html.is-mobile .modal-btn-row,
+      body.is-mobile .modal-btn-row {
+        flex-direction: column !important;
+        gap: 10px !important;
+      }
+
+      html.is-mobile .modal-btn,
+      html.is-mobile .modal-cancel-btn,
+      body.is-mobile .modal-btn,
+      body.is-mobile .modal-cancel-btn {
+        width: 100% !important;
+        min-height: 44px !important;
+        padding: 14px !important;
+      }
+
+      /* Mobile monitor view improvements */
+      html.is-mobile .monitor-modal-top,
+      body.is-mobile .monitor-modal-top {
+        flex-direction: column !important;
+        gap: 12px !important;
+        margin-bottom: 12px !important;
+      }
+
+      html.is-mobile .monitor-controls,
+      body.is-mobile .monitor-controls {
+        width: 100% !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+      }
+
+      html.is-mobile .monitor-select,
+      html.is-mobile .monitor-close-btn,
+      body.is-mobile .monitor-select,
+      body.is-mobile .monitor-close-btn {
+        width: 100% !important;
+        min-height: 44px !important;
+        padding: 14px 12px !important;
+      }
+
+      /* Hide desktop-only elements on mobile */
+      html.is-mobile .wishlist-mascot,
+      body.is-mobile .wishlist-mascot {
+        max-width: 80px !important;
+        height: auto !important;
+      }
+
+      /* Login modal - Mobile optimized */
+      html.is-mobile .login-modal-bg,
+      body.is-mobile .login-modal-bg {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0, 0, 0, 0.95) !important;
+        backdrop-filter: blur(8px) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 10000 !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+      }
+
+      html.is-mobile .login-modal,
+      body.is-mobile .login-modal {
+        background: rgba(20, 20, 20, 0.98) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 0 !important;
+        padding: 28px 20px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
+      }
+
+      html.is-mobile #login-form,
+      body.is-mobile #login-form {
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
+        width: 100% !important;
+      }
+
+      html.is-mobile .login-input,
+      body.is-mobile .login-input {
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
+      }
+
+      html.is-mobile .login-title,
+      body.is-mobile .login-title {
+        font-size: 1.3em !important;
+        font-weight: 900 !important;
+        color: #fff !important;
+        margin-bottom: 8px !important;
+        letter-spacing: 0.02em !important;
+      }
+
+      html.is-mobile .login-subtitle,
+      body.is-mobile .login-subtitle {
+        color: #b0b0b0 !important;
+        font-size: 0.9em !important;
+        margin-bottom: 24px !important;
+      }
+
+      html.is-mobile .login-input,
+      body.is-mobile .login-input {
+        width: 100% !important;
+        background: rgba(30, 32, 34, 0.93) !important;
+        border: 1.5px solid #2a2d2f !important;
+        color: #e3e3e3 !important;
+        border-radius: 10px !important;
+        padding: 16px !important;
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        outline: none !important;
+        margin-bottom: 16px !important;
+        box-sizing: border-box !important;
+        min-height: 44px !important;
+      }
+
+      html.is-mobile .login-input:focus,
+      body.is-mobile .login-input:focus {
+        border-color: rgba(0, 230, 214, 0.55) !important;
+        background: rgba(40, 42, 44, 0.98) !important;
+      }
+
+      html.is-mobile .login-btn,
+      body.is-mobile .login-btn {
+        width: 100% !important;
+        background: #232323 !important;
+        color: #e3e3e3 !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 16px !important;
+        font-size: 1em !important;
+        font-weight: 800 !important;
+        cursor: pointer !important;
+        transition: background 0.18s, transform 0.13s !important;
+        min-height: 48px !important;
+        pointer-events: auto !important;
+        -webkit-tap-highlight-color: rgba(255,255,255,0.2) !important;
+        touch-action: manipulation !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+      }
+
+      html.is-mobile .login-btn:hover,
+      html.is-mobile .login-btn:active,
+      html.is-mobile .login-btn:focus,
+      body.is-mobile .login-btn:hover,
+      body.is-mobile .login-btn:active,
+      body.is-mobile .login-btn:focus {
+        background: #444 !important;
+        outline: none !important;
+      }
+
+      html.is-mobile .login-error,
+      body.is-mobile .login-error {
+        color: #ff6b6b !important;
+        font-size: 0.9em !important;
+        margin-top: 12px !important;
+        display: none !important;
+      }
+
+      html.is-mobile body.login-locked .sidebar,
+      html.is-mobile body.login-locked .container,
+      html.is-mobile body.login-locked .wishlist-section,
+      html.is-mobile body.login-locked .minimized-panels,
+      body.is-mobile.login-locked .sidebar,
+      body.is-mobile.login-locked .container,
+      body.is-mobile.login-locked .wishlist-section,
+      body.is-mobile.login-locked .minimized-panels {
+        pointer-events: none !important;
+        filter: blur(3px) !important;
+        opacity: 0.4 !important;
       }
 
       /* Landscape orientation on mobile */
       @media (max-width: 768px) and (orientation: landscape) {
-        .sidebar {
-          max-height: 40vh;
+        html.is-mobile .sidebar,
+        body.is-mobile .sidebar {
+          max-height: 45vh !important;
+          overflow-y: auto !important;
         }
 
-        .wishlist-section {
-          max-height: 40vh;
+        html.is-mobile .wishlist-section,
+        body.is-mobile .wishlist-section {
+          max-height: 45vh !important;
+          overflow-y: auto !important;
         }
 
-        .container {
-          padding: 12px 10px;
+        html.is-mobile .container,
+        body.is-mobile .container {
+          padding: 10px 8px !important;
         }
 
-        h1 {
-          font-size: 1.3em;
-          margin-bottom: 8px;
+        html.is-mobile h1,
+        body.is-mobile h1 {
+          font-size: 1.2em !important;
+          margin-bottom: 8px !important;
         }
       }
 
       /* Very small screens */
       @media (max-width: 360px) {
-        .container {
-          padding: 12px 8px;
+        html.is-mobile .container,
+        body.is-mobile .container {
+          padding: 10px 8px !important;
         }
 
-        h1 {
-          font-size: 1.3em;
+        html.is-mobile h1,
+        body.is-mobile h1 {
+          font-size: 1.2em !important;
         }
 
-        .market-btn {
-          font-size: 0.85em;
-          padding: 12px 8px;
+        html.is-mobile .market-btn,
+        body.is-mobile .market-btn {
+          font-size: 0.85em !important;
+          padding: 14px 10px !important;
         }
 
-        .sidebar {
-          font-size: 0.9em;
-          padding: 10px 8px;
+        html.is-mobile .sidebar,
+        body.is-mobile .sidebar {
+          font-size: 0.9em !important;
+          padding: 12px 8px !important;
         }
       }
     }
@@ -1840,31 +2140,52 @@
     }
 
     @media (max-width: 768px) {
-      .login-modal {
-        padding: 24px 20px;
-        width: 95vw;
+      html.is-mobile .login-modal,
+      body.is-mobile .login-modal {
+        padding: 24px 20px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
       }
 
-      .login-title {
-        font-size: 1.3em;
+      html.is-mobile .login-title,
+      body.is-mobile .login-title {
+        font-size: 1.3em !important;
       }
 
-      .login-input {
-        font-size: 16px; /* Prevents zoom on iOS */
-        padding: 16px;
+      html.is-mobile .login-input,
+      body.is-mobile .login-input {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 16px !important;
+        min-height: 44px !important;
       }
 
-      .login-btn {
-        padding: 16px;
-        font-size: 1em;
+      html.is-mobile .login-btn,
+      body.is-mobile .login-btn {
+        padding: 16px !important;
+        font-size: 1em !important;
+        min-height: 48px !important;
       }
     }
 
     @media (max-width: 1200px) {
-      .wishlist-section { display: none; }
-      .container { margin-right: 0; }
-      .custom-market-modal-bg { justify-content: center; align-items: center; }
-      .custom-market-modal { margin: auto; }
+      html:not(.is-mobile) .wishlist-section,
+      body:not(.is-mobile) .wishlist-section { 
+        display: none; 
+      }
+      html:not(.is-mobile) .container,
+      body:not(.is-mobile) .container { 
+        margin-right: 0; 
+      }
+      html:not(.is-mobile) .custom-market-modal-bg,
+      body:not(.is-mobile) .custom-market-modal-bg { 
+        justify-content: center; 
+        align-items: center; 
+      }
+      html:not(.is-mobile) .custom-market-modal,
+      body:not(.is-mobile) .custom-market-modal { 
+        margin: auto; 
+      }
     }
 
     @media (min-width: 1200px) {
@@ -2073,6 +2394,33 @@
   </div>
 
   <script>
+    // Mobile detection - runs immediately
+    (function() {
+      function detectMobile() {
+        const isMobile = window.innerWidth <= 768 || 
+                        ('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 1024 ||
+                        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          document.documentElement.classList.add('is-mobile');
+          document.body.classList.add('is-mobile');
+        }
+        
+        // Update on resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(function() {
+            const nowMobile = window.innerWidth <= 768 || 
+                            ('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 1024;
+            document.documentElement.classList.toggle('is-mobile', nowMobile);
+            document.body.classList.toggle('is-mobile', nowMobile);
+          }, 150);
+        });
+      }
+      detectMobile();
+    })();
+
     // Login system (password obfuscated)
     (function() {
       const loginModal = document.getElementById('login-modal-bg');
@@ -2108,8 +2456,7 @@
         }
       }
 
-      loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+      function handleLogin() {
         const password = passwordInput.value.trim();
         loginError.style.display = 'none';
 
@@ -2119,7 +2466,43 @@
         } else {
           loginError.style.display = 'block';
           passwordInput.value = '';
-          passwordInput.focus();
+          setTimeout(() => passwordInput.focus(), 50);
+        }
+      }
+
+      loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleLogin();
+        return false;
+      });
+
+      // Mobile-specific: Also handle button click directly
+      const loginBtn = loginForm.querySelector('.login-btn');
+      if (loginBtn) {
+        loginBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleLogin();
+          return false;
+        });
+        
+        // Also handle touch events for mobile
+        loginBtn.addEventListener('touchend', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleLogin();
+          return false;
+        });
+      }
+
+      // Also handle Enter key on password input (important for mobile keyboards)
+      passwordInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleLogin();
+          return false;
         }
       });
 
