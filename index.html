@@ -1715,8 +1715,16 @@
       const SUPABASE_URL = 'https://wbpfuuiznsmysbskywdx.supabase.co'; // e.g., 'https://xxxxx.supabase.co'
       const SUPABASE_ANON_KEY = 'sb_publishable_rIy_-DWT87Gj9ao1WvN3gA_WA6eME-x'; // Your anon/public key
       
-      // Initialize Supabase client
-      const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+      // Initialize Supabase client with session persistence
+      const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true, // Enable session persistence across page refreshes
+          autoRefreshToken: true, // Automatically refresh expired tokens
+          detectSessionInUrl: true, // Detect session from URL (for OAuth redirects)
+          storage: window.localStorage, // Use localStorage for session storage
+          storageKey: 'sb-' + SUPABASE_URL.split('//')[1].split('.')[0] + '-auth-token' // Unique storage key
+        }
+      }) : null;
       
       const CURRENT_USER_KEY = 'mmcs_current_user';
       
@@ -2493,7 +2501,7 @@
         }
       }
       
-      // Session heartbeat - refresh Supabase session periodically
+      // Session heartbeat - refresh Supabase session periodically to keep it alive
       let sessionHeartbeatInterval = null;
       function startSessionHeartbeat() {
         if (sessionHeartbeatInterval) {
@@ -2504,20 +2512,35 @@
           if (!supabase) return;
           
           try {
-            // Refresh the session to keep it alive
-            const { data: { session }, error } = await supabase.auth.refreshSession();
-            
-            if (error || !session) {
-              // Session invalidated, clear local session
-              clearSession();
-              clearInterval(sessionHeartbeatInterval);
-              await initUnlockSystem();
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              // Refresh the session to keep it alive
+              const { data: { session: refreshedSession }, error } = await supabase.auth.refreshSession();
+              
+              if (error) {
+                console.error('Error refreshing session:', error);
+                // Only clear if session is truly expired/invalid
+                if (error.message && (error.message.includes('expired') || error.message.includes('invalid'))) {
+                  console.log('Session expired, clearing...');
+                  clearSession();
+                  clearInterval(sessionHeartbeatInterval);
+                  await initUnlockSystem();
+                }
+              } else if (refreshedSession) {
+                console.log('Session refreshed via heartbeat');
+                // Update last_active timestamp
+                try {
+                  await supabase
+                    .from('unlocked_users')
+                    .update({ last_active: new Date().toISOString() })
+                    .eq('auth_user_id', refreshedSession.user.id);
+                } catch (err) {
+                  console.warn('Error updating last_active:', err);
+                }
+              }
             }
           } catch (err) {
-            console.error('Error refreshing session:', err);
-            clearSession();
-            clearInterval(sessionHeartbeatInterval);
-            await initUnlockSystem();
+            console.error('Error in session heartbeat:', err);
           }
         }, 300000); // Refresh every 5 minutes (Supabase sessions last ~1 hour)
       }
@@ -2529,36 +2552,118 @@
         }
       }
       
-      // Clear session on page close/unload
+      // Note: We no longer clear session on page unload to allow users to stay logged in
+      // Sessions will persist across page refreshes
       function handlePageUnload() {
+        // Don't sign out - let users stay logged in after refresh
+        // Only update last_active timestamp if user is logged in
         if (supabase) {
-          // Sign out from Supabase (this clears the session)
-          supabase.auth.signOut().catch(err => {
-            console.error('Error signing out:', err);
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+              // Update last_active but don't sign out
+              supabase
+                .from('unlocked_users')
+                .update({ last_active: new Date().toISOString() })
+                .eq('auth_user_id', session.user.id)
+                .catch(err => console.warn('Error updating last_active on unload:', err));
+            }
           });
         }
-        clearSession();
+      }
+      
+      // Restore session on page load and refresh
+      async function restoreSession() {
+        if (!supabase) return;
+        
+        try {
+          // Get existing session from localStorage (Supabase handles this automatically)
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error('Error restoring session:', error);
+            return;
+          }
+          
+          if (session) {
+            console.log('Session restored on page load:', session.user.email);
+            
+            // Refresh the session to ensure it's still valid
+            const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+            
+            if (refreshError) {
+              console.warn('Session refresh error (may be expired):', refreshError);
+              // Session might be expired, but continue with existing session check
+            } else if (refreshedSession) {
+              console.log('Session refreshed successfully');
+            }
+            
+            // Check if user is verified and unlock site
+            const unlocked = await isUnlocked();
+            if (unlocked) {
+              // User is logged in and verified - unlock site immediately
+              document.body.classList.remove('site-locked');
+              
+              // Remove all interaction blockers
+              if (window._lockBlockers && Array.isArray(window._lockBlockers)) {
+                window._lockBlockers.forEach(({ type, handler }) => {
+                  document.removeEventListener(type, handler, true);
+                });
+                window._lockBlockers = [];
+              }
+              
+              // Hide modal
+              const unlockModalBg = document.getElementById('unlock-modal-bg');
+              if (unlockModalBg) {
+                unlockModalBg.classList.remove('show');
+                unlockModalBg.style.display = 'none';
+              }
+              
+              // Update UI
+              const userDisplay = document.getElementById('user-display');
+              const unlockBtn = document.getElementById('unlock-btn');
+              if (userDisplay) {
+                const currentUser = getCurrentUser();
+                userDisplay.textContent = `Welcome, ${currentUser || session.user.email}`;
+                userDisplay.style.display = 'inline';
+              }
+              if (unlockBtn) unlockBtn.style.display = 'none';
+              
+              // Start session heartbeat
+              startSessionHeartbeat();
+              
+              console.log('User automatically logged in after page refresh');
+            }
+          } else {
+            console.log('No existing session found');
+          }
+        } catch (err) {
+          console.error('Error in restoreSession:', err);
+        }
       }
       
       // Initialize on page load
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-          initUnlockSystem().then(() => {
-            // Start heartbeat after initialization
-            const currentUser = getCurrentUser();
-            if (currentUser) {
-              startSessionHeartbeat();
-            }
-          });
+        document.addEventListener('DOMContentLoaded', async () => {
+          // First restore session, then initialize unlock system
+          await restoreSession();
+          await initUnlockSystem();
+          
+          // Start heartbeat after initialization
+          const currentUser = getCurrentUser();
+          if (currentUser) {
+            startSessionHeartbeat();
+          }
         });
       } else {
-        setTimeout(() => {
-          initUnlockSystem().then(() => {
-            const currentUser = getCurrentUser();
-            if (currentUser) {
-              startSessionHeartbeat();
-            }
-          });
+        // Page already loaded, restore session immediately
+        setTimeout(async () => {
+          await restoreSession();
+          await initUnlockSystem();
+          
+          const currentUser = getCurrentUser();
+          if (currentUser) {
+            startSessionHeartbeat();
+          }
         }, 100);
       }
       
