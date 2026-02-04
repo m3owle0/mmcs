@@ -2553,6 +2553,42 @@
         startChat(username);
       }
 
+      // Remove duplicate messages from DOM
+      function removeDuplicateMessages() {
+        const messagesDiv = document.getElementById('chat-messages');
+        if (!messagesDiv) return;
+        
+        const messages = Array.from(messagesDiv.children);
+        const seen = new Map(); // messageId -> element
+        let removedCount = 0;
+        
+        messages.forEach(msg => {
+          const msgId = msg.getAttribute('data-message-id');
+          if (msgId) {
+            if (seen.has(msgId)) {
+              // Duplicate found - remove it
+              msg.remove();
+              removedCount++;
+            } else {
+              seen.set(msgId, msg);
+            }
+          } else {
+            // If no ID, check by content
+            const text = msg.textContent || '';
+            if (seen.has(text)) {
+              msg.remove();
+              removedCount++;
+            } else {
+              seen.set(text, msg);
+            }
+          }
+        });
+        
+        if (removedCount > 0) {
+          console.log(`Removed ${removedCount} duplicate messages`);
+        }
+      }
+
       // Start chat with username
       function startChat(username) {
         currentUsername = username;
@@ -2566,6 +2602,9 @@
         
         chatWidget.style.display = 'flex';
         
+        // Clean up any existing duplicates first
+        removeDuplicateMessages();
+        
         // Add current user to online list
         const userId = getUserId();
         onlineUsers.add(userId);
@@ -2573,10 +2612,20 @@
         
         if (USE_BACKEND && CHAT_API_URL && CHAT_API_URL !== 'https://your-backend-url.com') {
           // Backend mode: send heartbeat and poll for messages
+          // Initialize last poll timestamp
+          lastPollTimestamp = Date.now() - 5000; // Start 5 seconds ago to get recent messages
           sendHeartbeat(username, userId);
           heartbeatInterval = setInterval(() => sendHeartbeat(username, userId), 30000); // Every 30s
-          messagePollInterval = setInterval(pollMessages, 2000); // Every 2s
-          pollMessages();
+          messagePollInterval = setInterval(() => {
+            pollMessages();
+            // Clean duplicates after each poll
+            removeDuplicateMessages();
+          }, 3000); // Every 3s (reduced frequency)
+          // Initial poll after a short delay
+          setTimeout(() => {
+            pollMessages();
+            removeDuplicateMessages();
+          }, 500);
         } else {
           // LocalStorage mode: single-user chat (for testing)
           loadLocalMessages();
@@ -2603,23 +2652,37 @@
         }
       }
 
+      // Track last poll timestamp to avoid re-fetching same messages
+      let lastPollTimestamp = Date.now();
+      
       // Poll for new messages
       async function pollMessages() {
         if (!USE_BACKEND || !CHAT_API_URL || CHAT_API_URL === 'https://your-backend-url.com') return;
         
         try {
-          // Use a shorter time window to avoid getting old messages repeatedly
-          const since = Date.now() - 10000; // Only get messages from last 10 seconds
+          // Only get messages since last poll (prevents duplicates)
+          const since = lastPollTimestamp;
           const response = await fetch(CHAT_API_URL + '/messages?since=' + since);
           const data = await response.json();
           
+          // Update last poll timestamp
+          lastPollTimestamp = Date.now();
+          
           if (data.messages && Array.isArray(data.messages)) {
             // Process messages and filter out duplicates
+            let addedCount = 0;
             data.messages.forEach(msg => {
               if (msg.username && msg.message && msg.timestamp) {
-                addMessageToChat(msg.username, msg.message, msg.timestamp);
+                // Only add if timestamp is newer than last poll
+                if (msg.timestamp > since) {
+                  addMessageToChat(msg.username, msg.message, msg.timestamp);
+                  addedCount++;
+                }
               }
             });
+            if (addedCount > 0) {
+              console.log(`Added ${addedCount} new messages`);
+            }
           }
           
           if (data.onlineUsers) {
@@ -2705,12 +2768,12 @@
         }
       }
 
-      // Generate unique message ID
+      // Generate unique message ID - more precise
       function getMessageId(username, message, timestamp) {
-        // Create a unique ID from username, message, and timestamp
-        // Round timestamp to nearest second to handle slight timing differences
-        const roundedTimestamp = Math.floor(timestamp / 1000) * 1000;
-        return `${username}_${message}_${roundedTimestamp}`;
+        // Create a unique ID from username, message, and exact timestamp
+        // Use exact timestamp to ensure uniqueness
+        const cleanMessage = message.trim().toLowerCase();
+        return `${username.toLowerCase()}_${cleanMessage}_${timestamp}`;
       }
 
       // Add message to chat
@@ -2718,29 +2781,64 @@
         const messagesDiv = document.getElementById('chat-messages');
         if (!messagesDiv) return;
         
-        // Create unique message ID
-        const messageId = getMessageId(username, message, timestamp || Date.now());
+        // Validate inputs
+        if (!username || !message) {
+          console.warn('Invalid message data:', { username, message, timestamp });
+          return;
+        }
         
-        // Check if message already exists (prevent duplicates)
+        // Use exact timestamp or current time
+        const msgTimestamp = timestamp || Date.now();
+        
+        // Create unique message ID
+        const messageId = getMessageId(username, message, msgTimestamp);
+        
+        // Check if message already exists in our tracking set
         if (displayedMessageIds.has(messageId)) {
           console.log('Duplicate message prevented:', messageId);
           return;
         }
         
+        // Also check if message already exists in DOM (double-check)
+        const existingMessages = Array.from(messagesDiv.children);
+        for (const existingMsg of existingMessages) {
+          const existingId = existingMsg.getAttribute('data-message-id');
+          if (existingId === messageId) {
+            console.log('Duplicate found in DOM:', messageId);
+            return;
+          }
+          // Also check by content as fallback
+          const existingText = existingMsg.textContent || '';
+          const newText = `${username}: ${message}`;
+          if (existingText.includes(newText)) {
+            // Check if timestamps are very close (within 2 seconds)
+            const existingTime = existingMsg.querySelector('.chat-message-time');
+            if (existingTime) {
+              const timeText = existingTime.textContent.trim();
+              const newTime = new Date(msgTimestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+              if (timeText === newTime) {
+                console.log('Duplicate message by content and time:', messageId);
+                return;
+              }
+            }
+          }
+        }
+        
         // Mark as displayed
         displayedMessageIds.add(messageId);
         
-        // Keep only last 500 message IDs to prevent memory issues
-        if (displayedMessageIds.size > 500) {
+        // Keep only last 1000 message IDs to prevent memory issues
+        if (displayedMessageIds.size > 1000) {
           const idsArray = Array.from(displayedMessageIds);
-          displayedMessageIds = new Set(idsArray.slice(-500));
+          displayedMessageIds = new Set(idsArray.slice(-1000));
         }
         
         const messageDiv = document.createElement('div');
         messageDiv.className = 'chat-message';
-        messageDiv.setAttribute('data-message-id', messageId); // Store ID for reference
+        messageDiv.setAttribute('data-message-id', messageId);
+        messageDiv.setAttribute('data-timestamp', msgTimestamp);
         
-        const time = timestamp ? new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const time = new Date(msgTimestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
         messageDiv.innerHTML = `
           <span class="chat-message-username">${escapeHtml(username)}:</span>
