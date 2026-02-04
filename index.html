@@ -1187,41 +1187,23 @@
         display: none !important;
       }
       
-      /* Mobile container - full screen */
-      .container {
-        position: fixed !important;
-        top: 60px !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 60px !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 100vw !important;
-        height: calc(100vh - 120px) !important;
-        max-height: calc(100vh - 120px) !important;
-        transform: none !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-        padding: 16px !important;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-      }
       
-      /* Mobile Tab Navigation */
+      /* App-like Tab Navigation */
       .mobile-tabs {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        height: 60px;
+        height: calc(70px + env(safe-area-inset-bottom, 0px));
         background: rgba(15, 15, 15, 0.98);
-        backdrop-filter: blur(20px);
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(30px) saturate(180%);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
         display: flex;
         justify-content: space-around;
-        align-items: center;
-        z-index: 1000;
-        box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.5);
+        align-items: flex-start;
+        z-index: 10000;
+        box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.6);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
       }
       
       .mobile-tab {
@@ -1230,212 +1212,353 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 8px 4px;
-        color: #888;
-        font-size: 11px;
+        padding: 8px 4px 12px 4px;
+        color: #666;
+        font-size: 10px;
         text-decoration: none;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border: none;
         background: none;
         cursor: pointer;
-        min-height: 60px;
+        min-height: 70px;
+        position: relative;
+        -webkit-tap-highlight-color: transparent;
       }
       
       .mobile-tab.active {
         color: #00e6d6;
       }
       
+      .mobile-tab.active::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 3px;
+        background: linear-gradient(90deg, #00e6d6, #00b8a8);
+        border-radius: 0 0 3px 3px;
+      }
+      
       .mobile-tab-icon {
-        font-size: 20px;
+        font-size: 24px;
         margin-bottom: 4px;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      .mobile-tab.active .mobile-tab-icon {
+        transform: scale(1.1);
       }
       
       .mobile-tab-label {
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        text-transform: none;
+        letter-spacing: 0.3px;
       }
       
-      /* Mobile Tab Content */
+      .mobile-tab:active {
+        transform: scale(0.95);
+      }
+      
+      /* App-like Tab Content */
       .mobile-tab-content {
         display: none;
         width: 100%;
         height: 100%;
         overflow-y: auto;
+        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
+        padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+        background: #0a0a0a;
       }
       
       .mobile-tab-content.active {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        animation: fadeIn 0.3s ease-out;
+      }
+      
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      /* App-like Search Tab */
+      #mobile-tab-search {
+        padding: 0;
+      }
+      
+      #mobile-tab-search h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 20px 20px 8px 20px;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+      }
+      
+      #mobile-tab-search .tip {
+        font-size: 14px;
+        color: #888;
+        margin: 0 20px 24px 20px;
+        line-height: 1.5;
+      }
+      
+      #mobile-tab-search form {
+        padding: 0 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      /* App-like Search Input */
+      #mobile-query {
+        width: 100%;
+        padding: 16px 20px;
+        font-size: 17px;
+        min-height: 56px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        margin-bottom: 20px;
+        transition: all 0.2s;
+      }
+      
+      #mobile-query:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: #00e6d6;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(0, 230, 214, 0.1);
       }
       
       /* Mobile Search Section */
       .mobile-search-section {
         margin-bottom: 20px;
+        padding: 0 20px;
       }
       
       .mobile-search-section h2 {
-        font-size: 18px;
-        margin: 0 0 12px 0;
-        color: #00e6d6;
-        font-weight: 600;
+        font-size: 22px;
+        margin: 0 0 16px 0;
+        color: #ffffff;
+        font-weight: 700;
+        letter-spacing: -0.3px;
       }
       
-      /* Mobile Saved Searches */
+      /* App-like Saved Searches */
+      #mobile-tab-saved {
+        padding: 0;
+      }
+      
+      #mobile-tab-saved h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 20px 20px 24px 20px;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+      }
+      
       .mobile-saved-searches {
-        margin-bottom: 24px;
+        padding: 0 20px;
+        flex: 1;
+        overflow-y: auto;
       }
       
       .mobile-folder {
-        margin-bottom: 16px;
-        background: rgba(20, 20, 20, 0.6);
-        border-radius: 12px;
-        padding: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
       }
       
       .mobile-folder-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 10px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
       
       .mobile-folder-name {
         font-weight: 600;
-        font-size: 14px;
-        color: #e3e3e3;
+        font-size: 16px;
+        color: #ffffff;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
       }
       
       .mobile-search-item {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 10px;
-        margin-bottom: 6px;
-        background: rgba(30, 30, 30, 0.6);
-        border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        transition: all 0.2s;
-        min-height: 44px; /* Touch target size */
+        gap: 12px;
+        padding: 14px 16px;
+        margin-bottom: 8px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 56px;
+        -webkit-tap-highlight-color: transparent;
       }
       
       .mobile-search-item:active {
-        background: rgba(50, 50, 50, 0.8);
+        background: rgba(255, 255, 255, 0.08);
         transform: scale(0.98);
+        border-color: rgba(0, 230, 214, 0.3);
       }
       
       .mobile-search-checkbox {
-        width: 20px;
-        height: 20px;
+        width: 22px;
+        height: 22px;
         accent-color: #00e6d6;
         cursor: pointer;
+        flex-shrink: 0;
       }
       
       .mobile-search-term {
         flex: 1;
-        font-size: 14px;
-        color: #e3e3e3;
+        font-size: 16px;
+        color: #ffffff;
+        font-weight: 500;
       }
       
-      /* Mobile Markets Section */
+      /* App-like Markets Tab */
+      #mobile-tab-markets {
+        padding: 0;
+      }
+      
+      #mobile-tab-markets h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 20px 20px 24px 20px;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+      }
+      
       .mobile-markets-section {
-        margin-bottom: 24px;
+        padding: 0 20px;
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 20px;
       }
       
       .mobile-market-category {
-        margin-bottom: 24px;
+        margin-bottom: 32px;
       }
       
       .mobile-market-category h3 {
-        font-size: 16px;
-        margin: 0 0 12px 0;
-        color: #00e6d6;
-        font-weight: 600;
-        padding-bottom: 8px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 20px;
+        margin: 0 0 16px 0;
+        color: #ffffff;
+        font-weight: 700;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(0, 230, 214, 0.2);
+        letter-spacing: -0.3px;
       }
       
       .mobile-market-btn {
         width: 100%;
-        padding: 14px 16px;
-        margin-bottom: 8px;
-        background: rgba(30, 30, 30, 0.8);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        color: #e3e3e3;
-        font-size: 14px;
-        font-weight: 500;
+        padding: 18px 20px;
+        margin-bottom: 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 600;
         text-align: left;
         cursor: pointer;
-        transition: all 0.2s;
-        min-height: 48px; /* Touch target */
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 64px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        -webkit-tap-highlight-color: transparent;
+        backdrop-filter: blur(10px);
       }
       
       .mobile-market-btn:active {
-        background: rgba(50, 50, 50, 0.9);
+        background: rgba(255, 255, 255, 0.08);
         transform: scale(0.98);
-        border-color: #00e6d6;
+        border-color: rgba(0, 230, 214, 0.4);
       }
       
-      .mobile-market-btn:hover {
-        background: rgba(40, 40, 40, 0.9);
-        border-color: rgba(0, 230, 214, 0.3);
+      .mobile-market-btn span {
+        flex: 1;
+        text-align: left;
       }
       
-      /* Mobile Actions */
+      /* App-like Action Buttons */
       .mobile-actions {
         position: sticky;
-        bottom: 70px;
-        background: rgba(15, 15, 15, 0.95);
+        bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+        background: linear-gradient(to top, rgba(10, 10, 10, 0.98) 0%, rgba(10, 10, 10, 0.95) 70%, transparent 100%);
         backdrop-filter: blur(20px);
-        padding: 12px;
-        margin: 20px -16px -16px -16px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 16px 20px 20px 20px;
+        margin: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
         z-index: 100;
       }
       
       .mobile-action-btn {
         width: 100%;
-        padding: 14px;
-        margin-bottom: 8px;
+        padding: 16px 24px;
+        margin-bottom: 12px;
         background: linear-gradient(135deg, #00e6d6 0%, #00b8a8 100%);
         border: none;
-        border-radius: 10px;
+        border-radius: 14px;
         color: #0a0a0a;
-        font-size: 15px;
-        font-weight: 600;
+        font-size: 17px;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s;
-        min-height: 48px;
-        box-shadow: 0 4px 12px rgba(0, 230, 214, 0.3);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 56px;
+        box-shadow: 0 4px 20px rgba(0, 230, 214, 0.4);
+        -webkit-tap-highlight-color: transparent;
+        letter-spacing: 0.2px;
       }
       
       .mobile-action-btn:active {
-        transform: scale(0.98);
-        box-shadow: 0 2px 8px rgba(0, 230, 214, 0.4);
+        transform: scale(0.97);
+        box-shadow: 0 2px 12px rgba(0, 230, 214, 0.5);
       }
       
       .mobile-action-btn.secondary {
-        background: rgba(40, 40, 40, 0.8);
-        color: #e3e3e3;
-        box-shadow: none;
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
       
-      /* Mobile Header Adjustments */
+      .mobile-action-btn.secondary:active {
+        background: rgba(255, 255, 255, 0.12);
+      }
+      
+      /* App-like Header */
       .top-header {
-        padding: 10px 12px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 12px 20px;
         flex-wrap: wrap;
         gap: 8px;
+        background: rgba(10, 10, 10, 0.95);
+        backdrop-filter: blur(30px) saturate(180%);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        z-index: 9999;
       }
       
       .header-left {
@@ -1444,36 +1567,123 @@
       }
       
       .donation-link {
-        font-size: 12px;
-        padding: 6px 12px;
+        font-size: 13px;
+        padding: 8px 14px;
+        border-radius: 12px;
+        font-weight: 600;
       }
       
       .online-users-count {
-        font-size: 11px;
+        font-size: 12px;
         margin-left: 0;
+        padding: 6px 12px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
       }
       
-      /* Hide desktop-specific elements on mobile */
-      .panel-controls,
-      .resize-handle,
-      .drag-handle {
-        display: none !important;
-      }
-      
-      /* Mobile Search Input */
-      #query {
-        width: 100%;
-        padding: 14px 16px;
-        font-size: 16px; /* Prevents zoom on iOS */
-        min-height: 48px;
-        border-radius: 10px;
-      }
-      
-      /* Mobile Buttons */
+      /* App-like Buttons */
       button, .market-btn, .add-market-btn {
-        min-height: 44px; /* Touch target */
+        min-height: 48px;
+        font-size: 15px;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      button:active, .market-btn:active {
+        transform: scale(0.97);
+      }
+      
+      /* App-like Section Headers */
+      .section-header-row {
+        padding: 0 20px;
+        margin-bottom: 16px;
+      }
+      
+      .section-header-row h2 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+        letter-spacing: -0.3px;
+      }
+      
+      .section-openall-btn {
+        padding: 10px 18px;
+        border-radius: 12px;
         font-size: 14px;
+        font-weight: 600;
+      }
+      
+      /* App-like Market Buttons in Search Tab */
+      #mobile-tab-search .markets {
+        padding: 0 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 20px;
+      }
+      
+      #mobile-tab-search .market-btn {
+        width: 100%;
+        padding: 18px 20px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        min-height: 64px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      #mobile-tab-search .market-btn:active {
+        background: rgba(255, 255, 255, 0.08);
+        transform: scale(0.98);
+      }
+      
+      #mobile-tab-search .market-btn.disabled {
+        opacity: 0.4;
+      }
+      
+      /* App-like Open All Button */
+      #mobile-open-all-btn {
+        width: 100%;
+        padding: 16px 24px;
+        background: linear-gradient(135deg, #00e6d6 0%, #00b8a8 100%);
+        border: none;
+        border-radius: 14px;
+        color: #0a0a0a;
+        font-size: 17px;
+        font-weight: 700;
+        min-height: 56px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 20px rgba(0, 230, 214, 0.4);
+      }
+      
+      #mobile-open-all-btn:active {
+        transform: scale(0.97);
+      }
+      
+      /* App-like Toggle All */
+      #mobile-tab-search label {
         padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        margin-bottom: 16px;
+      }
+      
+      #mobile-toggle-all-checkbox {
+        width: 20px;
+        height: 20px;
+        accent-color: #00e6d6;
       }
       
       /* Mobile Modals */
@@ -2075,58 +2285,55 @@
       </div>
     </form>
     
-    <!-- Mobile Tab Content Sections -->
+    <!-- Mobile Tab Content Sections - App-like Design -->
     <div class="mobile-tab-content active" id="mobile-tab-search">
-      <h1>Multi-Market Clothing Search</h1>
-      <div class="tip">Enter your search and click any button to open the most recent results on that secondhand fashion site.<br>
-        Example: <span style="color:#e60021;font-weight:bold;">rick owens</span>
+      <h1>Search</h1>
+      <div class="tip">Enter your search and click any button to open results on that marketplace.<br>
+        Example: <span style="color:#00e6d6;font-weight:bold;">rick owens</span>
       </div>
       <form id="mobile-searchForm" autocomplete="off">
         <div class="market-row" style="position:relative;">
           <input type="text" id="mobile-query" placeholder="Search for clothing, brands, etc." required />
-          <button id="mobile-clear-search" type="button" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#888;cursor:pointer;display:none;">✕</button>
+          <button id="mobile-clear-search" type="button" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:#888;cursor:pointer;display:none;font-size:20px;width:32px;height:32px;display:none;align-items:center;justify-content:center;">✕</button>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
-          <button type="button" id="mobile-open-all-btn">Open All</button>
-          <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-            <input type="checkbox" id="mobile-toggle-all-checkbox" checked style="width: 16px; height: 16px; accent-color: #666;">
-            <span style="font-size: 14px; color: #e3e3e3;">Toggle All</span>
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+          <button type="button" id="mobile-open-all-btn">Open All Markets</button>
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px 16px; background: rgba(255, 255, 255, 0.04); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
+            <input type="checkbox" id="mobile-toggle-all-checkbox" checked style="width: 20px; height: 20px; accent-color: #00e6d6;">
+            <span style="font-size: 15px; color: #ffffff; font-weight: 500;">Toggle All Markets</span>
           </label>
         </div>
         <div class="section-header-row">
           <h2>Asia</h2>
-          <button type="button" class="section-openall-btn" data-section="asia">Open All Asia</button>
+          <button type="button" class="section-openall-btn" data-section="asia">Open All</button>
         </div>
         <div class="markets" id="mobile-asia-markets"></div>
         <div class="section-header-row">
-          <h2>International &amp; Other Markets</h2>
-          <button type="button" class="section-openall-btn" data-section="international">Open All International</button>
+          <h2>International</h2>
+          <button type="button" class="section-openall-btn" data-section="international">Open All</button>
         </div>
         <div class="markets" id="mobile-international-markets"></div>
-        <div class="special-group">
-          <div class="section-header-row" style="margin-top:0;margin-bottom:8px;">
-            <span class="special-group-label">Designer &amp; Global Select</span>
-            <button type="button" class="section-openall-btn" data-section="special">Open All Designer</button>
-          </div>
-          <div class="markets" id="mobile-special-markets"></div>
+        <div class="section-header-row">
+          <h2>Designer</h2>
+          <button type="button" class="section-openall-btn" data-section="special">Open All</button>
         </div>
+        <div class="markets" id="mobile-special-markets"></div>
       </form>
     </div>
     
     <!-- Mobile Saved Searches Tab -->
     <div class="mobile-tab-content" id="mobile-tab-saved">
-      <div class="mobile-search-section">
-        <h2>Saved Searches</h2>
-        <div class="mobile-saved-searches" id="mobile-saved-searches-list"></div>
-        <div class="mobile-actions">
-          <button class="mobile-action-btn" id="mobile-open-selected-btn">Open Selected</button>
-          <button class="mobile-action-btn secondary" id="mobile-clear-selection-btn">Clear Selection</button>
-        </div>
+      <h2>Saved Searches</h2>
+      <div class="mobile-saved-searches" id="mobile-saved-searches-list"></div>
+      <div class="mobile-actions">
+        <button class="mobile-action-btn" id="mobile-open-selected-btn">Open Selected</button>
+        <button class="mobile-action-btn secondary" id="mobile-clear-selection-btn">Clear Selection</button>
       </div>
     </div>
     
     <!-- Mobile Markets Tab -->
     <div class="mobile-tab-content" id="mobile-tab-markets">
+      <h2>All Markets</h2>
       <div class="mobile-markets-section" id="mobile-markets-list"></div>
     </div>
     
