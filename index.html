@@ -1802,16 +1802,30 @@
           });
           
           if (error) {
-            return { success: false, error: error.message || 'Invalid email or password.' };
+            console.error('Login error:', error);
+            
+            // Provide more helpful error messages
+            let errorMessage = error.message || 'Invalid email or password.';
+            
+            if (error.message && error.message.includes('Email not confirmed')) {
+              errorMessage = 'Please verify your email address first. Check your inbox for the confirmation link.';
+            } else if (error.message && error.message.includes('Invalid login credentials')) {
+              errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+            } else if (error.message && error.message.includes('User not found')) {
+              errorMessage = 'No account found with this email. Please sign up first.';
+            }
+            
+            return { success: false, error: errorMessage };
           }
           
-          if (data.user) {
+          if (data.user && data.session) {
+            console.log('Login successful:', data.user.id);
             const displayName = data.user.user_metadata?.username || data.user.email || data.user.id;
             setCurrentUser(displayName);
-            return { success: true, user: data.user };
+            return { success: true, user: data.user, session: data.session };
           }
           
-          return { success: false, error: 'Login failed.' };
+          return { success: false, error: 'Login failed. Please try again.' };
         } catch (err) {
           console.error('Error logging in:', err);
           return { success: false, error: 'Error logging in. Please try again.' };
@@ -1837,6 +1851,8 @@
         }
         
         try {
+          console.log('Attempting signup with:', { email: email.toLowerCase().trim(), username: username.trim() });
+          
           const { data, error } = await supabase.auth.signUp({
             email: email.toLowerCase().trim(),
             password: password,
@@ -1848,33 +1864,64 @@
             }
           });
           
+          console.log('Signup response:', { data, error });
+          
           if (error) {
-            console.error('Supabase signup error:', error);
+            console.error('Supabase signup error details:', {
+              message: error.message,
+              status: error.status,
+              name: error.name,
+              fullError: error
+            });
+            
             // Provide more helpful error messages
             let errorMessage = error.message || 'Error creating account.';
             
-            if (error.message.includes('already registered')) {
+            if (error.message && error.message.includes('already registered')) {
               errorMessage = 'This email is already registered. Please login instead.';
-            } else if (error.message.includes('password')) {
+            } else if (error.message && error.message.includes('password')) {
               errorMessage = 'Password does not meet requirements. Please use a stronger password.';
-            } else if (error.message.includes('email')) {
+            } else if (error.message && error.message.includes('email')) {
               errorMessage = 'Invalid email address. Please check and try again.';
-            } else if (error.message.includes('rate limit')) {
+            } else if (error.message && error.message.includes('rate limit')) {
               errorMessage = 'Too many signup attempts. Please wait a moment and try again.';
+            } else if (error.status === 400) {
+              errorMessage = `Invalid request: ${error.message || 'Please check your input and try again.'}`;
+            } else if (error.status === 422) {
+              errorMessage = `Validation error: ${error.message || 'Please check your email and password format.'}`;
+            } else if (error.status === 429) {
+              errorMessage = 'Too many requests. Please wait a moment and try again.';
+            } else {
+              errorMessage = `Database error: ${error.message || 'Unable to create account. Error code: ' + (error.status || 'unknown')}`;
             }
             
             return { success: false, error: errorMessage };
           }
           
           if (data.user) {
-            setCurrentUser(username.trim());
-            // Check if email confirmation is required
-            const needsVerification = !data.session;
-            return { 
-              success: true, 
-              user: data.user, 
-              needsEmailVerification: needsVerification 
-            };
+            console.log('User created successfully:', data.user.id);
+            console.log('Session available:', !!data.session);
+            console.log('Email confirmed:', data.user.email_confirmed_at ? 'Yes' : 'No');
+            
+            // If session exists, user is logged in immediately
+            if (data.session) {
+              setCurrentUser(username.trim());
+              return { 
+                success: true, 
+                user: data.user,
+                session: data.session,
+                needsEmailVerification: false
+              };
+            } else {
+              // No session means email confirmation is required
+              setCurrentUser(username.trim());
+              return { 
+                success: true, 
+                user: data.user,
+                needsEmailVerification: true,
+                message: 'Account created! Please check your email to verify your account before logging in.'
+              };
+            }
           }
           
           return { success: false, error: 'Account creation failed. Please try again.' };
@@ -2102,6 +2149,8 @@
                 loginSuccessText.textContent = 'Login successful! Welcome!';
                 loginSuccess.style.display = 'block';
               }
+              // Clear password field
+              if (loginPasswordInput) loginPasswordInput.value = '';
               setTimeout(async () => {
                 await initUnlockSystem();
               }, 500);
@@ -2109,7 +2158,10 @@
               if (loginError) {
                 loginErrorText.textContent = result.error || 'Login failed. Please try again.';
                 loginError.style.display = 'block';
+                console.error('Login failed:', result.error);
               }
+              // Clear password field on error
+              if (loginPasswordInput) loginPasswordInput.value = '';
             }
           };
         }
@@ -2140,11 +2192,22 @@
             
             if (result.success) {
               if (result.needsEmailVerification) {
+                // Email confirmation required
                 if (loginSuccess) {
-                  loginSuccessText.textContent = 'Account created! Please check your email to verify your account.';
+                  loginSuccessText.textContent = result.message || 'Account created! Please check your email (' + email + ') to verify your account before logging in.';
                   loginSuccess.style.display = 'block';
                 }
+                // Clear form
+                if (signupUsernameInput) signupUsernameInput.value = '';
+                if (signupEmailInput) signupEmailInput.value = '';
+                if (signupPasswordInput) signupPasswordInput.value = '';
+                // Switch to login form after 3 seconds
+                setTimeout(() => {
+                  if (loginToggleBtn) loginToggleBtn.click();
+                  if (loginSuccess) loginSuccess.style.display = 'none';
+                }, 5000);
               } else {
+                // User is logged in immediately (email confirmation disabled)
                 if (loginSuccess) {
                   loginSuccessText.textContent = 'Account created! Welcome!';
                   loginSuccess.style.display = 'block';
