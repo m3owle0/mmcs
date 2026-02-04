@@ -31,7 +31,16 @@
       background-attachment: fixed;
       color: var(--theme-text);
       min-height: 100vh;
-      overflow: hidden;
+      overflow: auto;
+    }
+    
+    /* On mobile, ensure body is scrollable */
+    @media (max-width: 768px) {
+      html, body {
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100vh !important;
+      }
     }
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
@@ -66,6 +75,15 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
+      /* Ensure scrolling works on iOS */
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Add safe area padding for iOS */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .container {
+        padding-bottom: calc(25px + env(safe-area-inset-bottom));
+      }
     }
 
     .container::-webkit-scrollbar {
@@ -1286,6 +1304,17 @@
         box-shadow: none;
         z-index: 1;
         box-sizing: border-box;
+        /* Ensure scrolling works on iOS */
+        -webkit-overflow-scrolling: touch;
+        /* Add safe area padding */
+        padding-bottom: calc(15px + env(safe-area-inset-bottom)) !important;
+      }
+      
+      /* Ensure body is scrollable on mobile */
+      body {
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100vh !important;
       }
       
       /* Hide resize handles on mobile */
@@ -1552,6 +1581,8 @@
         visibility: visible;
         display: flex;
         flex-direction: column;
+        /* Ensure smooth scrolling on iOS */
+        -webkit-overflow-scrolling: touch;
       }
       
       /* Add safe area inset for modern iOS devices */
@@ -1565,6 +1596,16 @@
         .mobile-sidebar {
           padding-bottom: calc(80px + constant(safe-area-inset-bottom));
         }
+      }
+      
+      /* Ensure the mobile sidebar content is scrollable */
+      .mobile-sidebar > div:first-child {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
       
       .mobile-sidebar > div:first-child {
@@ -2092,7 +2133,7 @@
   <button class="mobile-menu-toggle" id="mobile-menu-toggle" style="display: none;">☰</button>
   <div class="mobile-sidebar-overlay" id="mobile-sidebar-overlay"></div>
   <div class="mobile-sidebar" id="mobile-sidebar">
-    <div style="display: flex; flex-direction: column; height: 100%;">
+    <div style="display: flex; flex-direction: column; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;">
       <div style="flex-shrink: 0; margin-bottom: 20px;">
         <h3 style="color: #e3e3e3; margin-bottom: 15px;">Saved Searches</h3>
         
@@ -2111,7 +2152,7 @@
       </div>
       
       <!-- Saved searches for the selected folder -->
-      <div id="mobile-searches-container" style="flex: 1; min-height: 200px; max-height: none; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; background: rgba(30,32,34,0.5); margin-bottom: 15px;">
+      <div id="mobile-searches-container" style="flex: 1; min-height: 200px; max-height: none; overflow-y: auto; -webkit-overflow-scrolling: touch; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; background: rgba(30,32,34,0.5); margin-bottom: 15px;">
         <ul id="mobile-searches-list" style="list-style: none; padding: 0; margin: 0;">
           <!-- Saved searches will be populated here -->
         </ul>
