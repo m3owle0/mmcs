@@ -1224,6 +1224,33 @@
     gap: 15px;
   }
 
+  .online-users-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #b0b0b0;
+  }
+
+  .online-users-count .online-dot {
+    width: 6px;
+    height: 6px;
+    background: #00e6d6;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.2);
+    }
+  }
+
   .donation-link {
     background: linear-gradient(135deg, #0070ba 0%, #1546a0 100%);
     color: white;
@@ -1268,10 +1295,14 @@
     height: 100vh;
     background: rgba(0, 0, 0, 0.95);
     backdrop-filter: blur(8px);
-    display: flex;
+    display: none; /* Start hidden, only show when explicitly needed */
     align-items: center;
     justify-content: center;
-    z-index: 99999;
+    z-index: 99998; /* Below other critical modals */
+  }
+
+  .unlock-modal-bg.show {
+    display: flex !important;
   }
 
   .unlock-modal {
@@ -1352,17 +1383,32 @@
     padding-top: 60px;
   }
 
+  /* Ensure main content doesn't overlap with header */
+  .container {
+    margin-top: 10px; /* Add space below header */
+  }
+
+  .sidebar {
+    top: 60px; /* Start below header */
+    height: calc(100vh - 60px); /* Adjust height for header */
+  }
+
+  .wishlist-section {
+    top: 60px; /* Start below header */
+    height: calc(100vh - 60px); /* Adjust height for header */
+  }
+
   /* Lock overlay when site is locked */
   body.site-locked::before {
     content: '';
     position: fixed;
-    top: 60px;
+    top: 60px; /* Below header */
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(5px);
-    z-index: 99998;
+    z-index: 99997; /* Below unlock modal */
     pointer-events: all;
   }
 
@@ -1388,6 +1434,10 @@
          class="donation-link">
         💝 Donate via PayPal
       </a>
+      <span id="online-users-count" class="online-users-count" style="margin-left: 15px;">
+        <span class="online-dot"></span>
+        <span id="online-users-number">Loading...</span> online
+      </span>
     </div>
     <div class="header-right">
       <span id="user-display" style="display: none; color: #00e6d6; font-size: 14px; margin-right: 15px;"></span>
@@ -1806,7 +1856,14 @@
       }
       
       // Initialize unlock system
-      async function initUnlockSystem() {
+      let isInitializing = false; // Prevent multiple simultaneous calls
+      async function initUnlockSystem(suppressModal = false) {
+        // Prevent multiple simultaneous initialization calls
+        if (isInitializing) {
+          return;
+        }
+        isInitializing = true;
+        
         const unlockModalBg = document.getElementById('unlock-modal-bg');
         const unlockBtn = document.getElementById('unlock-btn');
         const unlockSubmitBtn = document.getElementById('unlock-submit-btn');
@@ -1814,26 +1871,28 @@
         const unlockEmailInput = document.getElementById('unlock-email-input');
         const userDisplay = document.getElementById('user-display');
         
-        // Check if Supabase is configured
-        if (!supabase || SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE') {
-          console.warn('Supabase not configured. Please add your credentials.');
-          // Show error message
-          if (unlockModalBg) {
-            unlockModalBg.innerHTML = `
-              <div class="unlock-modal">
-                <h3>Configuration Required</h3>
-                <p style="color: #ff6b6b; margin-bottom: 20px;">
-                  Please configure your Supabase credentials in the code.
-                </p>
-                <p style="color: #b0b0b0; font-size: 14px;">
-                  Edit the SUPABASE_URL and SUPABASE_ANON_KEY variables in the script.
-                </p>
-              </div>
-            `;
-            unlockModalBg.style.display = 'flex';
+          // Check if Supabase is configured
+          if (!supabase || SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE') {
+            console.warn('Supabase not configured. Please add your credentials.');
+            // Show error message only if no user is set
+            const currentUser = getCurrentUser();
+            if (!currentUser && unlockModalBg) {
+              unlockModalBg.innerHTML = `
+                <div class="unlock-modal">
+                  <h3>Configuration Required</h3>
+                  <p style="color: #ff6b6b; margin-bottom: 20px;">
+                    Please configure your Supabase credentials in the code.
+                  </p>
+                  <p style="color: #b0b0b0; font-size: 14px;">
+                    Edit the SUPABASE_URL and SUPABASE_ANON_KEY variables in the script.
+                  </p>
+                </div>
+              `;
+              unlockModalBg.classList.add('show');
+              unlockModalBg.style.display = 'flex';
+            }
+            return;
           }
-          return;
-        }
         
         // Check if site is unlocked (async)
         const unlocked = await isUnlocked();
@@ -1841,7 +1900,11 @@
         
         if (unlocked && currentUser) {
           document.body.classList.remove('site-locked');
-          if (unlockModalBg) unlockModalBg.style.display = 'none';
+          // Always hide modal when unlocked
+          if (unlockModalBg) {
+            unlockModalBg.classList.remove('show');
+            unlockModalBg.style.display = 'none';
+          }
           if (unlockBtn) unlockBtn.style.display = 'none';
           if (userDisplay) {
             userDisplay.textContent = `Welcome, ${currentUser}`;
@@ -1851,7 +1914,20 @@
           startSessionHeartbeat();
         } else {
           document.body.classList.add('site-locked');
-          if (unlockModalBg) unlockModalBg.style.display = 'flex';
+          // Only show modal if no current user (first visit), not on every check
+          if (!currentUser) {
+            // First visit - show modal
+            if (unlockModalBg) {
+              unlockModalBg.classList.add('show');
+              unlockModalBg.style.display = 'flex';
+            }
+          } else {
+            // User exists but not verified - hide modal, show button instead
+            if (unlockModalBg) {
+              unlockModalBg.classList.remove('show');
+              unlockModalBg.style.display = 'none';
+            }
+          }
           if (unlockBtn) unlockBtn.style.display = 'inline-block';
           if (userDisplay) userDisplay.style.display = 'none';
         }
@@ -1859,7 +1935,10 @@
         // Show unlock modal button
         if (unlockBtn) {
           unlockBtn.onclick = () => {
-            if (unlockModalBg) unlockModalBg.style.display = 'flex';
+            if (unlockModalBg) {
+              unlockModalBg.classList.add('show');
+              unlockModalBg.style.display = 'flex';
+            }
             if (unlockEmailInput) {
               unlockEmailInput.value = '';
               setTimeout(() => unlockEmailInput.focus(), 100);
@@ -1924,6 +2003,12 @@
             
             if (unlocked) {
               clearInterval(checkInterval);
+              // Hide modal before showing alert
+              const unlockModalBg = document.getElementById('unlock-modal-bg');
+              if (unlockModalBg) {
+                unlockModalBg.classList.remove('show');
+                unlockModalBg.style.display = 'none';
+              }
               alert('Your account has been verified! Welcome!');
               await initUnlockSystem();
             } else if (checks >= maxChecks) {
@@ -1936,7 +2021,10 @@
         // Cancel unlock
         if (unlockCancelBtn) {
           unlockCancelBtn.onclick = () => {
-            if (unlockModalBg) unlockModalBg.style.display = 'none';
+            if (unlockModalBg) {
+              unlockModalBg.classList.remove('show');
+              unlockModalBg.style.display = 'none';
+            }
           };
         }
         
@@ -2038,26 +2126,94 @@
       window.addEventListener('beforeunload', handlePageUnload);
       window.addEventListener('pagehide', handlePageUnload);
       
-      // Also handle visibility change (tab switch)
+      // Also handle visibility change (tab switch) - but don't show modal unnecessarily
+      let visibilityCheckTimeout = null;
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
-          // Tab is hidden, but don't clear session yet (user might come back)
+          // Tab is hidden, clear any pending checks
+          if (visibilityCheckTimeout) {
+            clearTimeout(visibilityCheckTimeout);
+            visibilityCheckTimeout = null;
+          }
         } else {
-          // Tab is visible again, verify session is still valid
+          // Tab is visible again, verify session is still valid (with delay to avoid flicker)
           const currentUser = getCurrentUser();
           if (currentUser) {
-            isUnlocked().then(unlocked => {
+            // Clear any existing timeout
+            if (visibilityCheckTimeout) {
+              clearTimeout(visibilityCheckTimeout);
+            }
+            // Delay check to avoid showing modal during normal tab switches
+            visibilityCheckTimeout = setTimeout(async () => {
+              const unlocked = await isUnlocked();
               if (!unlocked) {
+                // Only reload if truly unlocked - don't show modal here
                 clearSession();
                 stopSessionHeartbeat();
-                location.reload();
+                // Don't reload immediately, let initUnlockSystem handle it (suppress modal)
+                await initUnlockSystem(true); // Suppress modal during visibility check
               } else {
                 startSessionHeartbeat();
               }
-            });
+              visibilityCheckTimeout = null;
+            }, 1000); // 1 second delay
           }
         }
       });
+    })();
+
+    // Online Users Counter (from Supabase)
+    (function() {
+      const onlineUsersCountEl = document.getElementById('online-users-number');
+      const SUPABASE_URL = 'https://wbpfuuiznsmysbskywdx.supabase.co';
+      const SUPABASE_ANON_KEY = 'sb_publishable_rIy_-DWT87Gj9ao1WvN3gA_WA6eME-x';
+      const TABLE_NAME = 'unlocked_users';
+      const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+      
+      async function updateOnlineUsersCount() {
+        if (!onlineUsersCountEl || !supabase) {
+          if (onlineUsersCountEl) onlineUsersCountEl.textContent = '0';
+          return;
+        }
+        
+        try {
+          // Count users who were active in the last 5 minutes
+          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+          
+          const { data, error, count } = await supabase
+            .from(TABLE_NAME)
+            .select('*', { count: 'exact', head: false })
+            .eq('verified', true)
+            .not('last_active', 'is', null)
+            .gte('last_active', fiveMinutesAgo);
+          
+          if (error) {
+            console.error('Error fetching online users:', error);
+            if (onlineUsersCountEl) onlineUsersCountEl.textContent = '?';
+            return;
+          }
+          
+          const onlineCount = count || (data ? data.length : 0);
+          if (onlineUsersCountEl) {
+            onlineUsersCountEl.textContent = onlineCount.toString();
+          }
+        } catch (err) {
+          console.error('Error updating online users count:', err);
+          if (onlineUsersCountEl) onlineUsersCountEl.textContent = '?';
+        }
+      }
+      
+      // Update on load
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          setTimeout(updateOnlineUsersCount, 500);
+        });
+      } else {
+        setTimeout(updateOnlineUsersCount, 500);
+      }
+      
+      // Update every 30 seconds
+      setInterval(updateOnlineUsersCount, 30000);
     })();
 
     // Custom Market Storage
