@@ -2436,6 +2436,7 @@
       let onlineUsers = new Set();
       let messagePollInterval = null;
       let heartbeatInterval = null;
+      let displayedMessageIds = new Set(); // Track displayed messages to prevent duplicates
       const USERNAME_STORAGE_KEY = 'mmcs_chat_username';
       const PASSWORD_USERNAME_MAP_KEY = 'mmcs_password_username_map';
       const USER_ID_KEY = 'mmcs_user_id';
@@ -2607,12 +2608,17 @@
         if (!USE_BACKEND || !CHAT_API_URL || CHAT_API_URL === 'https://your-backend-url.com') return;
         
         try {
-          const response = await fetch(CHAT_API_URL + '/messages?since=' + (Date.now() - 60000));
+          // Use a shorter time window to avoid getting old messages repeatedly
+          const since = Date.now() - 10000; // Only get messages from last 10 seconds
+          const response = await fetch(CHAT_API_URL + '/messages?since=' + since);
           const data = await response.json();
           
-          if (data.messages) {
+          if (data.messages && Array.isArray(data.messages)) {
+            // Process messages and filter out duplicates
             data.messages.forEach(msg => {
-              addMessageToChat(msg.username, msg.message, msg.timestamp);
+              if (msg.username && msg.message && msg.timestamp) {
+                addMessageToChat(msg.username, msg.message, msg.timestamp);
+              }
             });
           }
           
@@ -2639,7 +2645,7 @@
         if (USE_BACKEND && CHAT_API_URL && CHAT_API_URL !== 'https://your-backend-url.com') {
           // Send to backend
           try {
-            await fetch(CHAT_API_URL + '/messages', {
+            const response = await fetch(CHAT_API_URL + '/messages', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -2649,13 +2655,20 @@
                 userId: userId
               })
             });
-            input.value = '';
+            
+            if (response.ok) {
+              // Don't add message locally - let polling pick it up to avoid duplicates
+              // The backend will return it in the next poll
+              input.value = '';
+            } else {
+              console.error('Failed to send message:', response.status);
+            }
           } catch (e) {
             console.error('Send error:', e);
             alert('Failed to send message. Check your backend configuration.');
           }
         } else {
-          // LocalStorage mode
+          // LocalStorage mode - add immediately
           addMessageToChat(currentUsername, message, timestamp);
           saveLocalMessage(currentUsername, message, timestamp);
           input.value = '';
@@ -2692,18 +2705,40 @@
         }
       }
 
+      // Generate unique message ID
+      function getMessageId(username, message, timestamp) {
+        // Create a unique ID from username, message, and timestamp
+        // Round timestamp to nearest second to handle slight timing differences
+        const roundedTimestamp = Math.floor(timestamp / 1000) * 1000;
+        return `${username}_${message}_${roundedTimestamp}`;
+      }
+
       // Add message to chat
       function addMessageToChat(username, message, timestamp) {
         const messagesDiv = document.getElementById('chat-messages');
         if (!messagesDiv) return;
         
+        // Create unique message ID
+        const messageId = getMessageId(username, message, timestamp || Date.now());
+        
         // Check if message already exists (prevent duplicates)
-        const existingMessages = Array.from(messagesDiv.children).map(el => el.textContent);
-        const messageText = username + ': ' + message;
-        if (existingMessages.includes(messageText)) return;
+        if (displayedMessageIds.has(messageId)) {
+          console.log('Duplicate message prevented:', messageId);
+          return;
+        }
+        
+        // Mark as displayed
+        displayedMessageIds.add(messageId);
+        
+        // Keep only last 500 message IDs to prevent memory issues
+        if (displayedMessageIds.size > 500) {
+          const idsArray = Array.from(displayedMessageIds);
+          displayedMessageIds = new Set(idsArray.slice(-500));
+        }
         
         const messageDiv = document.createElement('div');
         messageDiv.className = 'chat-message';
+        messageDiv.setAttribute('data-message-id', messageId); // Store ID for reference
         
         const time = timestamp ? new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
@@ -2718,7 +2753,12 @@
         
         // Keep only last 100 messages in DOM
         while (messagesDiv.children.length > 100) {
-          messagesDiv.removeChild(messagesDiv.firstChild);
+          const removedMsg = messagesDiv.firstChild;
+          const removedId = removedMsg.getAttribute('data-message-id');
+          if (removedId) {
+            displayedMessageIds.delete(removedId);
+          }
+          messagesDiv.removeChild(removedMsg);
         }
       }
 
