@@ -1298,7 +1298,7 @@
     display: none; /* Start hidden, only show when explicitly needed */
     align-items: center;
     justify-content: center;
-    z-index: 99998; /* Below other critical modals */
+    z-index: 99999; /* Above lock overlay */
   }
 
   .unlock-modal-bg.show {
@@ -1398,26 +1398,46 @@
     height: calc(100vh - 60px); /* Adjust height for header */
   }
 
-  /* Lock overlay when site is locked */
+  /* Lock overlay when site is locked - covers ENTIRE viewport */
   body.site-locked::before {
     content: '';
     position: fixed;
-    top: 60px; /* Below header */
+    top: 0; /* Cover entire viewport including header */
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
-    z-index: 99997; /* Below unlock modal */
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(8px);
+    z-index: 99997; /* Below unlock modal but above everything else */
     pointer-events: all;
+    cursor: not-allowed;
   }
 
+  /* Block ALL interactions with content when locked */
+  body.site-locked * {
+    pointer-events: none !important;
+    user-select: none !important;
+  }
+
+  /* Exception: allow unlock modal and its children */
+  body.site-locked .unlock-modal-bg,
+  body.site-locked .unlock-modal-bg *,
+  body.site-locked .top-header,
+  body.site-locked .top-header * {
+    pointer-events: auto !important;
+  }
+
+  /* Visual feedback for locked content */
   body.site-locked .container,
   body.site-locked .sidebar,
-  body.site-locked .wishlist-section {
-    pointer-events: none;
-    filter: blur(3px);
-    opacity: 0.5;
+  body.site-locked .wishlist-section,
+  body.site-locked .container *,
+  body.site-locked .sidebar *,
+  body.site-locked .wishlist-section * {
+    filter: blur(4px);
+    opacity: 0.3;
   }
 }
   </style>
@@ -1900,6 +1920,15 @@
         
         if (unlocked && currentUser) {
           document.body.classList.remove('site-locked');
+          
+          // Remove all interaction blockers when unlocked
+          if (window._lockBlockers && Array.isArray(window._lockBlockers)) {
+            window._lockBlockers.forEach(({ type, handler }) => {
+              document.removeEventListener(type, handler, true);
+            });
+            window._lockBlockers = [];
+          }
+          
           // Always hide modal when unlocked
           if (unlockModalBg) {
             unlockModalBg.classList.remove('show');
@@ -1914,15 +1943,62 @@
           startSessionHeartbeat();
         } else {
           document.body.classList.add('site-locked');
+          
+          // Block ALL interactions when locked - prevent bypass via minimized/resized windows
+          const blockInteractions = (e) => {
+            // Allow interactions only with unlock modal and top header
+            const target = e.target;
+            const isUnlockModal = target.closest('.unlock-modal-bg');
+            const isTopHeader = target.closest('.top-header');
+            
+            if (!isUnlockModal && !isTopHeader) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              return false;
+            }
+          };
+          
+          // Store blocker function reference for cleanup
+          if (!window._lockBlockers) {
+            window._lockBlockers = [];
+          }
+          
+          // Add event listeners to block all interactions (capture phase to catch everything)
+          const mouseHandler = (e) => blockInteractions(e);
+          const touchHandler = (e) => blockInteractions(e);
+          const keyHandler = (e) => {
+            const target = e.target;
+            const isUnlockModal = target.closest('.unlock-modal-bg');
+            if (!isUnlockModal) {
+              e.preventDefault();
+              e.stopPropagation();
+              return false;
+            }
+          };
+          
+          document.addEventListener('mousedown', mouseHandler, true);
+          document.addEventListener('click', mouseHandler, true);
+          document.addEventListener('touchstart', touchHandler, true);
+          document.addEventListener('keydown', keyHandler, true);
+          
+          // Store handlers for cleanup
+          window._lockBlockers = [
+            { type: 'mousedown', handler: mouseHandler },
+            { type: 'click', handler: mouseHandler },
+            { type: 'touchstart', handler: touchHandler },
+            { type: 'keydown', handler: keyHandler }
+          ];
+          
           // Only show modal if no current user (first visit), not on every check
-          if (!currentUser) {
+          if (!currentUser && !suppressModal) {
             // First visit - show modal
             if (unlockModalBg) {
               unlockModalBg.classList.add('show');
               unlockModalBg.style.display = 'flex';
             }
           } else {
-            // User exists but not verified - hide modal, show button instead
+            // User exists but not verified OR modal suppressed - hide modal, show button instead
             if (unlockModalBg) {
               unlockModalBg.classList.remove('show');
               unlockModalBg.style.display = 'none';
