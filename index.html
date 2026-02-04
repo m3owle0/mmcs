@@ -1903,6 +1903,26 @@
             console.log('Session available:', !!data.session);
             console.log('Email confirmed:', data.user.email_confirmed_at ? 'Yes' : 'No');
             
+            // Wait a moment for trigger to create unlocked_users record
+            // Then verify it was created
+            setTimeout(async () => {
+              if (supabase) {
+                const { data: unlockedData, error: unlockedError } = await supabase
+                  .from('unlocked_users')
+                  .select('*')
+                  .eq('auth_user_id', data.user.id)
+                  .maybeSingle();
+                
+                if (unlockedError) {
+                  console.warn('Could not verify unlocked_users record:', unlockedError);
+                } else if (unlockedData) {
+                  console.log('unlocked_users record created:', unlockedData);
+                } else {
+                  console.warn('unlocked_users record not found - trigger may not be set up');
+                }
+              }
+            }, 1000);
+            
             // If session exists, user is logged in immediately
             if (data.session) {
               setCurrentUser(username.trim());
