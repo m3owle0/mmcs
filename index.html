@@ -1739,7 +1739,7 @@
         }
       }
       
-      // Check if user is logged in via Supabase Auth
+      // Check if user is logged in via Supabase Auth AND verified in unlocked_users
       async function isUnlocked() {
         if (!supabase) return false;
         
@@ -1762,8 +1762,96 @@
             return false;
           }
           
+          // Check if user is verified in unlocked_users table
+          const { data: unlockedData, error: unlockedError } = await supabase
+            .from('unlocked_users')
+            .select('verified, email, username')
+            .eq('auth_user_id', user.id)
+            .maybeSingle();
+          
+          console.log('Verification check:', {
+            userId: user.id,
+            email: user.email,
+            unlockedData: unlockedData,
+            unlockedError: unlockedError
+          });
+          
+          if (unlockedError) {
+            console.error('Error checking verification status:', unlockedError);
+            // If table doesn't exist or error, allow access (fallback)
+            // This prevents breaking if unlocked_users table isn't set up yet
+            setCurrentUser(user.user_metadata?.username || user.email || user.id);
+            return true;
+          }
+          
+          // If no record exists, create one automatically (user signed up before trigger was set up)
+          if (!unlockedData) {
+            console.warn('User not found in unlocked_users table, creating record:', user.id);
+            try {
+              const { data: newRecord, error: insertError } = await supabase
+                .from('unlocked_users')
+                .insert({
+                  auth_user_id: user.id,
+                  email: user.email,
+                  username: user.user_metadata?.username || '',
+                  verified: false
+                })
+                .select()
+                .single();
+              
+              if (insertError) {
+                console.error('Error creating unlocked_users record:', insertError);
+                // Allow access for now if we can't create record
+                setCurrentUser(user.user_metadata?.username || user.email || user.id);
+                return true;
+              }
+              
+              // Record created but not verified - block access
+              console.log('User record created but not verified');
+              return false;
+            } catch (err) {
+              console.error('Error creating unlocked_users record:', err);
+              setCurrentUser(user.user_metadata?.username || user.email || user.id);
+              return true; // Fallback: allow access
+            }
+          }
+          
+          // Check if user is verified (handle various true formats)
+          const verifiedValue = unlockedData.verified;
+          const isVerified = verifiedValue === true || 
+                             verifiedValue === 'true' || 
+                             verifiedValue === 1 ||
+                             verifiedValue === '1' ||
+                             String(verifiedValue).toLowerCase() === 'true';
+          
+          console.log('Verification status:', {
+            email: user.email,
+            verifiedValue: verifiedValue,
+            verifiedType: typeof verifiedValue,
+            isVerified: isVerified
+          });
+          
+          if (!isVerified) {
+            console.log('User not verified:', user.email, 'verified status:', verifiedValue, 'type:', typeof verifiedValue);
+            return false; // User exists but not verified - block access
+          }
+          
+          // User is verified - allow access
+          console.log('User verified, granting access:', user.email);
+          
           // Update current user in localStorage
-          setCurrentUser(user.user_metadata?.username || user.email || user.id);
+          const displayName = unlockedData.username || user.user_metadata?.username || user.email || user.id;
+          setCurrentUser(displayName);
+          
+          // Update last_active timestamp
+          try {
+            await supabase
+              .from('unlocked_users')
+              .update({ last_active: new Date().toISOString() })
+              .eq('auth_user_id', user.id);
+          } catch (err) {
+            console.warn('Error updating last_active:', err);
+          }
           
           return true;
         } catch (err) {
@@ -2010,6 +2098,8 @@
         const unlocked = await isUnlocked();
         const currentUser = getCurrentUser();
         
+        console.log('initUnlockSystem check:', { unlocked, currentUser });
+        
         if (unlocked && currentUser) {
           document.body.classList.remove('site-locked');
           
@@ -2026,6 +2116,25 @@
             unlockModalBg.classList.remove('show');
             unlockModalBg.style.display = 'none';
           }
+          
+          // Hide any success/error messages immediately
+          const loginSuccessEl = document.getElementById('login-success');
+          const loginErrorEl = document.getElementById('login-error');
+          if (loginSuccessEl) {
+            loginSuccessEl.style.display = 'none';
+            loginSuccessEl.style.transition = 'opacity 0.3s';
+            loginSuccessEl.style.opacity = '0';
+          }
+          if (loginErrorEl) {
+            loginErrorEl.style.display = 'none';
+          }
+          
+          // Clear form fields
+          const loginUsernameInputEl = document.getElementById('login-username-input');
+          const loginPasswordInputEl = document.getElementById('login-password-input');
+          if (loginUsernameInputEl) loginUsernameInputEl.value = '';
+          if (loginPasswordInputEl) loginPasswordInputEl.value = '';
+          
           if (unlockBtn) unlockBtn.style.display = 'none';
           if (userDisplay) {
             userDisplay.textContent = `Welcome, ${currentUser}`;
@@ -2033,6 +2142,9 @@
           }
           // Start session heartbeat for active session
           startSessionHeartbeat();
+          
+          isInitializing = false;
+          return; // Exit early when unlocked
         } else {
           document.body.classList.add('site-locked');
           
@@ -2165,15 +2277,51 @@
             loginSubmitBtn.textContent = 'Login';
             
             if (result.success) {
+              // Hide error message if showing
+              if (loginError) loginError.style.display = 'none';
+              
+              // Show success message briefly
               if (loginSuccess) {
                 loginSuccessText.textContent = 'Login successful! Welcome!';
                 loginSuccess.style.display = 'block';
               }
+              
               // Clear password field
               if (loginPasswordInput) loginPasswordInput.value = '';
+              // Clear username field
+              if (loginUsernameInput) loginUsernameInput.value = '';
+              
+              // Wait a moment then refresh unlock system
               setTimeout(async () => {
+                console.log('Refreshing unlock system after login...');
+                
+                // Force a check to make sure it unlocked
+                const unlocked = await isUnlocked();
+                console.log('Unlock status after login:', unlocked);
+                
+                // Refresh the unlock system (this will show/hide modal appropriately)
                 await initUnlockSystem();
-              }, 500);
+                
+                // Hide success message after checking
+                if (loginSuccess) {
+                  setTimeout(() => {
+                    loginSuccess.style.display = 'none';
+                  }, 2000); // Hide after 2 seconds
+                }
+                
+                if (!unlocked) {
+                  // User logged in but not verified - show error
+                  console.warn('User logged in but site still locked - checking verification...');
+                  if (loginError) {
+                    loginErrorText.textContent = 'Your account is not verified yet. Please wait for verification after donation.';
+                    loginError.style.display = 'block';
+                    // Hide success message immediately when showing error
+                    if (loginSuccess) {
+                      loginSuccess.style.display = 'none';
+                    }
+                  }
+                }
+              }, 800); // Wait 800ms before checking
             } else {
               if (loginError) {
                 loginErrorText.textContent = result.error || 'Login failed. Please try again.';
