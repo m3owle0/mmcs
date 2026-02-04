@@ -2751,19 +2751,45 @@
         if (typeof s === 'string') {
           return { term: s };
         }
+        // Handle objects with "value" property (from imports)
+        if (s && typeof s === 'object') {
+          if (s.value && !s.term) {
+            return { term: s.value, editing: s.editing || false };
+          }
+          // Ensure term exists
+          if (!s.term && s.value) {
+            s.term = s.value;
+            delete s.value;
+          }
+        }
         return s;
+      }).filter(s => {
+        // Filter out invalid entries
+        const term = s.term || (s.value || (typeof s === 'string' ? s : ''));
+        return term && term.trim().length > 0;
       });
       
       const searches = normalizedSearches.slice().sort((a, b) => {
-        const termA = a.term || (typeof a === 'string' ? a : '');
-        const termB = b.term || (typeof b === 'string' ? b : '');
+        const termA = a.term || a.value || (typeof a === 'string' ? a : '');
+        const termB = b.term || b.value || (typeof b === 'string' ? b : '');
         return termA.localeCompare(termB);
       });
       
       searches.forEach((search, idx) => {
-        // Ensure search has a term property
-        const searchTerm = search.term || (typeof search === 'string' ? search : '');
-        if (!searchTerm) return; // Skip invalid entries
+        // Ensure search has a term property - check both "term" and "value"
+        let searchTerm = search.term;
+        if (!searchTerm && search.value) {
+          searchTerm = search.value;
+          // Fix it for future renders
+          search.term = search.value;
+          delete search.value;
+        }
+        if (!searchTerm && typeof search === 'string') {
+          searchTerm = search;
+        }
+        if (!searchTerm || !searchTerm.trim()) {
+          return; // Skip invalid entries
+        }
         
         const li = document.createElement('li');
         li.className = 'saved-search-item' + (clickedSearches[searchTerm] ? ' clicked' : '');
@@ -2976,12 +3002,35 @@
                     if (typeof search === 'string') {
                       return { term: search };
                     }
-                    if (search.value && !search.term) {
-                      return { term: search.value, editing: search.editing || false };
+                    // Handle object with "value" property
+                    if (search && typeof search === 'object') {
+                      if (search.value && !search.term) {
+                        // Convert "value" to "term"
+                        const converted = { term: search.value };
+                        // Preserve other properties like "editing"
+                        if (search.editing !== undefined) converted.editing = search.editing;
+                        return converted;
+                      }
+                      // If it has "term", use it; if neither, create empty term
+                      if (!search.term && !search.value) {
+                        return { term: '' }; // Empty term as fallback
+                      }
+                      // Already has "term" - ensure it exists
+                      if (!search.term && search.value) {
+                        search.term = search.value;
+                        delete search.value;
+                      }
                     }
                     // Already has "term" or is already normalized
                     return search;
+                  }).filter(search => {
+                    // Remove entries with empty terms
+                    const term = search.term || (search.value || '');
+                    return term && term.trim().length > 0;
                   });
+                } else if (!folder.searches) {
+                  // Ensure searches array exists
+                  folder.searches = [];
                 }
                 return folder;
               });
@@ -3011,14 +3060,54 @@
               localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
             }
             
+            // Ensure we have at least one folder
+            if (!savedFolders || savedFolders.length === 0) {
+              savedFolders = [{ name: 'Default', searches: [] }];
+              foldersObj.folders = savedFolders;
+            }
+            
+            // Normalize all folders after import to ensure data consistency
+            savedFolders = savedFolders.map(folder => {
+              if (!folder.searches) folder.searches = [];
+              folder.searches = folder.searches.map(search => {
+                if (typeof search === 'string') {
+                  return { term: search };
+                }
+                if (search && typeof search === 'object') {
+                  if (search.value && !search.term) {
+                    const converted = { term: search.value };
+                    if (search.editing !== undefined) converted.editing = search.editing;
+                    return converted;
+                  }
+                  if (!search.term && search.value) {
+                    search.term = search.value;
+                    delete search.value;
+                  }
+                }
+                return search;
+              }).filter(s => {
+                const term = s.term || s.value || '';
+                return term && term.trim().length > 0;
+              });
+              return folder;
+            });
+            
+            foldersObj.folders = savedFolders;
             saveFoldersObj(foldersObj);
+            
+            // Reset to first folder if current index is invalid
+            if (currentFolderIdx >= savedFolders.length) {
+              currentFolderIdx = 0;
+            }
+            
             refreshAllMarketButtons();
             renderFolders();
             renderSavedSearches();
-            alert('Import successful!');
+            alert('Import successful! Loaded ' + savedFolders.length + ' folder(s) with ' + savedFolders.reduce((sum, f) => sum + (f.searches ? f.searches.length : 0), 0) + ' total searches.');
           } catch (err) {
             alert('Import failed: ' + err.message);
             console.error('Import error:', err);
+            console.error('Import data:', data);
           }
         };
         reader.readAsText(file);
