@@ -2255,7 +2255,7 @@
       // PASSWORDS: "leoadmin" and "eemiladmin" (stored obfuscated)
       function checkPassword(input) {
         if (!input) return false;
-        const inputLower = input.toLowerCase();
+        const inputLower = input.toLowerCase().trim();
         
         // List of valid passwords (stored as character codes, reversed)
         // Password 1: "leoadmin" reversed = "nimdaoel"
@@ -2266,8 +2266,17 @@
         const password2Codes = [110, 105, 109, 100, 97, 108, 105, 109, 101, 101];
         const password2 = password2Codes.map(c => String.fromCharCode(c)).reverse().join('').toLowerCase();
         
-        // Check if input matches any valid password
-        if (inputLower === password1 || inputLower === password2) {
+        // Direct comparison with known passwords (fallback method for reliability)
+        const validPasswords = ['leoadmin', 'eemiladmin'];
+        const matchesDirect = validPasswords.includes(inputLower);
+        
+        // Check if input matches any valid password (using obfuscated method)
+        const matchesObfuscated = inputLower === password1 || inputLower === password2;
+        
+        // Use either method (direct is fallback for debugging/reliability)
+        const matches = matchesObfuscated || matchesDirect;
+        
+        if (matches) {
           // Store which password was used (for username lookup)
           try {
             sessionStorage.setItem('mmcs_used_password', inputLower);
