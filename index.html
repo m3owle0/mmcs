@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Multi-Market Secondhand Clothing Search</title>
-  <meta name="viewport" content="width=1920, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <link rel="icon" type="image/png" href="miku.png">
   <style>
     :root {
@@ -52,14 +52,15 @@
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(15,15,15,0.98);
-      padding: 32px 20px 20px 20px;
-      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(15,15,15,0.98) 100%);
+      padding: 35px 25px 25px 25px;
+      border-radius: 24px;
       box-shadow: 
-        0 8px 32px rgba(0,0,0,0.5),
-        0 0 0 1px rgba(255,255,255,0.05);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.1);
+        0 20px 60px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(255,255,255,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.15);
       z-index: 10;
       transition: all 0.4s cubic-bezier(0.2, 0.9, 0.1, 1.1);
       overflow-y: auto;
@@ -1128,6 +1129,20 @@
       background: rgba(255,60,60,0.3);
       transform: scale(1.1);
     }
+    
+    /* Mobile menu toggle button - hidden by default */
+    .mobile-menu-toggle {
+      display: none;
+    }
+    
+    /* Ensure mobile sidebar is hidden on desktop */
+    @media (min-width: 769px) {
+      .mobile-sidebar,
+      .mobile-sidebar-overlay,
+      .mobile-menu-toggle {
+        display: none !important;
+      }
+    }
 
     /* Minimized Panel Buttons */
     .minimized-panels {
@@ -1162,6 +1177,494 @@
       box-shadow: 0 0 0 2px rgba(120,120,120,0.3);
       transition: none;
     }
+    /* Mobile-specific styles - Enhanced for better aesthetics */
+    @media (max-width: 768px) {
+      /* Fix background for mobile */
+      html, body {
+        background: var(--theme-bg) !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
+        overflow-x: hidden !important;
+        height: 100% !important;
+      }
+      
+      /* Improve top header for mobile - reposition to bottom */
+      .top-header {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px 15px;
+        background: rgba(15,15,15,0.95);
+        backdrop-filter: blur(12px);
+        border-top: 1px solid rgba(255,255,255,0.1);
+        z-index: 1001;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+      }
+      
+      .header-left {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        width: 100%;
+        max-width: 100%;
+      }
+      
+      .donation-link {
+        padding: 8px 12px;
+        font-size: 12px;
+        border-radius: 8px;
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+      }
+      
+      .donation-link.discord {
+        order: -1; /* Make Discord first */
+        max-width: 120px;
+      }
+      
+      .donation-link.cashapp {
+        max-width: 140px;
+      }
+      
+      .donation-link.bitcoin {
+        max-width: 140px;
+      }
+      
+      .online-users-count {
+        display: none;
+      }
+      
+      .header-right {
+        display: none;
+      }
+      
+      /* Adjust container to account for bottom header */
+      .container {
+        padding-bottom: 80px !important; /* Add space for bottom header */
+      }
+      
+      /* Main container adjustments */
+      .container {
+        position: relative;
+        left: 0;
+        top: 0;
+        transform: none;
+        width: 100vw;
+        height: calc(100vh - 60px); /* Account for bottom donation links */
+        max-width: 100vw;
+        max-height: calc(100vh - 60px);
+        margin: 0;
+        padding: 15px;
+        border-radius: 0;
+        overflow-y: auto;
+        background: rgba(15,15,15,0.98);
+        backdrop-filter: blur(12px);
+        border: none;
+        box-shadow: none;
+        z-index: 1;
+        box-sizing: border-box;
+      }
+      
+      /* Hide resize handles on mobile */
+      .resize-handle {
+        display: none !important;
+      }
+      
+      /* Hide useless features on mobile */
+      .add-market-row,
+      #theme-editor-btn,
+      .randomize-section,
+      .special-group {
+        display: none !important;
+      }
+      
+      /* Improve search interface */
+      .market-row {
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      input[type="text"] {
+        font-size: 16px;
+        padding: 14px 16px;
+        width: 100%;
+        border-radius: 10px;
+        background: rgba(30,32,34,0.95);
+        border: 2px solid rgba(255,255,255,0.1);
+      }
+      
+      /* Make buttons larger and more beautiful for touch */
+      .market-btn, .section-openall-btn, #open-all-btn {
+        padding: 14px 20px;
+        min-height: 52px;
+        font-size: 16px;
+        width: 100%;
+        margin: 6px 0;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(40,42,44,0.95) 0%, rgba(30,32,34,0.95) 100%);
+        border: 1px solid rgba(255,255,255,0.15);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+      }
+      
+      .market-btn:hover, .section-openall-btn:hover, #open-all-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      }
+      
+      /* Adjust market buttons layout */
+      .markets {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .market-btn {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        text-align: left;
+        padding-left: 50px;
+        position: relative;
+      }
+      
+      .market-toggle {
+        left: 15px;
+        width: 20px;
+        height: 20px;
+      }
+      
+      /* Hide complex features on mobile */
+      .sidebar, .wishlist-section,
+      .saved-searches-list, 
+      .saved-folder-list {
+        display: none !important;
+      }
+      
+      /* Ensure mobile sidebar is properly positioned */
+      .mobile-sidebar {
+        display: block;
+      }
+      
+      /* Hide desktop saved searches to prevent duplication */
+      #saved-searches-list {
+        display: none !important;
+      }
+      
+      /* Adjust header spacing */
+      h1 {
+        font-size: 1.6em;
+        margin-top: 10px;
+        text-align: center;
+        color: #e3e3e3;
+        text-shadow: 0 2px 12px #2224;
+      }
+      
+      .tip {
+        font-size: 14px;
+        line-height: 1.4;
+        text-align: center;
+        color: #b0b0b0;
+        margin-bottom: 20px;
+        padding: 0 10px;
+      }
+      
+      /* Simplify the controls row */
+      #open-all-btn {
+        width: 100%;
+        margin-bottom: 15px;
+        background: linear-gradient(135deg, #00e6d6 0%, #00b8a9 100%);
+        color: #0a0a0a;
+        font-weight: bold;
+        font-size: 16px;
+      }
+      
+      /* Adjust section headers */
+      .section-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin: 20px 0 12px 0;
+      }
+      
+      .section-openall-btn {
+        align-self: stretch;
+        text-align: center;
+        background: linear-gradient(135deg, rgba(60,60,60,0.95) 0%, rgba(40,40,40,0.95) 100%);
+      }
+      
+      h2 {
+        font-size: 1.3em;
+        text-align: center;
+        margin-bottom: 5px;
+      }
+      
+      /* Hide particle canvas on mobile for performance */
+      #particle-canvas {
+        display: none;
+      }
+      
+      /* Adjust unlock modal for mobile */
+      .unlock-modal {
+        width: 95vw;
+        padding: 20px 15px;
+        border-radius: 15px;
+      }
+      
+      .unlock-input {
+        padding: 12px 14px;
+        font-size: 16px;
+        border-radius: 8px;
+      }
+      
+      /* Make custom market modal mobile-friendly */
+      .custom-market-modal {
+        width: 95vw;
+        padding: 20px 15px;
+        border-radius: 15px;
+      }
+      
+      /* Mobile menu toggle - improved */
+      .mobile-menu-toggle {
+        display: block !important;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1000;
+        background: linear-gradient(135deg, rgba(32,34,36,0.95) 0%, rgba(20,22,24,0.95) 100%);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: #e3e3e3;
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        transition: all 0.3s ease;
+      }
+      
+      .mobile-menu-toggle:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      }
+      
+      /* Adjust for very small screens */
+      @media (max-width: 480px) {
+        .donation-link {
+          padding: 6px 8px;
+          font-size: 11px;
+          max-width: 110px;
+        }
+        
+        .donation-link.discord {
+          max-width: 100px;
+        }
+        
+        .top-header {
+          padding: 8px 10px;
+          gap: 6px;
+        }
+        
+        .container {
+          padding-bottom: 70px !important;
+        }
+      }
+      
+      @media (max-width: 360px) {
+        .donation-link {
+          font-size: 10px;
+          padding: 5px 6px;
+          max-width: 90px;
+        }
+        
+        .donation-link.discord {
+          max-width: 85px;
+        }
+        
+        .top-header {
+          padding: 6px 8px;
+          gap: 4px;
+        }
+      }
+      
+      /* Mobile sidebar - enhanced with folders */
+      .mobile-sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 85vw;
+        height: calc(100vh - 60px); /* Leave space for donation links at bottom */
+        background: linear-gradient(135deg, rgba(15,15,15,0.98) 0%, rgba(10,10,10,0.98) 100%);
+        z-index: 2000;
+        padding: 70px 20px 20px 20px;
+        overflow-y: auto;
+        transition: left 0.3s ease;
+        border-right: 1px solid rgba(255,255,255,0.15);
+        box-shadow: 8px 0 30px rgba(0,0,0,0.5);
+      }
+      
+      .mobile-sidebar.active {
+        left: 0;
+      }
+      
+      .mobile-sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.7);
+        z-index: 1999;
+        display: none;
+        backdrop-filter: blur(3px);
+      }
+      
+      .mobile-sidebar-overlay.active {
+        display: block;
+      }
+      
+      /* Ensure mobile sidebar doesn't cover donation links */
+      .mobile-sidebar {
+        height: calc(100vh - 60px); /* Account for bottom donation links */
+        bottom: 60px;
+      }
+      
+      /* Improve mobile sidebar content */
+      .mobile-sidebar h3 {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+        text-align: center;
+        color: #e3e3e3;
+      }
+      
+      .mobile-sidebar .sidebar-add-row {
+        margin-bottom: 15px;
+      }
+      
+      .mobile-sidebar .sidebar-add-input {
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 15px;
+      }
+      
+      .mobile-sidebar .sidebar-add-btn {
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 16px;
+      }
+      
+      /* Mobile folder list */
+      .mobile-folder-list {
+        margin-bottom: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 10px;
+        background: rgba(30,32,34,0.5);
+      }
+      
+      .mobile-folder-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        background: rgba(44,46,48,0.7);
+        border-radius: 6px;
+        color: #e3e3e3;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+      }
+      
+      .mobile-folder-item.active {
+        background: rgba(0, 230, 214, 0.2);
+        border: 1px solid rgba(0, 230, 214, 0.4);
+        font-weight: bold;
+      }
+      
+      .mobile-folder-item:hover {
+        background: rgba(60,60,60,0.8);
+      }
+      
+      /* Fix body padding for mobile */
+      body {
+        padding-top: 0;
+        padding-bottom: 60px; /* Space for bottom donation links */
+        overflow-x: hidden;
+        box-sizing: border-box;
+      }
+      
+      /* Ensure content is not hidden behind fixed elements */
+      .container {
+        margin-bottom: 0;
+      }
+      
+      /* Improve wishlist mascot visibility */
+      .wishlist-mascot {
+        display: none;
+      }
+      
+      /* Better scrollbar for mobile */
+      .container::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      .container::-webkit-scrollbar-thumb {
+        background: rgba(120,120,120,0.4);
+        border-radius: 3px;
+      }
+      
+      /* Remove drag handles on mobile */
+      .drag-handle {
+        display: none !important;
+      }
+    }
+    
+    /* Additional mobile optimizations for very small screens */
+    @media (max-width: 480px) {
+      .donation-link {
+        min-width: 120px;
+        font-size: 12px;
+        padding: 7px 10px;
+      }
+      
+      h1 {
+        font-size: 1.6em;
+      }
+      
+      .tip {
+        font-size: 14px;
+      }
+      
+      .market-btn, .add-market-btn, .section-openall-btn, #open-all-btn {
+        padding: 14px 20px;
+        min-height: 52px;
+        font-size: 15px;
+      }
+      
+      .mobile-menu-toggle {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        top: 15px;
+        left: 15px;
+      }
+    }
+    
     @media (max-width: 1200px) {
       .wishlist-section { display: none; }
       .container { margin-right: 0; }
@@ -1475,6 +1978,41 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <!-- Mobile Menu Toggle -->
+  <button class="mobile-menu-toggle" id="mobile-menu-toggle" style="display: none;">☰</button>
+  <div class="mobile-sidebar-overlay" id="mobile-sidebar-overlay"></div>
+  <div class="mobile-sidebar" id="mobile-sidebar">
+    <div style="margin-bottom: 20px;">
+      <h3 style="color: #e3e3e3; margin-bottom: 15px;">Saved Searches</h3>
+      
+      <!-- Folder Selection -->
+      <div style="margin-bottom: 15px;">
+        <h4 style="color: #b0b0b0; font-size: 14px; margin-bottom: 8px;">Select Folder</h4>
+        <div class="mobile-folder-list" id="mobile-folder-list">
+          <!-- Folders will be populated by JavaScript -->
+        </div>
+      </div>
+      
+      <div class="sidebar-add-row" style="display: flex; gap: 8px; margin-bottom: 15px;">
+        <input type="text" placeholder="Save search..." id="mobile-add-input" class="sidebar-add-input" maxlength="70" style="flex: 1;">
+        <button class="sidebar-add-btn" id="mobile-add-btn" title="Save Search">+</button>
+      </div>
+      <ul class="saved-searches-list" id="mobile-searches-list" style="max-height: 300px; overflow-y: auto;"></ul>
+    </div>
+    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #232323;">
+      <button class="sidebar-randomize-btn" id="mobile-randomize-btn" style="width: 100%; margin-bottom: 10px;">Randomize Search</button>
+      <select id="mobile-randomize-category-select" class="randomize-select" style="width: 100%; margin-bottom: 15px;">
+        <option value="all">All Categories</option>
+        <option value="asia">Asia</option>
+        <option value="international">International</option>
+        <option value="special">Designer</option>
+      </select>
+    </div>
+    <div style="margin-top: 20px;">
+      <button class="sidebar-reset-btn" id="mobile-reset-highlights-btn" style="width: 100%; margin-bottom: 10px;">Reset Highlights</button>
+    </div>
+  </div>
+
   <!-- Top Header with PayPal Donation -->
   <div class="top-header">
     <div class="header-left">
@@ -4371,6 +4909,318 @@
         }
       });
     });
+
+    // Mobile detection and functionality - Enhanced
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Initialize mobile UI if on mobile
+    if (isMobile) {
+      // Hide desktop sidebar and wishlist
+      const sidebar = document.getElementById('sidebar');
+      const wishlist = document.getElementById('wishlist-section');
+      if (sidebar) sidebar.style.display = 'none';
+      if (wishlist) wishlist.style.display = 'none';
+      
+      // Show mobile menu toggle
+      const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+      if (mobileMenuToggle) {
+        mobileMenuToggle.style.display = 'flex';
+      }
+      
+      // Simplify mobile interface
+      const openAllBtn = document.getElementById('open-all-btn');
+      if (openAllBtn) {
+        openAllBtn.style.display = 'block';
+        openAllBtn.textContent = 'Open All';
+      }
+      
+      // Hide complex features on mobile
+      document.querySelectorAll('.add-market-btn').forEach(btn => {
+        btn.style.display = 'none';
+      });
+      
+      // Simplify section open all buttons
+      document.querySelectorAll('.section-openall-btn').forEach(btn => {
+        btn.style.display = 'block';
+        btn.style.padding = '12px 16px';
+        btn.style.fontSize = '14px';
+      });
+      
+      // Hide theme editor on mobile
+      const themeEditorBtn = document.getElementById('theme-editor-btn');
+      if (themeEditorBtn) themeEditorBtn.style.display = 'none';
+      
+      // Initialize mobile sidebar functionality
+      const mobileSidebar = document.getElementById('mobile-sidebar');
+      const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
+      
+      if (mobileMenuToggle && mobileSidebar && mobileSidebarOverlay) {
+        // Remove any existing event listeners first
+        const newMobileMenuToggle = mobileMenuToggle.cloneNode(true);
+        mobileMenuToggle.parentNode.replaceChild(newMobileMenuToggle, mobileMenuToggle);
+        
+        const newMobileSidebarOverlay = mobileSidebarOverlay.cloneNode(true);
+        mobileSidebarOverlay.parentNode.replaceChild(newMobileSidebarOverlay, mobileSidebarOverlay);
+        
+        // Add fresh event listeners
+        newMobileMenuToggle.addEventListener('click', function() {
+          mobileSidebar.classList.add('active');
+          newMobileSidebarOverlay.classList.add('active');
+          // Update searches when opening
+          updateMobileSearches();
+        });
+        
+        newMobileSidebarOverlay.addEventListener('click', function() {
+          mobileSidebar.classList.remove('active');
+          newMobileSidebarOverlay.classList.remove('active');
+        });
+      }
+      
+      // Update mobile folder list
+      function updateMobileFolders() {
+        const folderList = document.getElementById('mobile-folder-list');
+        if (!folderList) return;
+        
+        // Clear existing content
+        folderList.innerHTML = '';
+        
+        savedFolders.forEach((folder, idx) => {
+          const folderItem = document.createElement('div');
+          folderItem.className = 'mobile-folder-item' + (idx === currentFolderIdx ? ' active' : '');
+          folderItem.textContent = folder.name;
+          folderItem.onclick = function() {
+            currentFolderIdx = idx;
+            updateMobileFolders();
+            updateMobileSearches();
+            renderFolders();
+            renderSavedSearches();
+          };
+          folderList.appendChild(folderItem);
+        });
+      }
+      
+      // Load saved searches into mobile sidebar - fixed to prevent duplicates
+      function updateMobileSearches() {
+        const folder = savedFolders[currentFolderIdx];
+        const mobileList = document.getElementById('mobile-searches-list');
+        if (!mobileList) return;
+        
+        // Clear the list first
+        mobileList.innerHTML = '';
+        
+        if (!folder.searches || folder.searches.length === 0) {
+          const emptyMsg = document.createElement('li');
+          emptyMsg.textContent = 'No saved searches in this folder';
+          emptyMsg.style.color = '#888';
+          emptyMsg.style.textAlign = 'center';
+          emptyMsg.style.padding = '20px';
+          mobileList.appendChild(emptyMsg);
+          return;
+        }
+        
+        // Create a document fragment to batch DOM operations
+        const fragment = document.createDocumentFragment();
+        
+        folder.searches.forEach((term, idx) => {
+          const li = document.createElement('li');
+          li.className = 'saved-search-item';
+          li.style.marginBottom = '10px';
+          li.style.padding = '0';
+          
+          const termBtn = document.createElement('button');
+          termBtn.type = 'button';
+          termBtn.className = 'saved-search-term';
+          termBtn.style.width = '100%';
+          termBtn.style.textAlign = 'left';
+          termBtn.style.padding = '12px 14px';
+          termBtn.style.borderRadius = '8px';
+          termBtn.style.background = clickedSearches[term.value] ? 
+            'linear-gradient(135deg, rgba(0, 230, 214, 0.25) 0%, rgba(0, 184, 169, 0.25) 100%)' : 
+            'linear-gradient(135deg, rgba(44,46,48,0.7) 0%, rgba(30,32,34,0.7) 100%)';
+          termBtn.style.border = clickedSearches[term.value] ? 
+            '1px solid rgba(0, 230, 214, 0.4)' : '1px solid rgba(255,255,255,0.1)';
+          termBtn.style.color = '#e3e3e3';
+          termBtn.style.fontSize = '14px';
+          termBtn.style.fontWeight = clickedSearches[term.value] ? '600' : '400';
+          termBtn.style.transition = 'all 0.3s ease';
+          
+          termBtn.textContent = term.value;
+          
+          // Use a closure to capture the current term value
+          (function(termValue) {
+            termBtn.onclick = function() {
+              document.getElementById('query').value = termValue;
+              document.getElementById('query').focus();
+              
+              // Mark as clicked
+              clickedSearches[termValue] = { 
+                clicked: true, 
+                category: determineSearchCategory(termValue) 
+              };
+              localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+              
+              // Update UI
+              updateMobileSearches();
+              renderSavedSearches();
+              
+              // Close mobile sidebar
+              if (mobileSidebar) mobileSidebar.classList.remove('active');
+              if (mobileSidebarOverlay) mobileSidebarOverlay.classList.remove('active');
+            };
+          })(term.value);
+          
+          li.appendChild(termBtn);
+          fragment.appendChild(li);
+        });
+        
+        // Append all at once
+        mobileList.appendChild(fragment);
+      }
+      
+      // Mobile add search functionality
+      const mobileAddBtn = document.getElementById('mobile-add-btn');
+      const mobileAddInput = document.getElementById('mobile-add-input');
+      
+      if (mobileAddBtn && mobileAddInput) {
+        mobileAddBtn.addEventListener('click', function() {
+          const value = mobileAddInput.value.trim();
+          if (value) {
+            addSavedSearch(value);
+            mobileAddInput.value = '';
+            updateMobileSearches();
+            renderSavedSearches();
+          }
+        });
+        
+        mobileAddInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            const value = this.value.trim();
+            if (value) {
+              addSavedSearch(value);
+              this.value = '';
+              updateMobileSearches();
+              renderSavedSearches();
+            }
+          }
+        });
+      }
+      
+      // Mobile randomize button
+      const mobileRandomizeBtn = document.getElementById('mobile-randomize-btn');
+      if (mobileRandomizeBtn) {
+        mobileRandomizeBtn.addEventListener('click', function() {
+          const category = document.getElementById('mobile-randomize-category-select').value;
+          const folder = savedFolders[currentFolderIdx];
+          
+          if (!folder.searches || folder.searches.length === 0) {
+            alert('No saved searches to randomize from');
+            return;
+          }
+          
+          const unhighlightedTerms = folder.searches.filter(term => 
+            !clickedSearches[term.value] || !clickedSearches[term.value].clicked
+          );
+          
+          let randomTerm;
+          if (unhighlightedTerms.length === 0) {
+            clickedSearches = {};
+            localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+            randomTerm = folder.searches[Math.floor(Math.random() * folder.searches.length)];
+          } else {
+            randomTerm = unhighlightedTerms[Math.floor(Math.random() * unhighlightedTerms.length)];
+          }
+          
+          document.getElementById('query').value = randomTerm.value;
+          
+          // Close mobile sidebar
+          if (mobileSidebar) mobileSidebar.classList.remove('active');
+          if (mobileSidebarOverlay) mobileSidebarOverlay.classList.remove('active');
+          
+          // Update UI
+          updateMobileSearches();
+          renderSavedSearches();
+        });
+      }
+      
+      // Mobile reset highlights
+      const mobileResetBtn = document.getElementById('mobile-reset-highlights-btn');
+      if (mobileResetBtn) {
+        mobileResetBtn.addEventListener('click', function() {
+          clickedSearches = {};
+          localStorage.removeItem(CLICKED_SEARCHES_KEY);
+          updateMobileSearches();
+          renderSavedSearches();
+          alert('All highlights have been reset');
+        });
+      }
+      
+      // Initialize mobile folders and searches only once
+      // Check if already initialized to prevent duplicates
+      if (!window.mobileSidebarInitialized) {
+        updateMobileFolders();
+        updateMobileSearches();
+        window.mobileSidebarInitialized = true;
+      }
+      
+      // On mobile, open tabs one at a time to avoid overwhelming the browser
+      const originalTabQueueAdd = tabQueue.add;
+      tabQueue.add = function(url) {
+        // Open immediately but in new tab
+        window.open(url, '_blank');
+      };
+      
+      // Update form submission for mobile
+      const searchForm = document.getElementById('searchForm');
+      if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const query = document.getElementById('query').value.trim();
+          if (!query) return;
+          
+          // On mobile, open Mercari Japan in new tab
+          window.open(marketUrls["mercari-jp"](query), '_blank');
+        });
+      }
+      
+      // Make sure market buttons work on mobile
+      document.addEventListener('click', function(e) {
+        const marketBtn = e.target.closest('.market-btn');
+        if (marketBtn && !marketBtn.classList.contains('disabled') && !e.target.classList.contains('market-toggle')) {
+          const query = document.getElementById('query').value.trim();
+          if (!query) {
+            document.getElementById('query').focus();
+            return;
+          }
+          
+          const market = marketBtn.getAttribute('data-market');
+          const section = marketBtn.getAttribute('data-section');
+          
+          let url;
+          if (market.startsWith("custom-")) {
+            const parts = market.split("-");
+            const customId = parts.slice(2).join("-");
+            url = getCustomMarketUrl(section, customId, query);
+          } else if (marketUrls[market]) {
+            url = marketUrls[market](query);
+          }
+          
+          if (url) {
+            // On mobile, open in new tab
+            window.open(url, '_blank');
+          }
+        }
+      });
+      
+      // Improve mobile experience by adjusting some styles dynamically
+      setTimeout(() => {
+        // Make sure container is properly sized
+        const container = document.querySelector('.container');
+        if (container) {
+          container.style.height = 'auto';
+          container.style.minHeight = '100vh';
+        }
+      }, 100);
+    }
 
     // On page load, refresh market buttons with custom
     refreshAllMarketButtons();
