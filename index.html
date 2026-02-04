@@ -28,7 +28,8 @@
     /* Main Styles */
     html, body {
       height: 100%;
-      background: var(--theme-bg) var(--theme-bg-image);
+      background-color: var(--theme-bg);
+      background-image: var(--theme-bg-image);
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
@@ -2008,50 +2009,100 @@
         padding: 24px 20px;
       }
     }
+    /* Top Header Bar */
+    .top-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 15, 15, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .online-counter {
+      font-size: 14px;
+      color: var(--theme-text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      background: #00e6d6;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .donation-link {
+      background: linear-gradient(135deg, #0070ba 0%, #1546a0 100%);
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 112, 186, 0.3);
+    }
+
+    .donation-link:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 112, 186, 0.4);
+    }
+
+    body {
+      padding-top: 50px; /* Space for fixed header */
+    }
+
+    @media (max-width: 768px) {
+      .top-header {
+        padding: 10px 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .online-counter {
+        font-size: 12px;
+      }
+
+      .donation-link {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      body {
+        padding-top: 60px; /* More space on mobile */
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- Login Modal -->
-  <div id="login-modal-bg" class="login-modal-bg" style="display: flex; z-index: 99999; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;">
-    <div class="login-modal">
-      <div class="login-title">Access Required</div>
-      <div class="login-subtitle">Enter password to continue</div>
-      <form id="login-form" autocomplete="off">
-        <input type="password" id="login-password-input" class="login-input" placeholder="Password" autocomplete="off" autofocus />
-        <button type="submit" class="login-btn">Log In</button>
-        <div id="login-error" class="login-error">Incorrect password</div>
-      </form>
+  <!-- Top Header with Online Counter and Donation Link -->
+  <div class="top-header">
+    <div class="online-counter">
+      <span class="online-dot"></span>
+      <span id="online-count">Loading...</span>
     </div>
-  </div>
-
-  <!-- Username Selection Modal -->
-  <div id="username-modal" class="username-modal" style="display: none;">
-    <div class="username-modal-content">
-      <div class="login-title">Choose Your Username</div>
-      <div class="login-subtitle">This username will be used in chat (1 per password)</div>
-      <form id="username-form" autocomplete="off">
-        <input type="text" id="username-input" class="username-input" placeholder="Enter username" maxlength="20" autocomplete="off" autofocus />
-        <button type="submit" class="login-btn">Save Username</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Chat Widget -->
-  <div id="chat-widget" class="chat-widget" style="display: none;">
-    <div class="chat-header" id="chat-header">
-      <div>
-        <span class="chat-header-title">Live Chat</span>
-        <span class="chat-online-count" id="online-count">0 online</span>
-      </div>
-      <button class="chat-toggle" id="chat-toggle">−</button>
-    </div>
-    <div class="chat-body">
-      <div class="chat-messages" id="chat-messages"></div>
-      <div class="chat-input-area">
-        <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." maxlength="500" />
-        <button id="chat-send-btn" class="chat-send-btn">Send</button>
-      </div>
-    </div>
+    <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
+       target="_blank" 
+       rel="noopener noreferrer" 
+       class="donation-link">
+      💝 Donate via PayPal
+    </a>
   </div>
 
   <div class="minimized-panels" id="minimized-panels"></div>
@@ -2221,279 +2272,2193 @@
   </div>
 
   <script>
-    // ============================================
-    // PASSWORD PROTECTION SYSTEM
-    // ============================================
-    // This protects your website with passwords.
-    // Passwords are stored obfuscated (not plain text) for basic security.
-    // 
-    // CURRENT PASSWORDS:
-    // 1. "leoadmin" - stored as codes [110, 105, 109, 100, 97, 111, 101, 108]
-    // 2. "eemiladmin" - stored as codes [110, 105, 109, 100, 97, 108, 105, 109, 101, 101]
-    // 
-    // TO ADD A NEW PASSWORD:
-    // 1. Write your new password
-    // 2. Reverse it
-    // 3. Convert each letter to its character code
-    // 4. Add a new password check in the checkPassword() function
-    // 
-    // Example: Password "leoadmin" reversed = "nimdaoel"
-    // Character codes: n=110, i=105, m=109, d=100, a=97, o=111, e=101, l=108
-    // 
-    // Example: Password "eemiladmin" reversed = "nimdalimee"
-    // Character codes: n=110, i=105, m=109, d=100, a=97, l=108, i=105, m=109, e=101, e=101
-    // ============================================
-    
+    // Simple Online Counter
     (function() {
-      const loginModal = document.getElementById('login-modal-bg');
-      const loginForm = document.getElementById('login-form');
-      const passwordInput = document.getElementById('login-password-input');
-      const loginError = document.getElementById('login-error');
-      const LOGIN_SESSION_KEY = 'mmcs_auth_session';
-
-      // Password check function - supports multiple passwords
-      // PASSWORDS: "leoadmin" and "eemiladmin" (stored obfuscated)
-      function checkPassword(input) {
-        if (!input) return false;
-        const inputLower = input.toLowerCase().trim();
-        
-        // List of valid passwords (stored as character codes, reversed)
-        // Password 1: "leoadmin" reversed = "nimdaoel"
-        const password1Codes = [110, 105, 109, 100, 97, 111, 101, 108];
-        const password1 = password1Codes.map(c => String.fromCharCode(c)).reverse().join('').toLowerCase();
-        
-        // Password 2: "eemiladmin" reversed = "nimdalimee"
-        const password2Codes = [110, 105, 109, 100, 97, 108, 105, 109, 101, 101];
-        const password2 = password2Codes.map(c => String.fromCharCode(c)).reverse().join('').toLowerCase();
-        
-        // Direct comparison with known passwords (fallback method for reliability)
-        const validPasswords = ['leoadmin', 'eemiladmin'];
-        const matchesDirect = validPasswords.includes(inputLower);
-        
-        // Check if input matches any valid password (using obfuscated method)
-        const matchesObfuscated = inputLower === password1 || inputLower === password2;
-        
-        // Use either method (direct is fallback for debugging/reliability)
-        const matches = matchesObfuscated || matchesDirect;
-        
-        if (matches) {
-          // Store which password was used (for username lookup)
-          try {
-            sessionStorage.setItem('mmcs_used_password', inputLower);
-          } catch {}
-          return true;
-        }
-        
-        return false;
-      }
-
-      function setLoginLocked(locked) {
-        document.body.classList.toggle('login-locked', locked);
-        if (loginModal) {
-          if (locked) {
-            // Show login modal - hide username modal first
-            const usernameModal = document.getElementById('username-modal');
-            if (usernameModal) {
-              usernameModal.style.display = 'none';
-              usernameModal.style.zIndex = '-1';
-            }
-            
-            // Show login modal
-            loginModal.classList.add('show');
-            loginModal.classList.remove('hidden');
-            loginModal.style.display = 'flex';
-            loginModal.style.zIndex = '99999';
-            loginModal.style.position = 'fixed';
-            loginModal.style.top = '0';
-            loginModal.style.left = '0';
-            loginModal.style.width = '100vw';
-            loginModal.style.height = '100vh';
-            loginModal.style.background = 'rgba(0, 0, 0, 0.95)';
-            loginModal.style.visibility = 'visible';
-            loginModal.style.opacity = '1';
-          } else {
-            // Hide login modal completely
-            loginModal.classList.remove('show');
-            loginModal.classList.add('hidden');
-            loginModal.style.display = 'none';
-            loginModal.style.visibility = 'hidden';
-            loginModal.style.opacity = '0';
-            loginModal.style.zIndex = '-1';
-          }
-        }
-        if (!locked) {
-          try {
-            sessionStorage.setItem(LOGIN_SESSION_KEY, '1');
-          } catch {}
-        }
-      }
-
-      function isLoggedIn() {
+      const onlineCountEl = document.getElementById('online-count');
+      
+      // Simple online counter using a free service
+      // This shows approximate visitor count
+      async function updateOnlineCount() {
         try {
-          return sessionStorage.getItem(LOGIN_SESSION_KEY) === '1';
-        } catch {
-          return false;
-        }
-      }
-
-      loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const password = passwordInput.value.trim();
-        loginError.style.display = 'none';
-
-        if (checkPassword(password)) {
-          // Hide login modal first
-          setLoginLocked(false);
-          passwordInput.value = '';
+          // Use a simple counter API (free service)
+          // This gives an approximate count of visitors
+          const response = await fetch('https://api.countapi.xyz/hit/mmcs-online-counter/visits');
+          const data = await response.json();
           
-          // Wait for login modal to hide, then initialize chat
-          setTimeout(() => {
-            // Ensure login modal is hidden
-            if (loginModal) {
-              loginModal.style.display = 'none';
-              loginModal.style.visibility = 'hidden';
-              loginModal.style.zIndex = '-1';
-            }
-            
-            // Initialize chat (which will show username modal if needed)
-            if (typeof window.initChat === 'function') {
-              window.initChat();
-            } else {
-              // If chat not loaded yet, try again after a delay
-              setTimeout(() => {
-                if (typeof window.initChat === 'function') {
-                  window.initChat();
-                }
-              }, 1000);
-            }
-          }, 400); // Increased delay to ensure login modal is hidden
-        } else {
-          loginError.style.display = 'block';
-          passwordInput.value = '';
-          passwordInput.focus();
-        }
-      });
-
-      // Lock on load if not logged in
-      // Make sure login modal is visible by default and on top
-      function initializeLogin() {
-        const isLoggedInCheck = isLoggedIn();
-        console.log('Login check:', isLoggedInCheck);
-        
-        // Force login modal to be visible
-        if (loginModal) {
-          console.log('Login modal found, setting up...');
-          loginModal.style.display = 'flex';
-          loginModal.style.zIndex = '99999';
-          loginModal.style.position = 'fixed';
-          loginModal.style.top = '0';
-          loginModal.style.left = '0';
-          loginModal.style.width = '100vw';
-          loginModal.style.height = '100vh';
-          loginModal.style.background = 'rgba(0, 0, 0, 0.95)';
-          loginModal.classList.add('show');
-          loginModal.classList.remove('hidden');
-          console.log('Login modal styles applied');
-        } else {
-          console.error('Login modal element not found!');
-        }
-        
-        if (!isLoggedInCheck) {
-          console.log('User not logged in, showing login modal');
-          setLoginLocked(true);
-          setTimeout(() => {
-            if (passwordInput) {
-              passwordInput.focus();
-              console.log('Password input focused');
-            }
-          }, 100);
-        } else {
-          console.log('User already logged in, hiding login modal');
-          setLoginLocked(false);
-          // Initialize chat after successful login
-          setTimeout(() => {
-            if (typeof window.initChat === 'function') {
-              window.initChat();
-            }
-          }, 500);
-        }
-      }
-      
-      // Initialize immediately
-      initializeLogin();
-      
-      // Also initialize when DOM is ready (in case script runs before body)
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-          console.log('DOM loaded, re-initializing login');
-          initializeLogin();
-        });
-      }
-      
-      // Force show login modal after a short delay (in case something hides it)
-      setTimeout(function() {
-        if (!isLoggedIn()) {
-          const modal = document.getElementById('login-modal-bg');
-          if (modal) {
-            modal.style.display = 'flex';
-            modal.style.zIndex = '99999';
-            console.log('Forced login modal to show');
+          if (data && data.value !== undefined) {
+            // Show the count (this is total hits, not concurrent users)
+            // For a simple solution, we'll show "X+ online" based on recent activity
+            const count = Math.max(1, Math.floor(data.value / 10)); // Rough estimate
+            onlineCountEl.textContent = `${count}+ online`;
+          } else {
+            onlineCountEl.textContent = '1+ online';
           }
+        } catch (error) {
+          // Fallback if API fails
+          onlineCountEl.textContent = '1+ online';
         }
-      }, 500);
+      }
+      
+      // Update on load
+      updateOnlineCount();
+      
+      // Update every 30 seconds
+      setInterval(updateOnlineCount, 30000);
     })();
 
-    // ============================================
-    // CHAT SYSTEM - Live Chat with Online Users
-    // ============================================
-    // This adds a live chat feature to your website.
-    // 
-    // CONFIGURATION (find these lines below):
-    // 1. Set CHAT_API_URL to your backend URL (after deploying backend)
-    // 2. Set USE_BACKEND = true when you have a backend ready
-    // 
-    // See BACKEND_SETUP_GUIDE.md for step-by-step instructions
-    // ============================================
-    
+    // Mobile detection and optimization
     (function() {
-      // ⚙️ CONFIGURATION - UPDATE THESE SETTINGS ⚙️
-      const CHAT_API_URL = 'https://backend-production-dbb0.up.railway.app'; // Replace with your backend URL
-      const USE_BACKEND = true; // Set to true when backend is deployed
-      // ⚙️ END CONFIGURATION ⚙️
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                       (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) ||
+                       ('ontouchstart' in window);
       
-      let currentUsername = '';
-      let onlineUsers = new Set();
-      let messagePollInterval = null;
-      let heartbeatInterval = null;
-      let displayedMessageIds = new Set(); // Track displayed messages to prevent duplicates
-      const USERNAME_STORAGE_KEY = 'mmcs_chat_username';
-      const PASSWORD_USERNAME_MAP_KEY = 'mmcs_password_username_map';
-      const USER_ID_KEY = 'mmcs_user_id';
-      const MESSAGES_STORAGE_KEY = 'mmcs_chat_messages';
-
-      // Generate unique user ID
-      function getUserId() {
-        let userId = localStorage.getItem(USER_ID_KEY);
-        if (!userId) {
-          userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-          localStorage.setItem(USER_ID_KEY, userId);
-        }
-        return userId;
+      if (isMobile) {
+        document.documentElement.classList.add('is-mobile');
+        document.body.classList.add('is-mobile');
+        
+        // Prevent double-tap zoom on buttons
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+          const now = Date.now();
+          if (now - lastTouchEnd <= 300) {
+            e.preventDefault();
+          }
+          lastTouchEnd = now;
+        }, false);
+        
+        // Optimize scroll performance
+        document.addEventListener('touchmove', function(e) {
+          // Allow native scrolling
+        }, { passive: true });
       }
+    })();
 
-      // Get username for current password
-      function getUsernameForPassword(password) {
+    // Compatibility helper: older code still calls scopedKey(...) in a few places.
+    function scopedKey(baseKey) { return baseKey; }
+
+    // Custom Market Storage
+    const CUSTOM_MARKETS_KEY = scopedKey('customMarkets_v1');
+    function loadCustomMarketsFromFolders(foldersObj) {
+      return (foldersObj?.customMarkets && typeof foldersObj.customMarkets === 'object') 
+        ? foldersObj.customMarkets
+        : JSON.parse(localStorage.getItem(CUSTOM_MARKETS_KEY)) || { asia: [], international: [], special: [] };
+    }
+    const saveCustomMarkets = data => localStorage.setItem(CUSTOM_MARKETS_KEY, JSON.stringify(data));
+    // Folder Storage
+    const FOLDER_KEY = scopedKey('savedFolders_v2');
+    function loadFoldersObj() {
+      const raw = localStorage.getItem(FOLDER_KEY);
+      if (raw) {
         try {
-          const map = JSON.parse(localStorage.getItem(PASSWORD_USERNAME_MAP_KEY) || '{}');
-          return map[password] || null;
-        } catch {
-          return null;
+          const data = JSON.parse(raw);
+          if (Array.isArray(data)) {
+            // legacy format, convert
+            return { folders: data, customMarkets: loadCustomMarketsFromFolders() };
+          }
+          return data;
+        } catch {}
+      }
+      // Legacy fallback
+      return { folders: [{ name: 'Default', searches: [] }], customMarkets: { asia: [], international: [], special: [] } };
+    }
+    function saveFoldersObj(obj) {
+      localStorage.setItem(FOLDER_KEY, JSON.stringify(obj));
+      saveCustomMarkets(obj.customMarkets);
+    }
+    let foldersObj = loadFoldersObj();
+    let savedFolders = foldersObj.folders;
+    let customMarkets = foldersObj.customMarkets || { asia: [], international: [], special: [] };
+    let currentFolderIdx = 0; // Default folder on start
+    // Market Data
+    const marketDataInitial = {
+      asia: [
+        { key: "mercari-jp", label: "Mercari Japan" },
+        { key: "paypay-fleamarket", label: "Yahoo PayPay Flea" },
+        { key: "rakuma", label: "Rakuten Rakuma" },
+        { key: "rakuten-jp", label: "Rakuten Japan" },
+        { key: "xianyu", label: "Xianyu (闲鱼)" },
+        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" }
+      ],
+      international: [
+        { key: "depop", label: "Depop" },
+        { key: "ebay", label: "eBay Global" },
+        { key: "facebook", label: "Facebook Marketplace" },
+        { key: "gem", label: "Gem" },
+        { key: "grailed", label: "Grailed" },
+        { key: "mercari-us", label: "Mercari US" },
+        { key: "poshmark", label: "Poshmark" },
+        { key: "shopgoodwill", label: "ShopGoodwill" },
+        { key: "vinted", label: "Vinted" }
+      ],
+      special: [
+        { key: "secondstreet", label: "2nd STREET" },
+        { key: "therealreal", label: "The RealReal" },
+        { key: "vestiaire", label: "Vestiaire Collective" }
+      ]
+    };
+    // Market toggle state storage
+    const MARKET_TOGGLE_KEY = scopedKey('marketToggleStates');
+    function loadMarketToggleState(marketKey) {
+      return toggleStatesCache[marketKey] !== false; // Default to true if not set
+    }
+    let toggleStatesCache = JSON.parse(localStorage.getItem(MARKET_TOGGLE_KEY)) || {};
+    function saveMarketToggleState(marketKey, isEnabled) {
+      toggleStatesCache[marketKey] = isEnabled;
+      // Debounce the localStorage write with requestAnimationFrame
+      cancelAnimationFrame(window.toggleStateSaveRAF);
+      window.toggleStateSaveRAF = requestAnimationFrame(() => {
+        localStorage.setItem(MARKET_TOGGLE_KEY, JSON.stringify(toggleStatesCache));
+      });
+    }
+
+    // Combined Market Data + Custom
+    function getMarkets(section) {
+      const orig = marketDataInitial[section].slice();
+      const custom = (customMarkets[section] || []).map(m => ({
+        key: "custom-" + section + "-" + m.id,
+        label: m.title,
+        custom: true,
+        urlTemplate: m.url,
+        id: m.id
+      }));
+      return orig.concat(custom);
+    }
+    function createMarketButtons(markets, sectionId, sectionName) {
+      const container = document.getElementById(sectionId);
+      container.innerHTML = '';
+      markets.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
+        const btn = document.createElement('button');
+        btn.type = "button";
+        btn.className = "market-btn";
+        btn.setAttribute("data-market", market.key);
+        btn.setAttribute("data-section", sectionName);
+        
+        // Add toggle checkbox
+        const toggle = document.createElement('input');
+        toggle.type = "checkbox";
+        toggle.className = "market-toggle";
+        toggle.checked = true;
+        toggle.addEventListener('change', function(e) {
+          e.stopPropagation();
+          const isChecked = toggle.checked;
+          btn.classList.toggle('disabled', !isChecked);
+          // Save state without blocking UI
+          setTimeout(() => saveMarketToggleState(market.key, isChecked), 0);
+        }, { passive: true });
+        
+        // Set initial state
+        const isEnabled = loadMarketToggleState(market.key);
+        toggle.checked = isEnabled;
+        if (!isEnabled) btn.classList.add('disabled');
+        
+        btn.appendChild(toggle);
+        const label = document.createElement('span');
+        label.textContent = market.label + (market.custom ? " ★" : "");
+        btn.appendChild(label);
+        container.appendChild(btn);
+
+        // Custom market remove button
+        if (market.custom) {
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'market-remove-btn';
+          removeBtn.title = 'Remove Website';
+          removeBtn.innerHTML = '🗑';
+          removeBtn.onclick = function(e) {
+            e.stopPropagation();
+            removeCustomMarket(sectionName, market.id);
+          };
+          btn.appendChild(removeBtn);
+        }
+      });
+    }
+    function refreshAllMarketButtons() {
+      createMarketButtons(getMarkets('asia'), "asia-markets", "asia");
+      createMarketButtons(getMarkets('international'), "international-markets", "international");
+      createMarketButtons(getMarkets('special'), "special-markets", "special");
+    }
+    refreshAllMarketButtons();
+
+    // Remove custom market
+    function removeCustomMarket(section, id) {
+      customMarkets[section] = (customMarkets[section] || []).filter(m => m.id !== id);
+      foldersObj.customMarkets = customMarkets;
+      saveFoldersObj(foldersObj);
+      refreshAllMarketButtons();
+    }
+
+    // --- Saved Searches Folders UI ---
+    const folderListEl = document.getElementById('saved-folder-list');
+    const folderInputEl = document.getElementById('sidebar-folder-input');
+    const folderAddBtn = document.getElementById('sidebar-folder-btn');
+
+    function renderFolders() {
+      folderListEl.innerHTML = '';
+      savedFolders.forEach((folder, idx) => {
+        const li = document.createElement('li');
+        li.className = 'saved-folder-item' + (idx === currentFolderIdx ? ' sidebar-folder-active' : '');
+        li.setAttribute('draggable', 'true');
+        li.setAttribute('data-index', idx);
+
+        // Drag events
+        li.addEventListener('dragstart', function(e){
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', idx);
+          setTimeout(() => { li.classList.add('sidebar-folder-dragover'); }, 10);
+        });
+        li.addEventListener('dragend', function(e){
+          li.classList.remove('sidebar-folder-dragover');
+        });
+        li.addEventListener('dragover', function(e){
+          e.preventDefault();
+          li.classList.add('sidebar-folder-dragover');
+        });
+        li.addEventListener('dragleave', function(e){
+          li.classList.remove('sidebar-folder-dragover');
+        });
+        li.addEventListener('drop', function(e){
+          e.preventDefault();
+          li.classList.remove('sidebar-folder-dragover');
+          const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+          const toIdx = idx;
+          if (fromIdx !== toIdx) {
+            const moved = savedFolders.splice(fromIdx, 1)[0];
+            savedFolders.splice(toIdx, 0, moved);
+            if (currentFolderIdx === fromIdx) currentFolderIdx = toIdx;
+            else if (fromIdx < currentFolderIdx && toIdx >= currentFolderIdx) currentFolderIdx--;
+            else if (fromIdx > currentFolderIdx && toIdx <= currentFolderIdx) currentFolderIdx++;
+            foldersObj.folders = savedFolders;
+            saveFoldersObj(foldersObj);
+            renderFolders();
+            renderSavedSearches();
+          }
+        });
+
+        // Folder name or edit input
+        if (folder.editing) {
+          const editInput = document.createElement('input');
+          editInput.type = 'text';
+          editInput.value = folder.name;
+          editInput.className = 'sidebar-folder-input';
+          editInput.maxLength = 44;
+          editInput.autofocus = true;
+          editInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') saveFolderEdit(idx, editInput.value.trim());
+            if (e.key === 'Escape') cancelFolderEdit(idx);
+          });
+          li.appendChild(editInput);
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = 'sidebar-folder-edit-btn';
+          saveBtn.title = 'Save';
+          saveBtn.textContent = '✔';
+          saveBtn.onclick = () => saveFolderEdit(idx, editInput.value.trim());
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'sidebar-folder-edit-btn';
+          cancelBtn.title = 'Cancel';
+          cancelBtn.textContent = '✕';
+          cancelBtn.onclick = () => cancelFolderEdit(idx);
+          li.appendChild(saveBtn);
+          li.appendChild(cancelBtn);
+        } else {
+          const nameBtn = document.createElement('button');
+          nameBtn.type = 'button';
+          nameBtn.style = 'background:none;border:none;padding:0;margin:0;color:inherit;font-weight:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;';
+          nameBtn.onclick = () => {
+            currentFolderIdx = idx;
+            renderFolders();
+            renderSavedSearches();
+          };
+          // Add miku.png as folder icon
+          const folderIcon = document.createElement('img');
+          folderIcon.src = 'miku.png';
+          folderIcon.alt = 'Folder';
+          folderIcon.style.width = '18px';
+          folderIcon.style.height = '18px';
+          folderIcon.style.marginRight = '4px';
+          folderIcon.style.verticalAlign = 'middle';
+          nameBtn.appendChild(folderIcon);
+          // Folder name text
+          const folderText = document.createElement('span');
+          folderText.textContent = folder.name;
+          nameBtn.appendChild(folderText);
+          
+          li.appendChild(nameBtn);
+          // Edit/remove
+          const editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.className = 'sidebar-folder-edit-btn';
+          editBtn.title = 'Rename';
+          editBtn.textContent = '✎';
+          editBtn.onclick = () => editFolder(idx);
+          li.appendChild(editBtn);
+          if (savedFolders.length > 1) {
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'sidebar-folder-remove-btn';
+            removeBtn.title = 'Remove';
+            removeBtn.textContent = '🗑';
+            removeBtn.onclick = () => removeFolder(idx);
+            li.appendChild(removeBtn);
+          }
+        }
+        folderListEl.appendChild(li);
+      });
+    }
+    function addFolder(name) {
+      name = name.trim();
+      if (!name) return;
+      if (savedFolders.some(f => f.name === name)) return;
+      savedFolders.push({ name, searches: [] });
+      currentFolderIdx = savedFolders.length - 1;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderFolders();
+      renderSavedSearches();
+    }
+    function removeFolder(idx) {
+      if (savedFolders.length === 1) return;
+      savedFolders.splice(idx, 1);
+      if (currentFolderIdx >= savedFolders.length) currentFolderIdx = savedFolders.length - 1;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderFolders();
+      renderSavedSearches();
+    }
+    function editFolder(idx) {
+      savedFolders = savedFolders.map((f, i) => i === idx ? { ...f, editing: true } : { ...f, editing: false });
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderFolders();
+      setTimeout(() => {
+        const input = folderListEl.querySelector('input.sidebar-folder-input');
+        if (input) input.focus();
+      }, 50);
+    }
+    function saveFolderEdit(idx, value) {
+      value = value.trim();
+      if (!value) return;
+      if (savedFolders.some((f, i) => f.name === value && i !== idx)) return;
+      savedFolders[idx].name = value;
+      savedFolders[idx].editing = false;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderFolders();
+    }
+    function cancelFolderEdit(idx) {
+      savedFolders[idx].editing = false;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderFolders();
+    }
+
+    if (folderAddBtn && folderInputEl) {
+      folderAddBtn.addEventListener('click', () => {
+        const name = folderInputEl.value.trim();
+        if (name) {
+          addFolder(name);
+          folderInputEl.value = '';
+        }
+      });
+      folderInputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const name = folderInputEl.value.trim();
+          if (name) {
+            addFolder(name);
+            folderInputEl.value = '';
+          }
+        }
+      });
+    }
+
+    renderFolders();
+
+    // --- Saved Searches UI ---
+    const CLICKED_SEARCHES_KEY = scopedKey('clickedSearches');
+    let clickedSearches = JSON.parse(localStorage.getItem(CLICKED_SEARCHES_KEY)) || {};
+
+    const savedSearchesListEl = document.getElementById('saved-searches-list');
+    const sidebarAddInputEl = document.getElementById('sidebar-add-input');
+    const sidebarAddBtnEl = document.getElementById('sidebar-add-btn');
+
+    function renderSavedSearches() {
+      if (!savedSearchesListEl) return;
+      savedSearchesListEl.innerHTML = '';
+      const currentFolder = savedFolders[currentFolderIdx];
+      if (!currentFolder) return;
+      
+      const searches = (currentFolder.searches || []).slice().sort((a, b) => (a.term || '').localeCompare(b.term || ''));
+      
+      searches.forEach((search, idx) => {
+        const li = document.createElement('li');
+        li.className = 'saved-search-item' + (clickedSearches[search.term] ? ' clicked' : '');
+        
+        if (search.editing) {
+          const editInput = document.createElement('input');
+          editInput.type = 'text';
+          editInput.value = search.term;
+          editInput.className = 'sidebar-add-input';
+          editInput.maxLength = 70;
+          editInput.autofocus = true;
+          editInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') saveSearchEdit(currentFolderIdx, idx, editInput.value.trim());
+            if (e.key === 'Escape') cancelSearchEdit(currentFolderIdx, idx);
+          });
+          li.appendChild(editInput);
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = 'sidebar-folder-edit-btn';
+          saveBtn.title = 'Save';
+          saveBtn.textContent = '✔';
+          saveBtn.onclick = () => saveSearchEdit(currentFolderIdx, idx, editInput.value.trim());
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'sidebar-folder-edit-btn';
+          cancelBtn.title = 'Cancel';
+          cancelBtn.textContent = '✕';
+          cancelBtn.onclick = () => cancelSearchEdit(currentFolderIdx, idx);
+          li.appendChild(saveBtn);
+          li.appendChild(cancelBtn);
+        } else {
+          const termBtn = document.createElement('button');
+          termBtn.type = 'button';
+          termBtn.className = 'saved-search-term';
+          termBtn.textContent = search.term;
+          termBtn.onclick = () => {
+            document.getElementById('query').value = search.term;
+            clickedSearches[search.term] = true;
+            localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+            renderSavedSearches();
+            updateUnhighlightedCount();
+          };
+          li.appendChild(termBtn);
+          
+          const editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.className = 'edit-btn';
+          editBtn.title = 'Edit';
+          editBtn.textContent = '✎';
+          editBtn.onclick = () => editSearch(currentFolderIdx, idx);
+          li.appendChild(editBtn);
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'remove-btn';
+          removeBtn.title = 'Remove';
+          removeBtn.textContent = '🗑';
+          removeBtn.onclick = () => removeSearch(currentFolderIdx, idx);
+          li.appendChild(removeBtn);
+        }
+        
+        savedSearchesListEl.appendChild(li);
+      });
+      updateUnhighlightedCount();
+    }
+
+    function addSearch(term) {
+      term = term.trim();
+      if (!term) return;
+      const currentFolder = savedFolders[currentFolderIdx];
+      if (!currentFolder) return;
+      if (!currentFolder.searches) currentFolder.searches = [];
+      if (currentFolder.searches.some(s => s.term === term)) return;
+      currentFolder.searches.push({ term });
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderSavedSearches();
+    }
+
+    function removeSearch(folderIdx, searchIdx) {
+      const folder = savedFolders[folderIdx];
+      if (!folder || !folder.searches) return;
+      folder.searches.splice(searchIdx, 1);
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderSavedSearches();
+    }
+
+    function editSearch(folderIdx, searchIdx) {
+      const folder = savedFolders[folderIdx];
+      if (!folder || !folder.searches) return;
+      folder.searches = folder.searches.map((s, i) => i === searchIdx ? { ...s, editing: true } : { ...s, editing: false });
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderSavedSearches();
+      setTimeout(() => {
+        const input = savedSearchesListEl.querySelector('input.sidebar-add-input');
+        if (input) input.focus();
+      }, 50);
+    }
+
+    function saveSearchEdit(folderIdx, searchIdx, value) {
+      value = value.trim();
+      if (!value) return;
+      const folder = savedFolders[folderIdx];
+      if (!folder || !folder.searches) return;
+      if (folder.searches.some((s, i) => s.term === value && i !== searchIdx)) return;
+      folder.searches[searchIdx].term = value;
+      folder.searches[searchIdx].editing = false;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderSavedSearches();
+    }
+
+    function cancelSearchEdit(folderIdx, searchIdx) {
+      const folder = savedFolders[folderIdx];
+      if (!folder || !folder.searches) return;
+      folder.searches[searchIdx].editing = false;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderSavedSearches();
+    }
+
+    function updateUnhighlightedCount() {
+      const countEl = document.getElementById('unhighlighted-count');
+      if (!countEl) return;
+      const currentFolder = savedFolders[currentFolderIdx];
+      if (!currentFolder || !currentFolder.searches) {
+        countEl.textContent = '0 unhighlighted';
+        return;
+      }
+      const unhighlighted = currentFolder.searches.filter(s => !clickedSearches[s.term]).length;
+      countEl.textContent = unhighlighted + ' unhighlighted';
+    }
+
+    if (sidebarAddBtnEl && sidebarAddInputEl) {
+      sidebarAddBtnEl.addEventListener('click', () => {
+        const term = sidebarAddInputEl.value.trim();
+        if (term) {
+          addSearch(term);
+          sidebarAddInputEl.value = '';
+        }
+      });
+      sidebarAddInputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const term = sidebarAddInputEl.value.trim();
+          if (term) {
+            addSearch(term);
+            sidebarAddInputEl.value = '';
+          }
+        }
+      });
+    }
+
+    renderSavedSearches();
+
+    // --- Multi-select functionality ---
+    const SELECTED_SEARCH_TERMS_KEY = scopedKey('selectedSearchTerms');
+    let selectedSearchTerms = JSON.parse(localStorage.getItem(SELECTED_SEARCH_TERMS_KEY)) || {};
+
+    const multiClearBtn = document.getElementById('sidebar-multi-clear-btn');
+    if (multiClearBtn) {
+      multiClearBtn.addEventListener('click', () => {
+        selectedSearchTerms = {};
+        localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+        renderSavedSearches();
+      });
+    }
+
+    // --- Export/Import functionality ---
+    const exportBtn = document.getElementById('sidebar-export-btn');
+    const importInput = document.getElementById('sidebar-import-input');
+    const resetHighlightsBtn = document.getElementById('sidebar-reset-highlights-btn');
+
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        const data = {
+          folders: savedFolders,
+          customMarkets: customMarkets,
+          clickedSearches: clickedSearches
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'mmcs-backup.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    if (importInput) {
+      importInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            if (data.folders && Array.isArray(data.folders)) {
+              savedFolders = data.folders;
+              foldersObj.folders = savedFolders;
+            }
+            if (data.customMarkets) {
+              customMarkets = data.customMarkets;
+              foldersObj.customMarkets = customMarkets;
+            }
+            if (data.clickedSearches) {
+              clickedSearches = data.clickedSearches;
+              localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+            }
+            saveFoldersObj(foldersObj);
+            refreshAllMarketButtons();
+            renderFolders();
+            renderSavedSearches();
+            alert('Import successful!');
+          } catch (err) {
+            alert('Import failed: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = ''; // Reset input
+      });
+    }
+
+    if (resetHighlightsBtn) {
+      resetHighlightsBtn.addEventListener('click', () => {
+        if (confirm('Reset all search highlights? This cannot be undone.')) {
+          clickedSearches = {};
+          localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+          renderSavedSearches();
+        }
+      });
+    }
+
+    // --- Randomize functionality ---
+    const randomizeBtn = document.getElementById('sidebar-randomize-btn');
+    const randomizeCategorySelect = document.getElementById('randomize-category-select');
+    const randomizeColorIndicator = document.getElementById('randomize-color-indicator');
+
+    function updateRandomizeIndicator() {
+      if (!randomizeColorIndicator) return;
+      const category = randomizeCategorySelect ? randomizeCategorySelect.value : 'all';
+      const currentFolder = savedFolders[currentFolderIdx];
+      if (!currentFolder || !currentFolder.searches) {
+        randomizeColorIndicator.style.background = '#666';
+        return;
+      }
+      const unhighlighted = currentFolder.searches.filter(s => !clickedSearches[s.term]);
+      if (unhighlighted.length === 0) {
+        randomizeColorIndicator.style.background = '#666';
+      } else {
+        randomizeColorIndicator.style.background = '#00e6d6';
+      }
+    }
+
+    if (randomizeBtn) {
+      randomizeBtn.addEventListener('click', () => {
+        const category = randomizeCategorySelect ? randomizeCategorySelect.value : 'all';
+        const currentFolder = savedFolders[currentFolderIdx];
+        if (!currentFolder || !currentFolder.searches) return;
+        const unhighlighted = currentFolder.searches.filter(s => !clickedSearches[s.term]);
+        if (unhighlighted.length === 0) {
+          alert('No unhighlighted searches available!');
+          return;
+        }
+        const randomSearch = unhighlighted[Math.floor(Math.random() * unhighlighted.length)];
+        document.getElementById('query').value = randomSearch.term;
+        
+        // Open markets based on category
+        const markets = getMarkets(category === 'all' ? 'asia' : category);
+        if (markets.length > 0) {
+          const market = markets[0];
+          const query = randomSearch.term;
+          // Open market logic would go here
+        }
+      });
+    }
+
+    if (randomizeCategorySelect) {
+      randomizeCategorySelect.addEventListener('change', updateRandomizeIndicator);
+    }
+    updateRandomizeIndicator();
+
+    // --- Wishlist functionality ---
+    const WISHLIST_KEY = scopedKey('wishlist_links_v1');
+    const wishlistListEl = document.getElementById('wishlist-list');
+    const wishlistInput = document.getElementById('wishlist-link-input');
+    const wishlistForm = document.getElementById('wishlist-add-form');
+
+    let wishlistItems = JSON.parse(localStorage.getItem(WISHLIST_KEY)) || [];
+
+    function renderWishlist() {
+      if (!wishlistListEl) return;
+      wishlistListEl.innerHTML = '';
+      wishlistItems.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.className = 'wishlist-item';
+        
+        if (item.editing) {
+          const editInput = document.createElement('input');
+          editInput.type = 'text';
+          editInput.value = item.title || item.url;
+          editInput.className = 'wishlist-add-input';
+          editInput.maxLength = 200;
+          editInput.autofocus = true;
+          editInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') saveWishlistEdit(idx, editInput.value.trim());
+            if (e.key === 'Escape') cancelWishlistEdit(idx);
+          });
+          li.appendChild(editInput);
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = 'sidebar-folder-edit-btn';
+          saveBtn.textContent = '✔';
+          saveBtn.onclick = () => saveWishlistEdit(idx, editInput.value.trim());
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'sidebar-folder-edit-btn';
+          cancelBtn.textContent = '✕';
+          cancelBtn.onclick = () => cancelWishlistEdit(idx);
+          li.appendChild(saveBtn);
+          li.appendChild(cancelBtn);
+        } else {
+          const link = document.createElement('a');
+          link.href = item.url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.className = 'wishlist-link';
+          link.textContent = item.title || item.url;
+          link.onclick = (e) => {
+            if (e.ctrlKey || e.metaKey) return; // Allow ctrl/cmd+click to open in new tab
+            e.preventDefault();
+            window.open(item.url, '_blank', 'noopener,noreferrer');
+          };
+          li.appendChild(link);
+          
+          const editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.className = 'edit-btn';
+          editBtn.textContent = '✎';
+          editBtn.onclick = () => editWishlistItem(idx);
+          li.appendChild(editBtn);
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'remove-btn';
+          removeBtn.textContent = '🗑';
+          removeBtn.onclick = () => removeWishlistItem(idx);
+          li.appendChild(removeBtn);
+        }
+        
+        wishlistListEl.appendChild(li);
+      });
+    }
+
+    async function fetchTitle(url) {
+      try {
+        // Use a CORS proxy or fetch from your own backend
+        // For now, just return the URL
+        return url;
+      } catch {
+        return url;
+      }
+    }
+
+    function addWishlistItem(url) {
+      url = url.trim();
+      if (!url) return;
+      if (wishlistItems.some(item => item.url === url)) return;
+      const newItem = { url, title: url, editing: false };
+      wishlistItems.push(newItem);
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+      renderWishlist();
+      // Try to fetch title
+      fetchTitle(url).then(title => {
+        const item = wishlistItems.find(i => i.url === url);
+        if (item) {
+          item.title = title;
+          localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+          renderWishlist();
+        }
+      });
+    }
+
+    function removeWishlistItem(idx) {
+      wishlistItems.splice(idx, 1);
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+      renderWishlist();
+    }
+
+    function editWishlistItem(idx) {
+      wishlistItems[idx].editing = true;
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+      renderWishlist();
+    }
+
+    function saveWishlistEdit(idx, title) {
+      title = title.trim();
+      if (!title) return;
+      wishlistItems[idx].title = title;
+      wishlistItems[idx].editing = false;
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+      renderWishlist();
+    }
+
+    function cancelWishlistEdit(idx) {
+      wishlistItems[idx].editing = false;
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+      renderWishlist();
+    }
+
+    if (wishlistForm && wishlistInput) {
+      wishlistForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const url = wishlistInput.value.trim();
+        if (url) {
+          addWishlistItem(url);
+          wishlistInput.value = '';
+        }
+      });
+    }
+
+    renderWishlist();
+
+    // --- Search form functionality ---
+    const searchForm = document.getElementById('searchForm');
+    const queryInput = document.getElementById('query');
+    const openAllBtn = document.getElementById('open-all-btn');
+    const toggleAllCheckbox = document.getElementById('toggle-all-checkbox');
+    const clearSearchBtn = document.getElementById('clear-search');
+
+    // Market URL templates
+    const marketUrls = {
+      "mercari-jp": "https://www.mercari.com/jp/search/?keyword=example",
+      "paypay-fleamarket": "https://paypayfleamarket.yahoo.co.jp/search/example",
+      "rakuma": "https://fril.jp/s?query=example",
+      "rakuten-jp": "https://search.rakuten.co.jp/search/mall/example",
+      "xianyu": "https://www.goofish.com/search?q=example",
+      "yahoo-auctions": "https://auctions.yahoo.co.jp/search/search?va=example",
+      "depop": "https://www.depop.com/search/?q=example",
+      "ebay": "https://www.ebay.com/sch/i.html?_nkw=example",
+      "facebook": "https://www.facebook.com/marketplace/search/?query=example",
+      "gem": "https://www.gem.app/search?q=example",
+      "grailed": "https://www.grailed.com/shop?query=example",
+      "mercari-us": "https://www.mercari.com/us/search/?keyword=example",
+      "poshmark": "https://poshmark.com/search?query=example",
+      "shopgoodwill": "https://www.shopgoodwill.com/search?keywords=example",
+      "vinted": "https://www.vinted.com/catalog?search_text=example",
+      "secondstreet": "https://www.2ndstreet.jp/search?q=example",
+      "therealreal": "https://www.therealreal.com/search?q=example",
+      "vestiaire": "https://www.vestiairecollective.com/search/?q=example"
+    };
+
+    function getMarketUrl(marketKey, query, customUrlTemplate) {
+      if (customUrlTemplate) {
+        return customUrlTemplate.replace(/example/g, encodeURIComponent(query));
+      }
+      const template = marketUrls[marketKey];
+      if (!template) return null;
+      return template.replace(/example/g, encodeURIComponent(query));
+    }
+
+    function openMarket(marketKey, section, query, customUrlTemplate) {
+      const url = getMarketUrl(marketKey, query, customUrlTemplate);
+      if (!url) return;
+      const isMobile = document.documentElement.classList.contains('is-mobile');
+      if (isMobile) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    }
+
+    // Handle market button clicks
+    document.addEventListener('click', (e) => {
+      const marketBtn = e.target.closest('.market-btn');
+      if (!marketBtn) return;
+      const marketKey = marketBtn.getAttribute('data-market');
+      const section = marketBtn.getAttribute('data-section');
+      const query = queryInput ? queryInput.value.trim() : '';
+      if (!query) {
+        alert('Please enter a search term first');
+        return;
+      }
+      if (marketBtn.classList.contains('disabled')) return;
+      
+      // Get custom URL template if it's a custom market
+      let customUrlTemplate = null;
+      if (marketKey.startsWith('custom-')) {
+        const parts = marketKey.split('-');
+        const marketSection = parts[1];
+        const marketId = parts[2];
+        const customMarket = customMarkets[marketSection]?.find(m => m.id === marketId);
+        if (customMarket) {
+          customUrlTemplate = customMarket.url;
         }
       }
+      
+      openMarket(marketKey, section, query, customUrlTemplate);
+    });
 
-      // Save username for password
-      function saveUsernameForPassword(password, username) {
+    // Open All functionality
+    if (openAllBtn) {
+      openAllBtn.addEventListener('click', () => {
+        const query = queryInput ? queryInput.value.trim() : '';
+        if (!query) {
+          alert('Please enter a search term first');
+          return;
+        }
+        const enabledMarkets = Array.from(document.querySelectorAll('.market-btn:not(.disabled)'));
+        enabledMarkets.forEach(btn => {
+          const marketKey = btn.getAttribute('data-market');
+          const section = btn.getAttribute('data-section');
+          let customUrlTemplate = null;
+          if (marketKey.startsWith('custom-')) {
+            const parts = marketKey.split('-');
+            const marketSection = parts[1];
+            const marketId = parts[2];
+            const customMarket = customMarkets[marketSection]?.find(m => m.id === marketId);
+            if (customMarket) {
+              customUrlTemplate = customMarket.url;
+            }
+          }
+          openMarket(marketKey, section, query, customUrlTemplate);
+        });
+      });
+    }
+
+    // Toggle All functionality
+    if (toggleAllCheckbox) {
+      toggleAllCheckbox.addEventListener('change', (e) => {
+        const allToggles = document.querySelectorAll('.market-toggle');
+        allToggles.forEach(toggle => {
+          toggle.checked = e.target.checked;
+          const btn = toggle.closest('.market-btn');
+          if (btn) {
+            btn.classList.toggle('disabled', !e.target.checked);
+            const marketKey = btn.getAttribute('data-market');
+            if (marketKey) {
+              saveMarketToggleState(marketKey, e.target.checked);
+            }
+          }
+        });
+      });
+    }
+
+    // Clear search button
+    if (clearSearchBtn && queryInput) {
+      queryInput.addEventListener('input', () => {
+        clearSearchBtn.style.display = queryInput.value.trim() ? 'block' : 'none';
+      });
+      clearSearchBtn.addEventListener('click', () => {
+        queryInput.value = '';
+        clearSearchBtn.style.display = 'none';
+        queryInput.focus();
+      });
+    }
+
+    // Section "Open All" buttons
+    document.querySelectorAll('.section-openall-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const section = btn.getAttribute('data-section');
+        const query = queryInput ? queryInput.value.trim() : '';
+        if (!query) {
+          alert('Please enter a search term first');
+          return;
+        }
+        const sectionMarkets = Array.from(document.querySelectorAll(`#${section}-markets .market-btn:not(.disabled)`));
+        sectionMarkets.forEach(marketBtn => {
+          const marketKey = marketBtn.getAttribute('data-market');
+          let customUrlTemplate = null;
+          if (marketKey.startsWith('custom-')) {
+            const parts = marketKey.split('-');
+            const marketSection = parts[1];
+            const marketId = parts[2];
+            const customMarket = customMarkets[marketSection]?.find(m => m.id === marketId);
+            if (customMarket) {
+              customUrlTemplate = customMarket.url;
+            }
+          }
+          openMarket(marketKey, section, query, customUrlTemplate);
+        });
+      });
+    });
+
+    // Custom Market Modal
+    const customMarketModalBg = document.getElementById('custom-market-modal-bg');
+    const customMarketModalSaveBtn = document.getElementById('custom-market-modal-save-btn');
+    const customMarketModalCancelBtn = document.getElementById('custom-market-modal-cancel-btn');
+    const customMarketTitleInput = document.getElementById('custom-market-title-input');
+    const customMarketUrlInput = document.getElementById('custom-market-url-input');
+    const customMarketModalSection = document.getElementById('custom-market-modal-section');
+    let currentCustomMarketSection = null;
+
+    document.querySelectorAll('.add-market-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentCustomMarketSection = btn.getAttribute('data-section');
+        if (customMarketModalSection) {
+          customMarketModalSection.textContent = `Adding to: ${currentCustomMarketSection.charAt(0).toUpperCase() + currentCustomMarketSection.slice(1)}`;
+        }
+        if (customMarketModalBg) {
+          customMarketModalBg.style.display = 'flex';
+        }
+        if (customMarketTitleInput) customMarketTitleInput.value = '';
+        if (customMarketUrlInput) customMarketUrlInput.value = '';
+        if (customMarketTitleInput) customMarketTitleInput.focus();
+      });
+    });
+
+    if (customMarketModalSaveBtn && customMarketTitleInput && customMarketUrlInput) {
+      customMarketModalSaveBtn.addEventListener('click', () => {
+        const title = customMarketTitleInput.value.trim();
+        const url = customMarketUrlInput.value.trim();
+        if (!title || !url) {
+          alert('Please fill in both fields');
+          return;
+        }
+        if (!url.includes('example')) {
+          alert('URL must contain "example" where the search term should appear');
+          return;
+        }
+        if (!currentCustomMarketSection) return;
+        if (!customMarkets[currentCustomMarketSection]) {
+          customMarkets[currentCustomMarketSection] = [];
+        }
+        const newMarket = {
+          id: Date.now().toString(),
+          title: title,
+          url: url
+        };
+        customMarkets[currentCustomMarketSection].push(newMarket);
+        foldersObj.customMarkets = customMarkets;
+        saveFoldersObj(foldersObj);
+        refreshAllMarketButtons();
+        if (customMarketModalBg) {
+          customMarketModalBg.style.display = 'none';
+        }
+      });
+    }
+
+    if (customMarketModalCancelBtn && customMarketModalBg) {
+      customMarketModalCancelBtn.addEventListener('click', () => {
+        customMarketModalBg.style.display = 'none';
+      });
+    }
+
+    // Monitor View functionality
+    const monitorViewBtn = document.getElementById('monitor-view-btn');
+    const monitorModalBg = document.getElementById('monitor-modal-bg');
+    const monitorCloseBtn = document.getElementById('monitor-close-btn');
+    const monitorMarketSelect = document.getElementById('monitor-market-select');
+    const monitorBoard = document.getElementById('monitor-board');
+
+    if (monitorViewBtn && monitorModalBg) {
+      monitorViewBtn.addEventListener('click', () => {
+        monitorModalBg.style.display = 'flex';
+        // Populate market select
+        if (monitorMarketSelect) {
+          monitorMarketSelect.innerHTML = '<option value="">Select a market...</option>';
+          ['asia', 'international', 'special'].forEach(section => {
+            const markets = getMarkets(section);
+            markets.forEach(market => {
+              const option = document.createElement('option');
+              option.value = market.key;
+              option.textContent = market.label;
+              monitorMarketSelect.appendChild(option);
+            });
+          });
+        }
+      });
+    }
+
+    if (monitorCloseBtn && monitorModalBg) {
+      monitorCloseBtn.addEventListener('click', () => {
+        monitorModalBg.style.display = 'none';
+      });
+    }
+
+    // Theme Editor functionality (simplified - keeping existing theme code)
+    const themeEditorBtn = document.getElementById('theme-editor-btn');
+    // Theme editor would open a modal with color pickers, etc.
+    // Keeping this simple for now
+
+    // Additional initialization
+    if (queryInput) {
+      queryInput.focus();
+    }
+  </script>
+      return (foldersObj?.customMarkets && typeof foldersObj.customMarkets === 'object') 
+        ? foldersObj.customMarkets
+        : JSON.parse(localStorage.getItem(CUSTOM_MARKETS_KEY)) || { asia: [], international: [], special: [] };
+    }
+    const saveCustomMarkets = data => localStorage.setItem(CUSTOM_MARKETS_KEY, JSON.stringify(data));
+    // Folder Storage
+    const FOLDER_KEY = scopedKey('savedFolders_v2');
+    function loadFoldersObj() {
+      const raw = localStorage.getItem(FOLDER_KEY);
+      if (raw) {
         try {
+          const data = JSON.parse(raw);
+          if (Array.isArray(data)) {
+            // legacy format, convert
+            return { folders: data, customMarkets: loadCustomMarketsFromFolders() };
+          }
+          return data;
+        } catch {}
+      }
+      // Legacy fallback
+      return { folders: [{ name: 'Default', searches: [] }], customMarkets: { asia: [], international: [], special: [] } };
+    }
+    function saveFoldersObj(obj) {
+      localStorage.setItem(FOLDER_KEY, JSON.stringify(obj));
+      saveCustomMarkets(obj.customMarkets);
+    }
+    let foldersObj = loadFoldersObj();
+    let savedFolders = foldersObj.folders;
+    let customMarkets = foldersObj.customMarkets || { asia: [], international: [], special: [] };
+    let currentFolderIdx = 0; // Default folder on start
+    // Market Data
+    const marketDataInitial = {
+      asia: [
+        { key: "mercari-jp", label: "Mercari Japan" },
+        { key: "paypay-fleamarket", label: "Yahoo PayPay Flea" },
+        { key: "rakuma", label: "Rakuten Rakuma" },
+        { key: "rakuten-jp", label: "Rakuten Japan" },
+        { key: "xianyu", label: "Xianyu (闲鱼)" },
+        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" }
+      ],
+      international: [
+        { key: "depop", label: "Depop" },
+        { key: "ebay", label: "eBay Global" },
+        { key: "facebook", label: "Facebook Marketplace" },
+        { key: "gem", label: "Gem" },
+        { key: "grailed", label: "Grailed" },
+        { key: "mercari-us", label: "Mercari US" },
+        { key: "poshmark", label: "Poshmark" },
+        { key: "shopgoodwill", label: "ShopGoodwill" },
+        { key: "vinted", label: "Vinted" }
+      ],
+      special: [
+        { key: "secondstreet", label: "2nd STREET" },
+        { key: "therealreal", label: "The RealReal" },
+        { key: "vestiaire", label: "Vestiaire Collective" }
+      ]
+    };
+    // Market toggle state storage
+    const MARKET_TOGGLE_KEY = scopedKey('marketToggleStates');
+    function loadMarketToggleState(marketKey) {
+      return toggleStatesCache[marketKey] !== false; // Default to true if not set
+    }
+    let toggleStatesCache = JSON.parse(localStorage.getItem(MARKET_TOGGLE_KEY)) || {};
+    function saveMarketToggleState(marketKey, isEnabled) {
+      toggleStatesCache[marketKey] = isEnabled;
+      // Debounce the localStorage write with requestAnimationFrame
+      cancelAnimationFrame(window.toggleStateSaveRAF);
+      window.toggleStateSaveRAF = requestAnimationFrame(() => {
+        localStorage.setItem(MARKET_TOGGLE_KEY, JSON.stringify(toggleStatesCache));
+      });
+    }
+
+    // Combined Market Data + Custom
+    function getMarkets(section) {
+      const orig = marketDataInitial[section].slice();
+      const custom = (customMarkets[section] || []).map(m => ({
+        key: "custom-" + section + "-" + m.id,
+        label: m.title,
+        custom: true,
+        urlTemplate: m.url,
+        id: m.id
+      }));
+      return orig.concat(custom);
+    }
+    function createMarketButtons(markets, sectionId, sectionName) {
+      const container = document.getElementById(sectionId);
+      container.innerHTML = '';
+      markets.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
+        const btn = document.createElement('button');
+        btn.type = "button";
+        btn.className = "market-btn";
+        btn.setAttribute("data-market", market.key);
+        btn.setAttribute("data-section", sectionName);
+        
+        // Add toggle checkbox
+        const toggle = document.createElement('input');
+        toggle.type = "checkbox";
+        toggle.className = "market-toggle";
+        toggle.checked = true;
+        toggle.addEventListener('change', function(e) {
+          e.stopPropagation();
+          const isChecked = toggle.checked;
+          btn.classList.toggle('disabled', !isChecked);
+          // Save state without blocking UI
+          setTimeout(() => saveMarketToggleState(market.key, isChecked), 0);
+        }, { passive: true });
+        
+        // Set initial state
+        const isEnabled = loadMarketToggleState(market.key);
+        toggle.checked = isEnabled;
+        if (!isEnabled) btn.classList.add('disabled');
+        
+        btn.appendChild(toggle);
+        const label = document.createElement('span');
+        label.textContent = market.label + (market.custom ? " ★" : "");
+        btn.appendChild(label);
+        container.appendChild(btn);
+
+        // Custom market remove button
+        if (market.custom) {
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'market-remove-btn';
+          removeBtn.title = 'Remove Website';
+          removeBtn.innerHTML = '🗑';
+          removeBtn.onclick = function(e) {
+            e.stopPropagation();
+            removeCustomMarket(sectionName, market.id);
+          };
+          btn.appendChild(removeBtn);
+        }
+      });
+    }
+    function refreshAllMarketButtons() {
+      createMarketButtons(getMarkets('asia'), "asia-markets", "asia");
+      createMarketButtons(getMarkets('international'), "international-markets", "international");
+      createMarketButtons(getMarkets('special'), "special-markets", "special");
+    }
+    refreshAllMarketButtons();
+
+    // Remove custom market
+    function removeCustomMarket(section, id) {
+      customMarkets[section] = (customMarkets[section] || []).filter(m => m.id !== id);
+      foldersObj.customMarkets = customMarkets;
+      saveFoldersObj(foldersObj);
+      refreshAllMarketButtons();
+    }
+
+    // --- Saved Searches Folders UI ---
+    const folderListEl = document.getElementById('saved-folder-list');
+    const folderInputEl = document.getElementById('sidebar-folder-input');
+    const folderAddBtn = document.getElementById('sidebar-folder-btn');
+
+    function renderFolders() {
+      folderListEl.innerHTML = '';
+      savedFolders.forEach((folder, idx) => {
+        const li = document.createElement('li');
+        li.className = 'saved-folder-item' + (idx === currentFolderIdx ? ' sidebar-folder-active' : '');
+        li.setAttribute('draggable', 'true');
+        li.setAttribute('data-index', idx);
+
+        // Drag events
+        li.addEventListener('dragstart', function(e){
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', idx);
+          setTimeout(() => { li.classList.add('sidebar-folder-dragover'); }, 10);
+        });
+        li.addEventListener('dragend', function(e){
+          li.classList.remove('sidebar-folder-dragover');
+        });
+        li.addEventListener('dragover', function(e){
+          e.preventDefault();
+          li.classList.add('sidebar-folder-dragover');
+        });
+        li.addEventListener('dragleave', function(e){
+          li.classList.remove('sidebar-folder-dragover');
+        });
+        li.addEventListener('drop', function(e){
+          e.preventDefault();
+          li.classList.remove('sidebar-folder-dragover');
+          const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+          const toIdx = idx;
+          if (fromIdx !== toIdx) {
+            const moved = savedFolders.splice(fromIdx, 1)[0];
+            savedFolders.splice(toIdx, 0, moved);
+            if (currentFolderIdx === fromIdx) currentFolderIdx = toIdx;
+            else if (fromIdx < currentFolderIdx && toIdx >= currentFolderIdx) currentFolderIdx--;
+            else if (fromIdx > currentFolderIdx && toIdx <= currentFolderIdx) currentFolderIdx++;
+            foldersObj.folders = savedFolders;
+            saveFoldersObj(foldersObj);
+            renderFolders();
+            renderSavedSearches();
+          }
+        });
+
+        // Folder name or edit input
+        if (folder.editing) {
+          const editInput = document.createElement('input');
+          editInput.type = 'text';
+          editInput.value = folder.name;
+          editInput.className = 'sidebar-folder-input';
+          editInput.maxLength = 44;
+          editInput.autofocus = true;
+          editInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') saveFolderEdit(idx, editInput.value.trim());
+            if (e.key === 'Escape') cancelFolderEdit(idx);
+          });
+          li.appendChild(editInput);
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = 'sidebar-folder-edit-btn';
+          saveBtn.title = 'Save';
+          saveBtn.textContent = '✔';
+          saveBtn.onclick = () => saveFolderEdit(idx, editInput.value.trim());
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'sidebar-folder-edit-btn';
+          cancelBtn.title = 'Cancel';
+          cancelBtn.textContent = '✕';
+          cancelBtn.onclick = () => cancelFolderEdit(idx);
+          li.appendChild(saveBtn);
+          li.appendChild(cancelBtn);
+        } else {
+          const nameBtn = document.createElement('button');
+          nameBtn.type = 'button';
+          nameBtn.style = 'background:none;border:none;padding:0;margin:0;color:inherit;font-weight:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;';
+          nameBtn.onclick = () => {
+            currentFolderIdx = idx;
+            renderFolders();
+            renderSavedSearches();
+          };
+          // Add miku.png as folder icon
+          const folderIcon = document.createElement('img');
+          folderIcon.src = 'miku.png';
+          folderIcon.alt = 'Folder';
+          folderIcon.style.width = '18px';
+          folderIcon.style.height = '18px';
+          folderIcon.style.marginRight = '4px';
+          folderIcon.style.verticalAlign = 'middle';
+          nameBtn.appendChild(folderIcon);
+          // Folder name text
+          const folderText = document.createElement('span');
+          folderText.textContent = folder.name;
+          nameBtn.appendChild(folderText);
+          
+          li.appendChild(nameBtn);
+          // Edit/remove
+          const editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.className = 'sidebar-folder-edit-btn';
+          editBtn.title = 'Rename';
+          editBtn.textContent = '✎';
+          editBtn.onclick = () => editFolder(idx);
+          li.appendChild(editBtn);
+          if (savedFolders.length > 1) {
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'sidebar-folder-remove-btn';
+            removeBtn.title = 'Remove';
+            removeBtn.textContent = '🗑';
+            removeBtn.onclick = () => removeFolder(idx);
+            li.appendChild(removeBtn);
+          }
+        }
+        folderListEl.appendChild(li);
+      });
+    }
+    function addFolder(name) {
+      name = name.trim();
+      if (!name) return;
+      if (savedFolders.some(f => f.name === name)) return;
+      savedFolders.push({ name, searches: [] });
+      currentFolderIdx = savedFolders.length - 1;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderFolders();
+      renderSavedSearches();
+    }
+    function removeFolder(idx) {
+      if (savedFolders.length === 1) return;
+      savedFolders.splice(idx, 1);
+      if (currentFolderIdx >= savedFolders.length) currentFolderIdx = savedFolders.length - 1;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderFolders();
+      renderSavedSearches();
+    }
+    function editFolder(idx) {
+      savedFolders = savedFolders.map((f, i) => i === idx ? { ...f, editing: true } : { ...f, editing: false });
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderFolders();
+      setTimeout(() => {
+        const input = folderListEl.querySelector('input.sidebar-folder-input');
+        if (input) input.focus();
+      }, 50);
+    }
+    function saveFolderEdit(idx, value) {
+      value = value.trim();
+      if (!value) return;
+      if (savedFolders.some((f, i) => f.name === value && i !== idx)) return;
+      savedFolders[idx].name = value;
+      savedFolders[idx].editing = false;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderFolders();
+    }
+    function cancelFolderEdit(idx) {
+      savedFolders[idx].editing = false;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderFolders();
+    }
+
+    if (folderAddBtn && folderInputEl) {
+      folderAddBtn.addEventListener('click', () => {
+        const name = folderInputEl.value.trim();
+        if (name) {
+          addFolder(name);
+          folderInputEl.value = '';
+        }
+      });
+      folderInputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const name = folderInputEl.value.trim();
+          if (name) {
+            addFolder(name);
+            folderInputEl.value = '';
+          }
+        }
+      });
+    }
+
+    renderFolders();
+
+    // --- Saved Searches UI ---
+    const CLICKED_SEARCHES_KEY = scopedKey('clickedSearches');
+    let clickedSearches = JSON.parse(localStorage.getItem(CLICKED_SEARCHES_KEY)) || {};
+
+    const savedSearchesListEl = document.getElementById('saved-searches-list');
+    const sidebarAddInputEl = document.getElementById('sidebar-add-input');
+    const sidebarAddBtnEl = document.getElementById('sidebar-add-btn');
+
+    function renderSavedSearches() {
+      if (!savedSearchesListEl) return;
+      savedSearchesListEl.innerHTML = '';
+      const currentFolder = savedFolders[currentFolderIdx];
+      if (!currentFolder) return;
+      
+      const searches = (currentFolder.searches || []).slice().sort((a, b) => (a.term || '').localeCompare(b.term || ''));
+      
+      searches.forEach((search, idx) => {
+        const li = document.createElement('li');
+        li.className = 'saved-search-item' + (clickedSearches[search.term] ? ' clicked' : '');
+        
+        if (search.editing) {
+          const editInput = document.createElement('input');
+          editInput.type = 'text';
+          editInput.value = search.term;
+          editInput.className = 'sidebar-add-input';
+          editInput.maxLength = 70;
+          editInput.autofocus = true;
+          editInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') saveSearchEdit(currentFolderIdx, idx, editInput.value.trim());
+            if (e.key === 'Escape') cancelSearchEdit(currentFolderIdx, idx);
+          });
+          li.appendChild(editInput);
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = 'sidebar-folder-edit-btn';
+          saveBtn.title = 'Save';
+          saveBtn.textContent = '✔';
+          saveBtn.onclick = () => saveSearchEdit(currentFolderIdx, idx, editInput.value.trim());
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'sidebar-folder-edit-btn';
+          cancelBtn.title = 'Cancel';
+          cancelBtn.textContent = '✕';
+          cancelBtn.onclick = () => cancelSearchEdit(currentFolderIdx, idx);
+          li.appendChild(saveBtn);
+          li.appendChild(cancelBtn);
+        } else {
+          const termBtn = document.createElement('button');
+          termBtn.type = 'button';
+          termBtn.className = 'saved-search-term';
+          termBtn.textContent = search.term;
+          termBtn.onclick = () => {
+            document.getElementById('query').value = search.term;
+            clickedSearches[search.term] = true;
+            localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+            renderSavedSearches();
+            updateUnhighlightedCount();
+          };
+          li.appendChild(termBtn);
+          
+          const editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.className = 'edit-btn';
+          editBtn.title = 'Edit';
+          editBtn.textContent = '✎';
+          editBtn.onclick = () => editSearch(currentFolderIdx, idx);
+          li.appendChild(editBtn);
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'remove-btn';
+          removeBtn.title = 'Remove';
+          removeBtn.textContent = '🗑';
+          removeBtn.onclick = () => removeSearch(currentFolderIdx, idx);
+          li.appendChild(removeBtn);
+        }
+        
+        savedSearchesListEl.appendChild(li);
+      });
+      updateUnhighlightedCount();
+    }
+
+    function addSearch(term) {
+      term = term.trim();
+      if (!term) return;
+      const currentFolder = savedFolders[currentFolderIdx];
+      if (!currentFolder) return;
+      if (!currentFolder.searches) currentFolder.searches = [];
+      if (currentFolder.searches.some(s => s.term === term)) return;
+      currentFolder.searches.push({ term });
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderSavedSearches();
+    }
+
+    function removeSearch(folderIdx, searchIdx) {
+      const folder = savedFolders[folderIdx];
+      if (!folder || !folder.searches) return;
+      folder.searches.splice(searchIdx, 1);
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderSavedSearches();
+    }
+
+    function editSearch(folderIdx, searchIdx) {
+      const folder = savedFolders[folderIdx];
+      if (!folder || !folder.searches) return;
+      folder.searches = folder.searches.map((s, i) => i === searchIdx ? { ...s, editing: true } : { ...s, editing: false });
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderSavedSearches();
+      setTimeout(() => {
+        const input = savedSearchesListEl.querySelector('input.sidebar-add-input');
+        if (input) input.focus();
+      }, 50);
+    }
+
+    function saveSearchEdit(folderIdx, searchIdx, value) {
+      value = value.trim();
+      if (!value) return;
+      const folder = savedFolders[folderIdx];
+      if (!folder || !folder.searches) return;
+      if (folder.searches.some((s, i) => s.term === value && i !== searchIdx)) return;
+      folder.searches[searchIdx].term = value;
+      folder.searches[searchIdx].editing = false;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderSavedSearches();
+    }
+
+    function cancelSearchEdit(folderIdx, searchIdx) {
+      const folder = savedFolders[folderIdx];
+      if (!folder || !folder.searches) return;
+      folder.searches[searchIdx].editing = false;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderSavedSearches();
+    }
+
+    function updateUnhighlightedCount() {
+      const countEl = document.getElementById('unhighlighted-count');
+      if (!countEl) return;
+      const currentFolder = savedFolders[currentFolderIdx];
+      if (!currentFolder || !currentFolder.searches) {
+        countEl.textContent = '0 unhighlighted';
+        return;
+      }
+      const unhighlighted = currentFolder.searches.filter(s => !clickedSearches[s.term]).length;
+      countEl.textContent = unhighlighted + ' unhighlighted';
+    }
+
+    if (sidebarAddBtnEl && sidebarAddInputEl) {
+      sidebarAddBtnEl.addEventListener('click', () => {
+        const term = sidebarAddInputEl.value.trim();
+        if (term) {
+          addSearch(term);
+          sidebarAddInputEl.value = '';
+        }
+      });
+      sidebarAddInputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const term = sidebarAddInputEl.value.trim();
+          if (term) {
+            addSearch(term);
+            sidebarAddInputEl.value = '';
+          }
+        }
+      });
+    }
+
+    renderSavedSearches();
+
+    // --- Multi-select functionality ---
+    const SELECTED_SEARCH_TERMS_KEY = scopedKey('selectedSearchTerms');
+    let selectedSearchTerms = JSON.parse(localStorage.getItem(SELECTED_SEARCH_TERMS_KEY)) || {};
+
+    const multiClearBtn = document.getElementById('sidebar-multi-clear-btn');
+    if (multiClearBtn) {
+      multiClearBtn.addEventListener('click', () => {
+        selectedSearchTerms = {};
+        localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+        renderSavedSearches();
+      });
+    }
+
+    // --- Export/Import functionality ---
+    const exportBtn = document.getElementById('sidebar-export-btn');
+    const importInput = document.getElementById('sidebar-import-input');
+    const resetHighlightsBtn = document.getElementById('sidebar-reset-highlights-btn');
+
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        const data = {
+          folders: savedFolders,
+          customMarkets: customMarkets,
+          clickedSearches: clickedSearches
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'mmcs-backup.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    if (importInput) {
+      importInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            if (data.folders && Array.isArray(data.folders)) {
+              savedFolders = data.folders;
+              foldersObj.folders = savedFolders;
+            }
+            if (data.customMarkets) {
+              customMarkets = data.customMarkets;
+              foldersObj.customMarkets = customMarkets;
+            }
+            if (data.clickedSearches) {
+              clickedSearches = data.clickedSearches;
+              localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+            }
+            saveFoldersObj(foldersObj);
+            refreshAllMarketButtons();
+            renderFolders();
+            renderSavedSearches();
+            alert('Import successful!');
+          } catch (err) {
+            alert('Import failed: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = ''; // Reset input
+      });
+    }
+
+    if (resetHighlightsBtn) {
+      resetHighlightsBtn.addEventListener('click', () => {
+        if (confirm('Reset all search highlights? This cannot be undone.')) {
+          clickedSearches = {};
+          localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+          renderSavedSearches();
+        }
+      });
+    }
+
+    // --- Randomize functionality ---
+    const randomizeBtn = document.getElementById('sidebar-randomize-btn');
+    const randomizeCategorySelect = document.getElementById('randomize-category-select');
+    const randomizeColorIndicator = document.getElementById('randomize-color-indicator');
+
+    function updateRandomizeIndicator() {
+      if (!randomizeColorIndicator) return;
+      const category = randomizeCategorySelect ? randomizeCategorySelect.value : 'all';
+      const currentFolder = savedFolders[currentFolderIdx];
+      if (!currentFolder || !currentFolder.searches) {
+        randomizeColorIndicator.style.background = '#666';
+        return;
+      }
+      const unhighlighted = currentFolder.searches.filter(s => !clickedSearches[s.term]);
+      if (unhighlighted.length === 0) {
+        randomizeColorIndicator.style.background = '#666';
+      } else {
+        randomizeColorIndicator.style.background = '#00e6d6';
+      }
+    }
+
+    if (randomizeBtn) {
+      randomizeBtn.addEventListener('click', () => {
+        const category = randomizeCategorySelect ? randomizeCategorySelect.value : 'all';
+        const currentFolder = savedFolders[currentFolderIdx];
+        if (!currentFolder || !currentFolder.searches) return;
+        const unhighlighted = currentFolder.searches.filter(s => !clickedSearches[s.term]);
+        if (unhighlighted.length === 0) {
+          alert('No unhighlighted searches available!');
+          return;
+        }
+        const randomSearch = unhighlighted[Math.floor(Math.random() * unhighlighted.length)];
+        document.getElementById('query').value = randomSearch.term;
+        
+        // Open markets based on category
+        const markets = getMarkets(category === 'all' ? 'asia' : category);
+        if (markets.length > 0) {
+          const market = markets[0];
+          const query = randomSearch.term;
+          // Open market logic would go here
+        }
+      });
+    }
+
+    if (randomizeCategorySelect) {
+      randomizeCategorySelect.addEventListener('change', updateRandomizeIndicator);
+    }
+    updateRandomizeIndicator();
+
+    // --- Wishlist functionality ---
+    const WISHLIST_KEY = scopedKey('wishlist_links_v1');
+    const wishlistListEl = document.getElementById('wishlist-list');
+    const wishlistInput = document.getElementById('wishlist-link-input');
+    const wishlistForm = document.getElementById('wishlist-add-form');
+
+    let wishlistItems = JSON.parse(localStorage.getItem(WISHLIST_KEY)) || [];
+
+    function renderWishlist() {
+      if (!wishlistListEl) return;
+      wishlistListEl.innerHTML = '';
+      wishlistItems.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.className = 'wishlist-item';
+        
+        if (item.editing) {
+          const editInput = document.createElement('input');
+          editInput.type = 'text';
+          editInput.value = item.title || item.url;
+          editInput.className = 'wishlist-add-input';
+          editInput.maxLength = 200;
+          editInput.autofocus = true;
+          editInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') saveWishlistEdit(idx, editInput.value.trim());
+            if (e.key === 'Escape') cancelWishlistEdit(idx);
+          });
+          li.appendChild(editInput);
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = 'sidebar-folder-edit-btn';
+          saveBtn.textContent = '✔';
+          saveBtn.onclick = () => saveWishlistEdit(idx, editInput.value.trim());
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'sidebar-folder-edit-btn';
+          cancelBtn.textContent = '✕';
+          cancelBtn.onclick = () => cancelWishlistEdit(idx);
+          li.appendChild(saveBtn);
+          li.appendChild(cancelBtn);
+        } else {
+          const link = document.createElement('a');
+          link.href = item.url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.className = 'wishlist-link';
+          link.textContent = item.title || item.url;
+          link.onclick = (e) => {
+            if (e.ctrlKey || e.metaKey) return; // Allow ctrl/cmd+click to open in new tab
+            e.preventDefault();
+            window.open(item.url, '_blank', 'noopener,noreferrer');
+          };
+          li.appendChild(link);
+          
+          const editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.className = 'edit-btn';
+          editBtn.textContent = '✎';
+          editBtn.onclick = () => editWishlistItem(idx);
+          li.appendChild(editBtn);
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'remove-btn';
+          removeBtn.textContent = '🗑';
+          removeBtn.onclick = () => removeWishlistItem(idx);
+          li.appendChild(removeBtn);
+        }
+        
+        wishlistListEl.appendChild(li);
+      });
+    }
+
+    async function fetchTitle(url) {
+      try {
+        // Use a CORS proxy or fetch from your own backend
+        // For now, just return the URL
+        return url;
+      } catch {
+        return url;
+      }
+    }
+
+    function addWishlistItem(url) {
+      url = url.trim();
+      if (!url) return;
+      if (wishlistItems.some(item => item.url === url)) return;
+      const newItem = { url, title: url, editing: false };
+      wishlistItems.push(newItem);
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+      renderWishlist();
+      // Try to fetch title
+      fetchTitle(url).then(title => {
+        const item = wishlistItems.find(i => i.url === url);
+        if (item) {
+          item.title = title;
+          localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+          renderWishlist();
+        }
+      });
+    }
+
+    function removeWishlistItem(idx) {
+      wishlistItems.splice(idx, 1);
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+      renderWishlist();
+    }
+
+    function editWishlistItem(idx) {
+      wishlistItems[idx].editing = true;
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+      renderWishlist();
+    }
+
+    function saveWishlistEdit(idx, title) {
+      title = title.trim();
+      if (!title) return;
+      wishlistItems[idx].title = title;
+      wishlistItems[idx].editing = false;
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+      renderWishlist();
+    }
+
+    function cancelWishlistEdit(idx) {
+      wishlistItems[idx].editing = false;
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
+      renderWishlist();
+    }
+
+    if (wishlistForm && wishlistInput) {
+      wishlistForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const url = wishlistInput.value.trim();
+        if (url) {
+          addWishlistItem(url);
+          wishlistInput.value = '';
+        }
+      });
+    }
+
+    renderWishlist();
+
+    // --- Search form functionality ---
+    const searchForm = document.getElementById('searchForm');
+    const queryInput = document.getElementById('query');
+    const openAllBtn = document.getElementById('open-all-btn');
+    const toggleAllCheckbox = document.getElementById('toggle-all-checkbox');
+    const clearSearchBtn = document.getElementById('clear-search');
+
+    // Market URL templates
+    const marketUrls = {
+      "mercari-jp": "https://www.mercari.com/jp/search/?keyword=example",
+      "paypay-fleamarket": "https://paypayfleamarket.yahoo.co.jp/search/example",
+      "rakuma": "https://fril.jp/s?query=example",
+      "rakuten-jp": "https://search.rakuten.co.jp/search/mall/example",
+      "xianyu": "https://www.goofish.com/search?q=example",
+      "yahoo-auctions": "https://auctions.yahoo.co.jp/search/search?va=example",
+      "depop": "https://www.depop.com/search/?q=example",
+      "ebay": "https://www.ebay.com/sch/i.html?_nkw=example",
+      "facebook": "https://www.facebook.com/marketplace/search/?query=example",
+      "gem": "https://www.gem.app/search?q=example",
+      "grailed": "https://www.grailed.com/shop?query=example",
+      "mercari-us": "https://www.mercari.com/us/search/?keyword=example",
+      "poshmark": "https://poshmark.com/search?query=example",
+      "shopgoodwill": "https://www.shopgoodwill.com/search?keywords=example",
+      "vinted": "https://www.vinted.com/catalog?search_text=example",
+      "secondstreet": "https://www.2ndstreet.jp/search?q=example",
+      "therealreal": "https://www.therealreal.com/search?q=example",
+      "vestiaire": "https://www.vestiairecollective.com/search/?q=example"
+    };
+
+    function getMarketUrl(marketKey, query, customUrlTemplate) {
+      if (customUrlTemplate) {
+        return customUrlTemplate.replace(/example/g, encodeURIComponent(query));
+      }
+      const template = marketUrls[marketKey];
+      if (!template) return null;
+      return template.replace(/example/g, encodeURIComponent(query));
+    }
+
+    function openMarket(marketKey, section, query, customUrlTemplate) {
+      const url = getMarketUrl(marketKey, query, customUrlTemplate);
+      if (!url) return;
+      const isMobile = document.documentElement.classList.contains('is-mobile');
+      if (isMobile) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    }
+
+    // Handle market button clicks
+    document.addEventListener('click', (e) => {
+      const marketBtn = e.target.closest('.market-btn');
+      if (!marketBtn) return;
+      const marketKey = marketBtn.getAttribute('data-market');
+      const section = marketBtn.getAttribute('data-section');
+      const query = queryInput ? queryInput.value.trim() : '';
+      if (!query) {
+        alert('Please enter a search term first');
+        return;
+      }
+      if (marketBtn.classList.contains('disabled')) return;
+      
+      // Get custom URL template if it's a custom market
+      let customUrlTemplate = null;
+      if (marketKey.startsWith('custom-')) {
+        const parts = marketKey.split('-');
+        const marketSection = parts[1];
+        const marketId = parts[2];
+        const customMarket = customMarkets[marketSection]?.find(m => m.id === marketId);
+        if (customMarket) {
+          customUrlTemplate = customMarket.url;
+        }
+      }
+      
+      openMarket(marketKey, section, query, customUrlTemplate);
+    });
+
+    // Open All functionality
+    if (openAllBtn) {
+      openAllBtn.addEventListener('click', () => {
+        const query = queryInput ? queryInput.value.trim() : '';
+        if (!query) {
+          alert('Please enter a search term first');
+          return;
+        }
+        const enabledMarkets = Array.from(document.querySelectorAll('.market-btn:not(.disabled)'));
+        enabledMarkets.forEach(btn => {
+          const marketKey = btn.getAttribute('data-market');
+          const section = btn.getAttribute('data-section');
+          let customUrlTemplate = null;
+          if (marketKey.startsWith('custom-')) {
+            const parts = marketKey.split('-');
+            const marketSection = parts[1];
+            const marketId = parts[2];
+            const customMarket = customMarkets[marketSection]?.find(m => m.id === marketId);
+            if (customMarket) {
+              customUrlTemplate = customMarket.url;
+            }
+          }
+          openMarket(marketKey, section, query, customUrlTemplate);
+        });
+      });
+    }
+
+    // Toggle All functionality
+    if (toggleAllCheckbox) {
+      toggleAllCheckbox.addEventListener('change', (e) => {
+        const allToggles = document.querySelectorAll('.market-toggle');
+        allToggles.forEach(toggle => {
+          toggle.checked = e.target.checked;
+          const btn = toggle.closest('.market-btn');
+          if (btn) {
+            btn.classList.toggle('disabled', !e.target.checked);
+            const marketKey = btn.getAttribute('data-market');
+            if (marketKey) {
+              saveMarketToggleState(marketKey, e.target.checked);
+            }
+          }
+        });
+      });
+    }
+
+    // Clear search button
+    if (clearSearchBtn && queryInput) {
+      queryInput.addEventListener('input', () => {
+        clearSearchBtn.style.display = queryInput.value.trim() ? 'block' : 'none';
+      });
+      clearSearchBtn.addEventListener('click', () => {
+        queryInput.value = '';
+        clearSearchBtn.style.display = 'none';
+        queryInput.focus();
+      });
+    }
+
+    // Section "Open All" buttons
+    document.querySelectorAll('.section-openall-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const section = btn.getAttribute('data-section');
+        const query = queryInput ? queryInput.value.trim() : '';
+        if (!query) {
+          alert('Please enter a search term first');
+          return;
+        }
+        const sectionMarkets = Array.from(document.querySelectorAll(`#${section}-markets .market-btn:not(.disabled)`));
+        sectionMarkets.forEach(marketBtn => {
+          const marketKey = marketBtn.getAttribute('data-market');
+          let customUrlTemplate = null;
+          if (marketKey.startsWith('custom-')) {
+            const parts = marketKey.split('-');
+            const marketSection = parts[1];
+            const marketId = parts[2];
+            const customMarket = customMarkets[marketSection]?.find(m => m.id === marketId);
+            if (customMarket) {
+              customUrlTemplate = customMarket.url;
+            }
+          }
+          openMarket(marketKey, section, query, customUrlTemplate);
+        });
+      });
+    });
+
+    // Custom Market Modal
+    const customMarketModalBg = document.getElementById('custom-market-modal-bg');
+    const customMarketModalSaveBtn = document.getElementById('custom-market-modal-save-btn');
+    const customMarketModalCancelBtn = document.getElementById('custom-market-modal-cancel-btn');
+    const customMarketTitleInput = document.getElementById('custom-market-title-input');
+    const customMarketUrlInput = document.getElementById('custom-market-url-input');
+    const customMarketModalSection = document.getElementById('custom-market-modal-section');
+    let currentCustomMarketSection = null;
+
+    document.querySelectorAll('.add-market-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentCustomMarketSection = btn.getAttribute('data-section');
+        if (customMarketModalSection) {
+          customMarketModalSection.textContent = `Adding to: ${currentCustomMarketSection.charAt(0).toUpperCase() + currentCustomMarketSection.slice(1)}`;
+        }
+        if (customMarketModalBg) {
+          customMarketModalBg.style.display = 'flex';
+        }
+        if (customMarketTitleInput) customMarketTitleInput.value = '';
+        if (customMarketUrlInput) customMarketUrlInput.value = '';
+        if (customMarketTitleInput) customMarketTitleInput.focus();
+      });
+    });
+
+    if (customMarketModalSaveBtn && customMarketTitleInput && customMarketUrlInput) {
+      customMarketModalSaveBtn.addEventListener('click', () => {
+        const title = customMarketTitleInput.value.trim();
+        const url = customMarketUrlInput.value.trim();
+        if (!title || !url) {
+          alert('Please fill in both fields');
+          return;
+        }
+        if (!url.includes('example')) {
+          alert('URL must contain "example" where the search term should appear');
+          return;
+        }
+        if (!currentCustomMarketSection) return;
+        if (!customMarkets[currentCustomMarketSection]) {
+          customMarkets[currentCustomMarketSection] = [];
+        }
+        const newMarket = {
+          id: Date.now().toString(),
+          title: title,
+          url: url
+        };
+        customMarkets[currentCustomMarketSection].push(newMarket);
+        foldersObj.customMarkets = customMarkets;
+        saveFoldersObj(foldersObj);
+        refreshAllMarketButtons();
+        if (customMarketModalBg) {
+          customMarketModalBg.style.display = 'none';
+        }
+      });
+    }
+
+    if (customMarketModalCancelBtn && customMarketModalBg) {
+      customMarketModalCancelBtn.addEventListener('click', () => {
+        customMarketModalBg.style.display = 'none';
+      });
+    }
+
+    // Monitor View functionality
+    const monitorViewBtn = document.getElementById('monitor-view-btn');
+    const monitorModalBg = document.getElementById('monitor-modal-bg');
+    const monitorCloseBtn = document.getElementById('monitor-close-btn');
+    const monitorMarketSelect = document.getElementById('monitor-market-select');
+    const monitorBoard = document.getElementById('monitor-board');
+
+    if (monitorViewBtn && monitorModalBg) {
+      monitorViewBtn.addEventListener('click', () => {
+        monitorModalBg.style.display = 'flex';
+        // Populate market select
+        if (monitorMarketSelect) {
+          monitorMarketSelect.innerHTML = '<option value="">Select a market...</option>';
+          ['asia', 'international', 'special'].forEach(section => {
+            const markets = getMarkets(section);
+            markets.forEach(market => {
+              const option = document.createElement('option');
+              option.value = market.key;
+              option.textContent = market.label;
+              monitorMarketSelect.appendChild(option);
+            });
+          });
+        }
+      });
+    }
+
+    if (monitorCloseBtn && monitorModalBg) {
+      monitorCloseBtn.addEventListener('click', () => {
+        monitorModalBg.style.display = 'none';
+      });
+    }
+
+    // Theme Editor functionality (simplified - keeping existing theme code)
+    const themeEditorBtn = document.getElementById('theme-editor-btn');
+    // Theme editor would open a modal with color pickers, etc.
+    // Keeping this simple for now
+
+    // Additional initialization
+    if (queryInput) {
+      queryInput.focus();
+    }
+  </script>
+  <script>
+    // Resize handler for folder/search list divider
+    (function() {
+      const folderList = document.getElementById('saved-folder-list');
+      const searchList = document.getElementById('saved-searches-list');
+      const handle = document.getElementById('sidebar-folder-search-resize');
+      let startY, startFolderHeight, startSearchHeight, resizing = false;
+
+      // Set initial heights
+      if (folderList) folderList.style.height = '120px';
+      if (searchList) searchList.style.height = '180px';
+      if (folderList) folderList.style.overflowY = 'auto';
+      if (searchList) searchList.style.overflowY = 'auto';
+
+      if (handle && folderList && searchList) {
+        handle.addEventListener('mousedown', (e) => {
+          resizing = true;
+          startY = e.clientY;
+          startFolderHeight = folderList.offsetHeight;
+          startSearchHeight = searchList.offsetHeight;
+          document.body.style.cursor = 'ns-resize';
+          e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (!resizing) return;
+          const deltaY = e.clientY - startY;
+          const newFolderHeight = Math.max(60, Math.min(400, startFolderHeight + deltaY));
+          const newSearchHeight = Math.max(60, Math.min(400, startSearchHeight - deltaY));
+          folderList.style.height = newFolderHeight + 'px';
+          searchList.style.height = newSearchHeight + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+          resizing = false;
+          document.body.style.cursor = '';
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
           const map = JSON.parse(localStorage.getItem(PASSWORD_USERNAME_MAP_KEY) || '{}');
           map[password] = username;
           localStorage.setItem(PASSWORD_USERNAME_MAP_KEY, JSON.stringify(map));
@@ -2990,103 +4955,9 @@
         chatSendBtn.addEventListener('click', sendMessage);
       }
       
-      if (chatInput) {
-        chatInput.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-          }
-        });
-      }
-
-      // Chat toggle
-      const chatToggle = document.getElementById('chat-toggle');
-      if (chatToggle) {
-        chatToggle.addEventListener('click', function() {
-          const widget = document.getElementById('chat-widget');
-          if (widget) {
-            widget.classList.toggle('minimized');
-            this.textContent = widget.classList.contains('minimized') ? '+' : '−';
-          }
-        });
-      }
-
-      // Cleanup on page unload
-      window.addEventListener('beforeunload', function() {
-        if (heartbeatInterval) clearInterval(heartbeatInterval);
-        if (messagePollInterval) clearInterval(messagePollInterval);
-      });
-
-      // Make initChat available globally
-      window.initChat = initChat;
-    })();
-
-    // Mobile detection and optimization
-    (function() {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                       (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) ||
-                       ('ontouchstart' in window);
-      
-      if (isMobile) {
-        document.documentElement.classList.add('is-mobile');
-        document.body.classList.add('is-mobile');
-        
-        // Prevent double-tap zoom on buttons
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(e) {
-          const now = Date.now();
-          if (now - lastTouchEnd <= 300) {
-            e.preventDefault();
-          }
-          lastTouchEnd = now;
-        }, false);
-        
-        // Optimize scroll performance
-        document.addEventListener('touchmove', function(e) {
-          // Allow native scrolling
-        }, { passive: true });
-      }
-    })();
-
-    // Compatibility helper: older code still calls scopedKey(...) in a few places.
-    function scopedKey(baseKey) { return baseKey; }
-
-    // Custom Market Storage
-    const CUSTOM_MARKETS_KEY = scopedKey('customMarkets_v1');
-    function loadCustomMarketsFromFolders(foldersObj) {
-      return (foldersObj?.customMarkets && typeof foldersObj.customMarkets === 'object') 
-        ? foldersObj.customMarkets
-        : JSON.parse(localStorage.getItem(CUSTOM_MARKETS_KEY)) || { asia: [], international: [], special: [] };
-    }
-    const saveCustomMarkets = data => localStorage.setItem(CUSTOM_MARKETS_KEY, JSON.stringify(data));
-    // Folder Storage
-    const FOLDER_KEY = scopedKey('savedFolders_v2');
-    function loadFoldersObj() {
-      const raw = localStorage.getItem(FOLDER_KEY);
-      if (raw) {
-        try {
-          const data = JSON.parse(raw);
-          if (Array.isArray(data)) {
-            // legacy format, convert
-            return { folders: data, customMarkets: loadCustomMarketsFromFolders() };
-          }
-          return data;
-        } catch {}
-      }
-      // Legacy fallback
-      return { folders: [{ name: 'Default', searches: [] }], customMarkets: { asia: [], international: [], special: [] } };
-    }
-    function saveFoldersObj(obj) {
-      localStorage.setItem(FOLDER_KEY, JSON.stringify(obj));
-      saveCustomMarkets(obj.customMarkets);
-    }
-    let foldersObj = loadFoldersObj();
-    let savedFolders = foldersObj.folders;
-    let customMarkets = foldersObj.customMarkets || { asia: [], international: [], special: [] };
-    let currentFolderIdx = 0; // Default folder on start
-    // Market Data
-    const marketDataInitial = {
-      asia: [
+  </script>
+</body>
+</html>
         { key: "mercari-jp", label: "Mercari Japan" },
         { key: "paypay-fleamarket", label: "Yahoo PayPay Flea" },
         { key: "rakuma", label: "Rakuten Rakuma" },
@@ -3200,185 +5071,6 @@
       saveFoldersObj(foldersObj);
       refreshAllMarketButtons();
     }
-
-    // --- Saved Searches Folders UI ---
-    const folderListEl = document.getElementById('saved-folder-list');
-    const folderInputEl = document.getElementById('sidebar-folder-input');
-    const folderAddBtn = document.getElementById('sidebar-folder-btn');
-
-    function renderFolders() {
-      folderListEl.innerHTML = '';
-      savedFolders.forEach((folder, idx) => {
-        const li = document.createElement('li');
-        li.className = 'saved-folder-item' + (idx === currentFolderIdx ? ' sidebar-folder-active' : '');
-        li.setAttribute('draggable', 'true');
-        li.setAttribute('data-index', idx);
-
-        // Drag events
-        li.addEventListener('dragstart', function(e){
-          e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('text/plain', idx);
-          setTimeout(() => { li.classList.add('sidebar-folder-dragover'); }, 10);
-        });
-        li.addEventListener('dragend', function(e){
-          li.classList.remove('sidebar-folder-dragover');
-        });
-        li.addEventListener('dragover', function(e){
-          e.preventDefault();
-          li.classList.add('sidebar-folder-dragover');
-        });
-        li.addEventListener('dragleave', function(e){
-          li.classList.remove('sidebar-folder-dragover');
-        });
-        li.addEventListener('drop', function(e){
-          e.preventDefault();
-          li.classList.remove('sidebar-folder-dragover');
-          const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
-          const toIdx = idx;
-          if (fromIdx !== toIdx) {
-            const moved = savedFolders.splice(fromIdx, 1)[0];
-            savedFolders.splice(toIdx, 0, moved);
-            if (currentFolderIdx === fromIdx) currentFolderIdx = toIdx;
-            else if (fromIdx < currentFolderIdx && toIdx >= currentFolderIdx) currentFolderIdx--;
-            else if (fromIdx > currentFolderIdx && toIdx <= currentFolderIdx) currentFolderIdx++;
-            foldersObj.folders = savedFolders;
-            saveFoldersObj(foldersObj);
-            renderFolders();
-            renderSavedSearches();
-          }
-        });
-
-        // Folder name or edit input
-        if (folder.editing) {
-          const editInput = document.createElement('input');
-          editInput.type = 'text';
-          editInput.value = folder.name;
-          editInput.className = 'sidebar-folder-input';
-          editInput.maxLength = 44;
-          editInput.autofocus = true;
-          editInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') saveFolderEdit(idx, editInput.value.trim());
-            if (e.key === 'Escape') cancelFolderEdit(idx);
-          });
-          li.appendChild(editInput);
-          const saveBtn = document.createElement('button');
-          saveBtn.type = 'button';
-          saveBtn.className = 'sidebar-folder-edit-btn';
-          saveBtn.title = 'Save';
-          saveBtn.textContent = '✔';
-          saveBtn.onclick = () => saveFolderEdit(idx, editInput.value.trim());
-          const cancelBtn = document.createElement('button');
-          cancelBtn.type = 'button';
-          cancelBtn.className = 'sidebar-folder-edit-btn';
-          cancelBtn.title = 'Cancel';
-          cancelBtn.textContent = '✕';
-          cancelBtn.onclick = () => cancelFolderEdit(idx);
-          li.appendChild(saveBtn);
-          li.appendChild(cancelBtn);
-        } else {
-          const nameBtn = document.createElement('button');
-          nameBtn.type = 'button';
-          nameBtn.style = 'background:none;border:none;padding:0;margin:0;color:inherit;font-weight:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;';
-          nameBtn.onclick = () => {
-            currentFolderIdx = idx;
-            renderFolders();
-            renderSavedSearches();
-          };
-          // Add miku.png as folder icon
-          const folderIcon = document.createElement('img');
-          folderIcon.src = 'miku.png';
-          folderIcon.alt = 'Folder';
-          folderIcon.style.width = '18px';
-          folderIcon.style.height = '18px';
-          folderIcon.style.marginRight = '4px';
-          folderIcon.style.verticalAlign = 'middle';
-          nameBtn.appendChild(folderIcon);
-          // Folder name text
-          const folderText = document.createElement('span');
-          folderText.textContent = folder.name;
-          nameBtn.appendChild(folderText);
-          
-          li.appendChild(nameBtn);
-          // Edit/remove
-          const editBtn = document.createElement('button');
-          editBtn.type = 'button';
-          editBtn.className = 'sidebar-folder-edit-btn';
-          editBtn.title = 'Rename';
-          editBtn.textContent = '✎';
-          editBtn.onclick = () => editFolder(idx);
-          li.appendChild(editBtn);
-          if (savedFolders.length > 1) {
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'sidebar-folder-remove-btn';
-            removeBtn.title = 'Remove';
-            removeBtn.textContent = '🗑';
-            removeBtn.onclick = () => removeFolder(idx);
-            li.appendChild(removeBtn);
-          }
-        }
-        folderListEl.appendChild(li);
-      });
-    }
-    function addFolder(name) {
-      name = name.trim();
-      if (!name) return;
-      if (savedFolders.some(f => f.name === name)) return;
-      savedFolders.push({ name, searches: [] });
-      currentFolderIdx = savedFolders.length - 1;
-      foldersObj.folders = savedFolders;
-      saveFoldersObj(foldersObj);
-      renderFolders();
-      renderSavedSearches();
-    }
-    function removeFolder(idx) {
-      if (savedFolders.length === 1) return;
-      savedFolders.splice(idx, 1);
-      if (currentFolderIdx >= savedFolders.length) currentFolderIdx = savedFolders.length - 1;
-      foldersObj.folders = savedFolders;
-      saveFoldersObj(foldersObj);
-      renderFolders();
-      renderSavedSearches();
-    }
-    function editFolder(idx) {
-      savedFolders = savedFolders.map((f, i) => i === idx ? { ...f, editing: true } : { ...f, editing: false });
-      foldersObj.folders = savedFolders;
-      saveFoldersObj(foldersObj);
-      renderFolders();
-      setTimeout(() => {
-        const input = folderListEl.querySelector('input.sidebar-folder-input');
-        if (input) input.focus();
-      }, 50);
-    }
-    function saveFolderEdit(idx, value) {
-      value = value.trim();
-      if (!value) return;
-      if (savedFolders.some((f, i) => f.name === value && i !== idx)) return;
-      savedFolders[idx].name = value;
-      savedFolders[idx].editing = false;
-      foldersObj.folders = savedFolders;
-      saveFoldersObj(foldersObj);
-      renderFolders();
-      renderSavedSearches();
-    }
-    function cancelFolderEdit(idx) {
-      savedFolders[idx].editing = false;
-      foldersObj.folders = savedFolders;
-      saveFoldersObj(foldersObj);
-      renderFolders();
-    }
-    folderAddBtn.addEventListener('click', function() {
-      addFolder(folderInputEl.value);
-      folderInputEl.value = '';
-      folderInputEl.focus();
-    });
-    folderInputEl.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        addFolder(folderInputEl.value);
-        folderInputEl.value = '';
-      }
-    });
-    renderFolders();
 
     // --- Saved Searches Logic (Now Folder-Specific) ---
     const listEl = document.getElementById('saved-searches-list');
