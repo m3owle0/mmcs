@@ -1263,9 +1263,9 @@
         top: 0;
         transform: none;
         width: 100vw;
-        height: calc(100vh - 60px); /* Account for bottom donation links */
+        height: 100vh;
         max-width: 100vw;
-        max-height: calc(100vh - 60px);
+        max-height: 100vh;
         margin: 0;
         padding: 15px;
         border-radius: 0;
@@ -1438,7 +1438,7 @@
       
       /* Mobile menu toggle - improved */
       .mobile-menu-toggle {
-        display: block !important;
+        display: flex !important;
         position: fixed;
         top: 15px;
         left: 15px;
@@ -1449,7 +1449,6 @@
         width: 50px;
         height: 50px;
         border-radius: 12px;
-        display: flex;
         align-items: center;
         justify-content: center;
         font-size: 24px;
@@ -1461,6 +1460,23 @@
       .mobile-menu-toggle:hover {
         transform: scale(1.05);
         box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      }
+      
+      /* Ensure mobile sidebar overlay is properly positioned */
+      .mobile-sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.7);
+        z-index: 1999;
+        display: none;
+        backdrop-filter: blur(3px);
+      }
+      
+      .mobile-sidebar-overlay.active {
+        display: block;
       }
       
       /* Adjust for very small screens */
@@ -1508,7 +1524,7 @@
         top: 0;
         left: -100%;
         width: 85vw;
-        height: calc(100vh - 60px); /* Leave space for donation links at bottom */
+        height: 100vh;
         background: linear-gradient(135deg, rgba(15,15,15,0.98) 0%, rgba(10,10,10,0.98) 100%);
         z-index: 2000;
         padding: 70px 20px 20px 20px;
@@ -1516,6 +1532,8 @@
         transition: left 0.3s ease;
         border-right: 1px solid rgba(255,255,255,0.15);
         box-shadow: 8px 0 30px rgba(0,0,0,0.5);
+        visibility: visible;
+        display: block;
       }
       
       .mobile-sidebar.active {
@@ -1536,12 +1554,6 @@
       
       .mobile-sidebar-overlay.active {
         display: block;
-      }
-      
-      /* Ensure mobile sidebar doesn't cover donation links */
-      .mobile-sidebar {
-        height: calc(100vh - 60px); /* Account for bottom donation links */
-        bottom: 60px;
       }
       
       /* Improve mobile sidebar content */
@@ -1603,7 +1615,6 @@
       /* Fix body padding for mobile */
       body {
         padding-top: 0;
-        padding-bottom: 60px; /* Space for bottom donation links */
         overflow-x: hidden;
         box-sizing: border-box;
       }
@@ -4955,26 +4966,24 @@
       const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
       
       if (mobileMenuToggle && mobileSidebar && mobileSidebarOverlay) {
-        // Remove any existing event listeners first
-        const newMobileMenuToggle = mobileMenuToggle.cloneNode(true);
-        mobileMenuToggle.parentNode.replaceChild(newMobileMenuToggle, mobileMenuToggle);
-        
-        const newMobileSidebarOverlay = mobileSidebarOverlay.cloneNode(true);
-        mobileSidebarOverlay.parentNode.replaceChild(newMobileSidebarOverlay, mobileSidebarOverlay);
-        
-        // Add fresh event listeners
-        newMobileMenuToggle.addEventListener('click', function() {
+        // Add event listeners
+        mobileMenuToggle.addEventListener('click', function() {
           mobileSidebar.classList.add('active');
-          newMobileSidebarOverlay.classList.add('active');
-          // Update searches when opening
+          mobileSidebarOverlay.classList.add('active');
+          // Update folders and searches when opening
+          updateMobileFolders();
           updateMobileSearches();
         });
         
-        newMobileSidebarOverlay.addEventListener('click', function() {
+        mobileSidebarOverlay.addEventListener('click', function() {
           mobileSidebar.classList.remove('active');
-          newMobileSidebarOverlay.classList.remove('active');
+          mobileSidebarOverlay.classList.remove('active');
         });
       }
+      
+      // Initialize mobile folders and searches
+      updateMobileFolders();
+      updateMobileSearches();
       
       // Update mobile folder list
       function updateMobileFolders() {
@@ -5018,10 +5027,15 @@
           return;
         }
         
+        // Sort searches alphabetically
+        const sortedSearches = [...folder.searches].sort((a, b) => 
+          (a.value || "").localeCompare(b.value || "", undefined, {sensitivity: 'base'})
+        );
+        
         // Create a document fragment to batch DOM operations
         const fragment = document.createDocumentFragment();
         
-        folder.searches.forEach((term, idx) => {
+        sortedSearches.forEach((term, idx) => {
           const li = document.createElement('li');
           li.className = 'saved-search-item';
           li.style.marginBottom = '10px';
@@ -5075,6 +5089,23 @@
         
         // Append all at once
         mobileList.appendChild(fragment);
+      }
+      
+      // Make sure mobile sidebar is properly initialized when opened
+      if (mobileMenuToggle && mobileSidebar && mobileSidebarOverlay) {
+        // Add event listeners
+        mobileMenuToggle.addEventListener('click', function() {
+          mobileSidebar.classList.add('active');
+          mobileSidebarOverlay.classList.add('active');
+          // Update folders and searches when opening
+          updateMobileFolders();
+          updateMobileSearches();
+        });
+        
+        mobileSidebarOverlay.addEventListener('click', function() {
+          mobileSidebar.classList.remove('active');
+          mobileSidebarOverlay.classList.remove('active');
+        });
       }
       
       // Mobile add search functionality
@@ -5154,13 +5185,9 @@
         });
       }
       
-      // Initialize mobile folders and searches only once
-      // Check if already initialized to prevent duplicates
-      if (!window.mobileSidebarInitialized) {
-        updateMobileFolders();
-        updateMobileSearches();
-        window.mobileSidebarInitialized = true;
-      }
+      // Initialize mobile folders and searches
+      updateMobileFolders();
+      updateMobileSearches();
       
       // On mobile, open tabs one at a time to avoid overwhelming the browser
       const originalTabQueueAdd = tabQueue.add;
