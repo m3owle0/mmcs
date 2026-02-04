@@ -33,6 +33,16 @@
       min-height: 100vh;
       overflow: hidden;
     }
+    
+    /* Portrait mode - vertical stack layout */
+    @media (orientation: portrait), (max-aspect-ratio: 1/1) {
+      html, body {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        height: auto !important;
+        min-height: 100vh !important;
+      }
+    }
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -1401,6 +1411,7 @@
   /* Adjust body padding for top header */
   body {
     padding-top: 60px;
+    overflow-y: auto;
   }
 
   /* Ensure main content doesn't overlap with header */
@@ -1417,6 +1428,8 @@
     top: 60px; /* Start below header */
     height: calc(100vh - 60px); /* Adjust height for header */
   }
+  
+  /* Portrait mode will override these with relative positioning */
 
   /* Lock overlay when site is locked - covers ENTIRE viewport */
   body.site-locked::before {
