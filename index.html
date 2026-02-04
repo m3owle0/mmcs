@@ -1485,6 +1485,13 @@
         backdrop-filter: blur(3px);
       }
       
+      /* Ensure the overlay covers the entire screen including safe areas */
+      @supports (height: 100dvh) {
+        .mobile-sidebar-overlay {
+          height: 100dvh;
+        }
+      }
+      
       .mobile-sidebar-overlay.active {
         display: block;
       }
@@ -1537,7 +1544,7 @@
         height: 100vh;
         background: linear-gradient(135deg, rgba(15,15,15,0.98) 0%, rgba(10,10,10,0.98) 100%);
         z-index: 2000;
-        padding: 70px 20px 20px 20px;
+        padding: 70px 20px 80px 20px; /* Increased bottom padding to 80px */
         overflow-y: auto;
         transition: left 0.3s ease;
         border-right: 1px solid rgba(255,255,255,0.15);
@@ -1545,6 +1552,19 @@
         visibility: visible;
         display: flex;
         flex-direction: column;
+      }
+      
+      /* Add safe area inset for modern iOS devices */
+      @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        .mobile-sidebar {
+          padding-bottom: calc(80px + env(safe-area-inset-bottom));
+        }
+      }
+      
+      @supports (padding-bottom: constant(safe-area-inset-bottom)) {
+        .mobile-sidebar {
+          padding-bottom: calc(80px + constant(safe-area-inset-bottom));
+        }
       }
       
       .mobile-sidebar > div:first-child {
@@ -2097,7 +2117,7 @@
         </ul>
       </div>
       
-      <div style="flex-shrink: 0; margin-top: auto; padding-top: 20px; border-top: 1px solid #232323;">
+      <div style="flex-shrink: 0; margin-top: auto; padding-top: 20px; border-top: 1px solid #232323; padding-bottom: env(safe-area-inset-bottom);">
         <button class="sidebar-randomize-btn" id="mobile-randomize-btn" style="width: 100%; margin-bottom: 10px;">Randomize Search</button>
         <button class="sidebar-reset-btn" id="mobile-reset-highlights-btn" style="width: 100%; margin-bottom: 10px;">Reset Highlights</button>
         <div style="display: flex; gap: 8px; margin-top: 10px;">
