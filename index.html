@@ -2646,8 +2646,9 @@
         
         if (USE_BACKEND && CHAT_API_URL && CHAT_API_URL !== 'https://your-backend-url.com') {
           // Backend mode: send heartbeat and poll for messages
-          // Initialize last poll timestamp
-          lastPollTimestamp = Date.now() - 5000; // Start 5 seconds ago to get recent messages
+          // Reset first poll flag to load all recent messages
+          isFirstPoll = true;
+          lastPollTimestamp = Date.now();
           sendHeartbeat(username, userId);
           heartbeatInterval = setInterval(() => sendHeartbeat(username, userId), 30000); // Every 30s
           messagePollInterval = setInterval(() => {
@@ -2655,7 +2656,7 @@
             // Clean duplicates after each poll
             removeDuplicateMessages();
           }, 3000); // Every 3s (reduced frequency)
-          // Initial poll after a short delay
+          // Initial poll after a short delay to load all recent messages
           setTimeout(() => {
             pollMessages();
             removeDuplicateMessages();
@@ -2688,26 +2689,31 @@
 
       // Track last poll timestamp to avoid re-fetching same messages
       let lastPollTimestamp = Date.now();
+      let isFirstPoll = true; // Track if this is the first poll (to load all recent messages)
       
       // Poll for new messages
       async function pollMessages() {
         if (!USE_BACKEND || !CHAT_API_URL || CHAT_API_URL === 'https://your-backend-url.com') return;
         
         try {
-          // Only get messages since last poll (prevents duplicates)
-          const since = lastPollTimestamp;
+          // On first poll, fetch messages from last hour to see all recent chat history
+          // On subsequent polls, only get messages since last poll (prevents duplicates)
+          const since = isFirstPoll ? (Date.now() - 3600000) : lastPollTimestamp; // 1 hour ago for first poll
           const response = await fetch(CHAT_API_URL + '/messages?since=' + since);
           const data = await response.json();
           
-          // Update last poll timestamp
+          // Update last poll timestamp after fetching
+          const wasFirstPoll = isFirstPoll;
           lastPollTimestamp = Date.now();
+          isFirstPoll = false; // Mark that first poll is done
           
           if (data.messages && Array.isArray(data.messages)) {
             // Process messages and filter out duplicates
             let addedCount = 0;
             data.messages.forEach(msg => {
               if (msg.username && msg.message && msg.timestamp) {
-                // Only add if timestamp is newer than last poll
+                // Only add if timestamp is newer than the "since" timestamp
+                // This ensures we get all messages on first poll, and only new ones after
                 if (msg.timestamp > since) {
                   addMessageToChat(msg.username, msg.message, msg.timestamp);
                   addedCount++;
@@ -2715,7 +2721,7 @@
               }
             });
             if (addedCount > 0) {
-              console.log(`Added ${addedCount} new messages`);
+              console.log(`Added ${addedCount} new messages${wasFirstPoll ? ' (initial load)' : ''}`);
             }
           }
           
