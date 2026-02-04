@@ -29,13 +29,16 @@
     html, body {
       height: 100%;
       background-color: var(--theme-bg);
+      color: var(--theme-text);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    /* Background image - browsers handle background-size/position/attachment gracefully when image is 'none' */
+    html, body {
       background-image: var(--theme-bg-image);
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
-      color: var(--theme-text);
-      min-height: 100vh;
-      overflow: hidden;
     }
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
