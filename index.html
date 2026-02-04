@@ -1935,10 +1935,26 @@
       height: 100vh !important;
       background: rgba(0,0,0,0.95) !important;
       backdrop-filter: blur(8px) !important;
-      display: flex !important;
+      display: none !important; /* Hidden by default */
       align-items: center !important;
       justify-content: center !important;
+      z-index: 99998 !important; /* Slightly lower than login modal */
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+
+    .username-modal.show {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
       z-index: 99999 !important;
+    }
+
+    .username-modal.hidden {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      z-index: -1 !important;
     }
 
     .username-modal-content {
@@ -2246,6 +2262,13 @@
         document.body.classList.toggle('login-locked', locked);
         if (loginModal) {
           if (locked) {
+            // Show login modal - hide username modal first
+            const usernameModal = document.getElementById('username-modal');
+            if (usernameModal) {
+              usernameModal.style.display = 'none';
+              usernameModal.style.zIndex = '-1';
+            }
+            
             // Show login modal
             loginModal.classList.add('show');
             loginModal.classList.remove('hidden');
@@ -2257,11 +2280,16 @@
             loginModal.style.width = '100vw';
             loginModal.style.height = '100vh';
             loginModal.style.background = 'rgba(0, 0, 0, 0.95)';
+            loginModal.style.visibility = 'visible';
+            loginModal.style.opacity = '1';
           } else {
-            // Hide login modal
+            // Hide login modal completely
             loginModal.classList.remove('show');
             loginModal.classList.add('hidden');
             loginModal.style.display = 'none';
+            loginModal.style.visibility = 'hidden';
+            loginModal.style.opacity = '0';
+            loginModal.style.zIndex = '-1';
           }
         }
         if (!locked) {
@@ -2285,10 +2313,20 @@
         loginError.style.display = 'none';
 
         if (checkPassword(password)) {
+          // Hide login modal first
           setLoginLocked(false);
           passwordInput.value = '';
-          // Initialize chat after successful login
+          
+          // Wait for login modal to hide, then initialize chat
           setTimeout(() => {
+            // Ensure login modal is hidden
+            if (loginModal) {
+              loginModal.style.display = 'none';
+              loginModal.style.visibility = 'hidden';
+              loginModal.style.zIndex = '-1';
+            }
+            
+            // Initialize chat (which will show username modal if needed)
             if (typeof window.initChat === 'function') {
               window.initChat();
             } else {
@@ -2299,7 +2337,7 @@
                 }
               }, 1000);
             }
-          }, 300);
+          }, 400); // Increased delay to ensure login modal is hidden
         } else {
           loginError.style.display = 'block';
           passwordInput.value = '';
@@ -2434,18 +2472,53 @@
 
       // Show username modal
       function showUsernameModal() {
+        // First, ensure login modal is completely hidden
+        const loginModal = document.getElementById('login-modal-bg');
+        if (loginModal) {
+          loginModal.style.display = 'none';
+          loginModal.style.visibility = 'hidden';
+          loginModal.style.opacity = '0';
+          loginModal.style.zIndex = '-1';
+          loginModal.classList.remove('show');
+          loginModal.classList.add('hidden');
+        }
+        
+        // Then show username modal
         const modal = document.getElementById('username-modal');
         const input = document.getElementById('username-input');
         if (modal && input) {
-          modal.style.display = 'flex';
-          setTimeout(() => input.focus(), 100);
+          // Wait a moment to ensure login modal is hidden
+          setTimeout(() => {
+            modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
+            modal.style.zIndex = '99999';
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100vw';
+            modal.style.height = '100vh';
+            modal.classList.add('show');
+            modal.classList.remove('hidden');
+            setTimeout(() => input.focus(), 100);
+            console.log('Username modal shown');
+          }, 200);
+        } else {
+          console.error('Username modal or input not found');
         }
       }
 
       // Hide username modal
       function hideUsernameModal() {
         const modal = document.getElementById('username-modal');
-        if (modal) modal.style.display = 'none';
+        if (modal) {
+          modal.style.display = 'none';
+          modal.style.visibility = 'hidden';
+          modal.style.opacity = '0';
+          modal.classList.remove('show');
+          modal.classList.add('hidden');
+          console.log('Username modal hidden');
+        }
       }
 
       // Initialize chat
@@ -2684,18 +2757,45 @@
           saveUsernameForPassword(passwordHash, username);
           localStorage.setItem(USERNAME_STORAGE_KEY, username);
           
-          // Hide username modal
+          // Hide username modal FIRST with multiple methods
           hideUsernameModal();
-          // Start chat
-          startChat(username);
+          
+          // Also force hide with inline styles
+          const usernameModal = document.getElementById('username-modal');
+          if (usernameModal) {
+            usernameModal.style.display = 'none';
+            usernameModal.style.visibility = 'hidden';
+            usernameModal.style.opacity = '0';
+            usernameModal.style.zIndex = '-1';
+            usernameModal.classList.remove('show');
+            usernameModal.classList.add('hidden');
+            console.log('Username modal forcefully hidden');
+          }
+          
           // Ensure login modal is also hidden
           const loginModal = document.getElementById('login-modal-bg');
           if (loginModal) {
             loginModal.style.display = 'none';
+            loginModal.style.visibility = 'hidden';
+            loginModal.style.opacity = '0';
             loginModal.classList.remove('show');
             loginModal.classList.add('hidden');
+            console.log('Login modal hidden');
           }
+          
+          // Clear the input
+          input.value = '';
+          
+          // Start chat AFTER modals are hidden
+          setTimeout(() => {
+            startChat(username);
+            console.log('Chat started with username:', username);
+          }, 100);
+          
+          return false;
         });
+      } else {
+        console.error('Username form not found!');
       }
 
       // Chat input handlers
