@@ -1162,38 +1162,436 @@
       box-shadow: 0 0 0 2px rgba(120,120,120,0.3);
       transition: none;
     }
+    /* ============================================
+       MOBILE UI - COMPLETE REDESIGN
+       Single-screen tab-based interface
+       Activates based on aspect ratio (portrait/tall orientation)
+       ============================================ */
+    
+    @media (orientation: portrait), (max-aspect-ratio: 1/1) {
+      /* Hide desktop elements */
+      .sidebar,
+      .wishlist-section,
+      .minimized-panels {
+        display: none !important;
+      }
+      
+      /* Hide desktop container content by default, show mobile tabs */
+      .container > h1:first-of-type,
+      .container > .tip,
+      .container > form#searchForm {
+        display: none;
+      }
+      
+      .container > .mobile-tab-content:not(.active) {
+        display: none !important;
+      }
+      
+      /* Mobile container - full screen */
+      .container {
+        position: fixed !important;
+        top: 60px !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 60px !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        height: calc(100vh - 120px) !important;
+        max-height: calc(100vh - 120px) !important;
+        transform: none !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        padding: 16px !important;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      /* Mobile Tab Navigation */
+      .mobile-tabs {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: rgba(15, 15, 15, 0.98);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.5);
+      }
+      
+      .mobile-tab {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 4px;
+        color: #888;
+        font-size: 11px;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: none;
+        background: none;
+        cursor: pointer;
+        min-height: 60px;
+      }
+      
+      .mobile-tab.active {
+        color: #00e6d6;
+      }
+      
+      .mobile-tab-icon {
+        font-size: 20px;
+        margin-bottom: 4px;
+      }
+      
+      .mobile-tab-label {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      /* Mobile Tab Content */
+      .mobile-tab-content {
+        display: none;
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .mobile-tab-content.active {
+        display: block;
+      }
+      
+      /* Mobile Search Section */
+      .mobile-search-section {
+        margin-bottom: 20px;
+      }
+      
+      .mobile-search-section h2 {
+        font-size: 18px;
+        margin: 0 0 12px 0;
+        color: #00e6d6;
+        font-weight: 600;
+      }
+      
+      /* Mobile Saved Searches */
+      .mobile-saved-searches {
+        margin-bottom: 24px;
+      }
+      
+      .mobile-folder {
+        margin-bottom: 16px;
+        background: rgba(20, 20, 20, 0.6);
+        border-radius: 12px;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .mobile-folder-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .mobile-folder-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #e3e3e3;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .mobile-search-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        margin-bottom: 6px;
+        background: rgba(30, 30, 30, 0.6);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.2s;
+        min-height: 44px; /* Touch target size */
+      }
+      
+      .mobile-search-item:active {
+        background: rgba(50, 50, 50, 0.8);
+        transform: scale(0.98);
+      }
+      
+      .mobile-search-checkbox {
+        width: 20px;
+        height: 20px;
+        accent-color: #00e6d6;
+        cursor: pointer;
+      }
+      
+      .mobile-search-term {
+        flex: 1;
+        font-size: 14px;
+        color: #e3e3e3;
+      }
+      
+      /* Mobile Markets Section */
+      .mobile-markets-section {
+        margin-bottom: 24px;
+      }
+      
+      .mobile-market-category {
+        margin-bottom: 24px;
+      }
+      
+      .mobile-market-category h3 {
+        font-size: 16px;
+        margin: 0 0 12px 0;
+        color: #00e6d6;
+        font-weight: 600;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .mobile-market-btn {
+        width: 100%;
+        padding: 14px 16px;
+        margin-bottom: 8px;
+        background: rgba(30, 30, 30, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        color: #e3e3e3;
+        font-size: 14px;
+        font-weight: 500;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-height: 48px; /* Touch target */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      
+      .mobile-market-btn:active {
+        background: rgba(50, 50, 50, 0.9);
+        transform: scale(0.98);
+        border-color: #00e6d6;
+      }
+      
+      .mobile-market-btn:hover {
+        background: rgba(40, 40, 40, 0.9);
+        border-color: rgba(0, 230, 214, 0.3);
+      }
+      
+      /* Mobile Actions */
+      .mobile-actions {
+        position: sticky;
+        bottom: 70px;
+        background: rgba(15, 15, 15, 0.95);
+        backdrop-filter: blur(20px);
+        padding: 12px;
+        margin: 20px -16px -16px -16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 100;
+      }
+      
+      .mobile-action-btn {
+        width: 100%;
+        padding: 14px;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #00e6d6 0%, #00b8a8 100%);
+        border: none;
+        border-radius: 10px;
+        color: #0a0a0a;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-height: 48px;
+        box-shadow: 0 4px 12px rgba(0, 230, 214, 0.3);
+      }
+      
+      .mobile-action-btn:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 8px rgba(0, 230, 214, 0.4);
+      }
+      
+      .mobile-action-btn.secondary {
+        background: rgba(40, 40, 40, 0.8);
+        color: #e3e3e3;
+        box-shadow: none;
+      }
+      
+      /* Mobile Header Adjustments */
+      .top-header {
+        padding: 10px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      .header-left {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      .donation-link {
+        font-size: 12px;
+        padding: 6px 12px;
+      }
+      
+      .online-users-count {
+        font-size: 11px;
+        margin-left: 0;
+      }
+      
+      /* Hide desktop-specific elements on mobile */
+      .panel-controls,
+      .resize-handle,
+      .drag-handle {
+        display: none !important;
+      }
+      
+      /* Mobile Search Input */
+      #query {
+        width: 100%;
+        padding: 14px 16px;
+        font-size: 16px; /* Prevents zoom on iOS */
+        min-height: 48px;
+        border-radius: 10px;
+      }
+      
+      /* Mobile Buttons */
+      button, .market-btn, .add-market-btn {
+        min-height: 44px; /* Touch target */
+        font-size: 14px;
+        padding: 12px 16px;
+      }
+      
+      /* Mobile Modals */
+      .unlock-modal-bg {
+        background: rgba(0, 0, 0, 0.98) !important;
+        backdrop-filter: blur(12px) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 20px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+      
+      .unlock-modal {
+        width: calc(100vw - 40px) !important;
+        max-width: calc(100vw - 40px) !important;
+        margin: 0 !important;
+        padding: 24px 20px !important;
+        max-height: calc(100vh - 40px) !important;
+        overflow-y: auto !important;
+        background: rgba(20, 20, 20, 1) !important;
+        border: 2px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9) !important;
+      }
+      
+      .unlock-modal h3 {
+        font-size: 20px !important;
+        margin-bottom: 16px !important;
+      }
+      
+      .unlock-modal p {
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        margin-bottom: 16px !important;
+      }
+      
+      .unlock-input {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 14px 16px !important;
+        margin-bottom: 16px !important;
+      }
+      
+      .unlock-btn-row {
+        flex-direction: column !important;
+        gap: 12px !important;
+      }
+      
+      .unlock-submit-btn,
+      .unlock-cancel-btn {
+        width: 100% !important;
+        padding: 14px 20px !important;
+        font-size: 16px !important;
+        min-height: 48px !important;
+      }
+      
+      /* Login/Signup Forms */
+      .login-form,
+      .signup-form {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+      }
+      
+      .login-form input,
+      .signup-form input {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 14px 16px !important;
+        min-height: 48px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      .login-form button,
+      .signup-form button {
+        width: 100% !important;
+        padding: 14px 20px !important;
+        font-size: 16px !important;
+        min-height: 48px !important;
+        margin-top: 8px !important;
+      }
+      
+      .login-error,
+      .login-success {
+        padding: 12px 16px !important;
+        font-size: 14px !important;
+        margin-bottom: 16px !important;
+        border-radius: 8px !important;
+      }
+      
+      .custom-market-modal {
+        width: calc(100vw - 40px) !important;
+        max-width: calc(100vw - 40px) !important;
+        margin: 20px !important;
+        max-height: calc(100vh - 40px) !important;
+        overflow-y: auto !important;
+      }
+    }
+    
     @media (max-width: 1200px) {
       .wishlist-section { display: none; }
       .container { margin-right: 0; }
       .custom-market-modal-bg { justify-content: center; align-items: center; }
       .custom-market-modal { margin: auto; }
     }
-    @media (max-width: 1000px) {
-      .sidebar {
-        position: static;
-        width: 100%;
-        height: auto;
-        box-shadow: none;
-        border-right: none;
-        border-bottom: 1.5px solid #232323;
-        padding: 13px 8px 7px 8px;
-        margin-bottom: 18px;
-        max-width: 100vw;
+    
+    @media (orientation: landscape) and (min-aspect-ratio: 1/1) {
+      .mobile-tabs,
+      .mobile-tab-content {
+        display: none !important;
       }
-      .container { max-width: 98vw; margin: 0.5em; }
-      .custom-market-modal-bg { justify-content: center !important; align-items: center !important; }
-      .custom-market-modal { margin: auto !important; }
-    }
-    @media (max-width: 700px) {
-      .market-row, .markets { flex-direction: column; gap: 8px; }
-      .market-btn { min-width: 0; width: 100%; }
-      .add-market-btn { min-width: 0; width: 100%; }
-      input[type="text"] { min-width: 0; }
-      .special-group { padding: 10px 4px 6px 4px; }
-      #open-all-btn { max-width: 100%; }
-      .sidebar { padding: 9px 3px 7px 6px; font-size: 0.97em; }
-      .custom-market-modal-bg { justify-content: center !important; align-items: center !important; }
-      .custom-market-modal { margin: auto !important; }
+      
+      /* Show desktop content on landscape/wide screens */
+      .container > h1:first-of-type,
+      .container > .tip,
+      .container > form#searchForm {
+        display: block;
+      }
     }
     @media (min-width: 1200px) {
   .container {
@@ -1622,6 +2020,8 @@
   </div>
   <div class="container">
     <div class="drag-handle" id="container-handle"></div>
+    
+    <!-- Desktop Content (hidden on mobile) -->
     <h1>Multi-Market Clothing Search</h1>
     <div class="tip">Enter your search and click any button to open the most recent results on that secondhand fashion site.<br>
       Example: <span style="color:#e60021;font-weight:bold;">rick owens</span>
@@ -1674,6 +2074,62 @@
         <div class="markets" id="special-markets"></div>
       </div>
     </form>
+    
+    <!-- Mobile Tab Content Sections -->
+    <div class="mobile-tab-content active" id="mobile-tab-search">
+      <h1>Multi-Market Clothing Search</h1>
+      <div class="tip">Enter your search and click any button to open the most recent results on that secondhand fashion site.<br>
+        Example: <span style="color:#e60021;font-weight:bold;">rick owens</span>
+      </div>
+      <form id="mobile-searchForm" autocomplete="off">
+        <div class="market-row" style="position:relative;">
+          <input type="text" id="mobile-query" placeholder="Search for clothing, brands, etc." required />
+          <button id="mobile-clear-search" type="button" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#888;cursor:pointer;display:none;">✕</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
+          <button type="button" id="mobile-open-all-btn">Open All</button>
+          <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+            <input type="checkbox" id="mobile-toggle-all-checkbox" checked style="width: 16px; height: 16px; accent-color: #666;">
+            <span style="font-size: 14px; color: #e3e3e3;">Toggle All</span>
+          </label>
+        </div>
+        <div class="section-header-row">
+          <h2>Asia</h2>
+          <button type="button" class="section-openall-btn" data-section="asia">Open All Asia</button>
+        </div>
+        <div class="markets" id="mobile-asia-markets"></div>
+        <div class="section-header-row">
+          <h2>International &amp; Other Markets</h2>
+          <button type="button" class="section-openall-btn" data-section="international">Open All International</button>
+        </div>
+        <div class="markets" id="mobile-international-markets"></div>
+        <div class="special-group">
+          <div class="section-header-row" style="margin-top:0;margin-bottom:8px;">
+            <span class="special-group-label">Designer &amp; Global Select</span>
+            <button type="button" class="section-openall-btn" data-section="special">Open All Designer</button>
+          </div>
+          <div class="markets" id="mobile-special-markets"></div>
+        </div>
+      </form>
+    </div>
+    
+    <!-- Mobile Saved Searches Tab -->
+    <div class="mobile-tab-content" id="mobile-tab-saved">
+      <div class="mobile-search-section">
+        <h2>Saved Searches</h2>
+        <div class="mobile-saved-searches" id="mobile-saved-searches-list"></div>
+        <div class="mobile-actions">
+          <button class="mobile-action-btn" id="mobile-open-selected-btn">Open Selected</button>
+          <button class="mobile-action-btn secondary" id="mobile-clear-selection-btn">Clear Selection</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mobile Markets Tab -->
+    <div class="mobile-tab-content" id="mobile-tab-markets">
+      <div class="mobile-markets-section" id="mobile-markets-list"></div>
+    </div>
+    
     <div class="resize-handle resize-handle-right" data-resize="container"></div>
     <div class="resize-handle resize-handle-left" data-resize="container"></div>
     <div class="resize-handle resize-handle-bottom" data-resize="container"></div>
@@ -1683,6 +2139,23 @@
     <div class="resize-handle resize-handle-top-right" data-resize="container"></div>
     <div class="resize-handle resize-handle-top-left" data-resize="container"></div>
   </div>
+  
+  <!-- Mobile Tab Navigation -->
+  <div class="mobile-tabs">
+    <button class="mobile-tab active" data-tab="search">
+      <div class="mobile-tab-icon">🔍</div>
+      <div class="mobile-tab-label">Search</div>
+    </button>
+    <button class="mobile-tab" data-tab="saved">
+      <div class="mobile-tab-icon">⭐</div>
+      <div class="mobile-tab-label">Saved</div>
+    </button>
+    <button class="mobile-tab" data-tab="markets">
+      <div class="mobile-tab-icon">🌐</div>
+      <div class="mobile-tab-label">Markets</div>
+    </button>
+  </div>
+  
   <!-- Custom Market Modal -->
   <div id="custom-market-modal-bg" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;">
     <div class="custom-market-modal">
@@ -4758,6 +5231,405 @@
         if (panelId === 'wishlist') {
           createWishlistButton();
         }
+      });
+    })();
+    
+    // ============================================
+    // MOBILE TAB NAVIGATION SYSTEM
+    // ============================================
+    (function() {
+      const mobileTabs = document.querySelectorAll('.mobile-tab');
+      const mobileTabContents = document.querySelectorAll('.mobile-tab-content');
+      
+      // Helper function to check if we're in portrait/tall aspect ratio
+      function isPortraitOrientation() {
+        return window.innerHeight > window.innerWidth || 
+               window.matchMedia('(orientation: portrait)').matches || 
+               window.matchMedia('(max-aspect-ratio: 1/1)').matches;
+      }
+      
+      // Tab switching
+      mobileTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Only allow tab switching in portrait orientation
+          if (!isPortraitOrientation()) return;
+          
+          const targetTab = this.getAttribute('data-tab');
+          
+          // Update active states
+          mobileTabs.forEach(t => t.classList.remove('active'));
+          mobileTabContents.forEach(c => c.classList.remove('active'));
+          
+          this.classList.add('active');
+          const targetContent = document.getElementById(`mobile-tab-${targetTab}`);
+          if (targetContent) {
+            targetContent.classList.add('active');
+            
+            // Render content when tab is activated
+            if (targetTab === 'saved') {
+              renderMobileSavedSearches();
+            } else if (targetTab === 'markets') {
+              renderMobileMarkets();
+            } else if (targetTab === 'search') {
+              // Sync mobile search form with desktop
+              const desktopQuery = document.getElementById('query');
+              const mobileQuery = document.getElementById('mobile-query');
+              if (desktopQuery && mobileQuery) {
+                mobileQuery.value = desktopQuery.value;
+              }
+            }
+          }
+        });
+      });
+      
+      // Listen for orientation/aspect ratio changes
+      window.addEventListener('resize', function() {
+        const isPortrait = isPortraitOrientation();
+        const mobileTabsEl = document.querySelector('.mobile-tabs');
+        
+        // Show/hide mobile tabs based on orientation
+        if (mobileTabsEl) {
+          if (isPortrait) {
+            mobileTabsEl.style.display = 'flex';
+            // Ensure first tab is active if no tab is active
+            const activeTab = document.querySelector('.mobile-tab.active');
+            if (!activeTab && mobileTabs.length > 0) {
+              mobileTabs[0].click();
+            }
+          } else {
+            mobileTabsEl.style.display = 'none';
+            // Show desktop content
+            document.querySelectorAll('.mobile-tab-content').forEach(c => c.classList.remove('active'));
+          }
+        }
+      });
+      
+      // Initial check
+      setTimeout(() => {
+        const isPortrait = isPortraitOrientation();
+        const mobileTabsEl = document.querySelector('.mobile-tabs');
+        if (mobileTabsEl) {
+          mobileTabsEl.style.display = isPortrait ? 'flex' : 'none';
+        }
+      }, 100);
+      
+      // Render mobile saved searches
+      function renderMobileSavedSearches() {
+        const container = document.getElementById('mobile-saved-searches-list');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        savedFolders.forEach((folder, folderIdx) => {
+          const folderDiv = document.createElement('div');
+          folderDiv.className = 'mobile-folder';
+          
+          const folderHeader = document.createElement('div');
+          folderHeader.className = 'mobile-folder-header';
+          
+          const folderName = document.createElement('div');
+          folderName.className = 'mobile-folder-name';
+          folderName.innerHTML = `<span>📁</span> ${folder.name}`;
+          
+          folderHeader.appendChild(folderName);
+          folderDiv.appendChild(folderHeader);
+          
+          // Render searches in folder
+          folder.searches.forEach((term, idx) => {
+            const searchItem = document.createElement('div');
+            searchItem.className = 'mobile-search-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'mobile-search-checkbox';
+            checkbox.checked = selectedSearchTerms[term.value] || false;
+            checkbox.addEventListener('change', function(e) {
+              e.stopPropagation();
+              selectedSearchTerms[term.value] = checkbox.checked;
+              localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+            });
+            
+            const termSpan = document.createElement('span');
+            termSpan.className = 'mobile-search-term';
+            termSpan.textContent = term.value;
+            termSpan.style.cursor = 'pointer';
+            termSpan.onclick = () => {
+              // Switch to search tab and load term
+              document.querySelector('.mobile-tab[data-tab="search"]').click();
+              document.getElementById('query').value = term.value;
+              document.getElementById('query').focus();
+              
+              clickedSearches[term.value] = { 
+                clicked: true, 
+                category: determineSearchCategory(term.value) 
+              };
+              localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+            };
+            
+            searchItem.appendChild(checkbox);
+            searchItem.appendChild(termSpan);
+            folderDiv.appendChild(searchItem);
+          });
+          
+          container.appendChild(folderDiv);
+        });
+      }
+      
+      // Render mobile markets
+      function renderMobileMarkets() {
+        const container = document.getElementById('mobile-markets-list');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        const sections = [
+          { name: 'Asia', key: 'asia', markets: getMarkets('asia') },
+          { name: 'International & Other Markets', key: 'international', markets: getMarkets('international') },
+          { name: 'Designer & Global Select', key: 'special', markets: getMarkets('special') }
+        ];
+        
+        sections.forEach(section => {
+          const categoryDiv = document.createElement('div');
+          categoryDiv.className = 'mobile-market-category';
+          
+          const header = document.createElement('h3');
+          header.textContent = section.name;
+          categoryDiv.appendChild(header);
+          
+          section.markets.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
+            const btn = document.createElement('button');
+            btn.className = 'mobile-market-btn';
+            btn.setAttribute('data-market', market.key);
+            btn.setAttribute('data-section', section.key);
+            
+            const label = document.createElement('span');
+            label.textContent = market.label + (market.custom ? " ★" : "");
+            
+            const toggle = document.createElement('input');
+            toggle.type = 'checkbox';
+            toggle.className = 'market-toggle';
+            toggle.checked = loadMarketToggleState(market.key);
+            toggle.style.marginLeft = 'auto';
+            toggle.style.marginRight = '8px';
+            toggle.addEventListener('change', function(e) {
+              e.stopPropagation();
+              saveMarketToggleState(market.key, toggle.checked);
+              btn.style.opacity = toggle.checked ? '1' : '0.5';
+            });
+            
+            btn.appendChild(label);
+            btn.appendChild(toggle);
+            
+            // Handle market click
+            btn.addEventListener('click', function(e) {
+              if (e.target === toggle) return;
+              
+              const selectedTerms = getSelectedSearchTerms();
+              if (selectedTerms.length === 0) {
+                const query = document.getElementById('query').value.trim();
+                if (!query) {
+                  alert('Please enter a search term first');
+                  return;
+                }
+                selectedTerms.push(query);
+              }
+              
+              // Open markets
+              selectedTerms.forEach(term => {
+                clickedSearches[term] = { 
+                  clicked: true, 
+                  category: determineSearchCategory(term) 
+                };
+              });
+              localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+              
+              const marketKey = this.getAttribute('data-market');
+              const sectionKey = this.getAttribute('data-section');
+              
+              selectedTerms.forEach(term => {
+                if (marketKey.startsWith("custom-")) {
+                  const parts = marketKey.split("-");
+                  const customId = parts.slice(2).join("-");
+                  const url = getCustomMarketUrl(sectionKey, customId, term);
+                  if (url) window.open(url, '_blank');
+                } else if (marketUrls[marketKey]) {
+                  window.open(marketUrls[marketKey](term), '_blank');
+                }
+              });
+              
+              // Clear selection
+              selectedSearchTerms = {};
+              localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+              renderMobileSavedSearches();
+            });
+            
+            if (!toggle.checked) {
+              btn.style.opacity = '0.5';
+            }
+            
+            categoryDiv.appendChild(btn);
+          });
+          
+          container.appendChild(categoryDiv);
+        });
+      }
+      
+      // Mobile action buttons
+      const mobileOpenSelectedBtn = document.getElementById('mobile-open-selected-btn');
+      const mobileClearSelectionBtn = document.getElementById('mobile-clear-selection-btn');
+      
+      if (mobileOpenSelectedBtn) {
+        mobileOpenSelectedBtn.addEventListener('click', function() {
+          const selectedTerms = getSelectedSearchTerms();
+          if (selectedTerms.length === 0) {
+            alert('Please select at least one search term');
+            return;
+          }
+          
+          // Switch to markets tab
+          document.querySelector('.mobile-tab[data-tab="markets"]').click();
+        });
+      }
+      
+      if (mobileClearSelectionBtn) {
+        mobileClearSelectionBtn.addEventListener('click', function() {
+          selectedSearchTerms = {};
+          localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+          renderMobileSavedSearches();
+        });
+      }
+      
+      // Expose renderMobileSavedSearches globally
+      window.renderMobileSavedSearches = renderMobileSavedSearches;
+      window.renderMobileMarkets = renderMobileMarkets;
+      
+      // Re-render mobile saved searches periodically when tab is active
+      setInterval(() => {
+        if (document.getElementById('mobile-tab-saved') && document.getElementById('mobile-tab-saved').classList.contains('active')) {
+          renderMobileSavedSearches();
+        }
+      }, 1000);
+      
+      // Initial render if saved tab is active
+      setTimeout(() => {
+        if (document.getElementById('mobile-tab-saved') && document.getElementById('mobile-tab-saved').classList.contains('active')) {
+          renderMobileSavedSearches();
+        }
+      }, 500);
+      
+      // Wire up mobile search form
+      const mobileSearchForm = document.getElementById('mobile-searchForm');
+      const mobileQuery = document.getElementById('mobile-query');
+      const mobileClearSearch = document.getElementById('mobile-clear-search');
+      const mobileOpenAllBtn = document.getElementById('mobile-open-all-btn');
+      const mobileToggleAllCheckbox = document.getElementById('mobile-toggle-all-checkbox');
+      
+      // Sync mobile query with desktop query
+      if (mobileQuery) {
+        const desktopQuery = document.getElementById('query');
+        if (desktopQuery) {
+          // Sync on input
+          mobileQuery.addEventListener('input', function() {
+            desktopQuery.value = this.value;
+          });
+          
+          desktopQuery.addEventListener('input', function() {
+            mobileQuery.value = this.value;
+          });
+          
+          // Clear button
+          mobileQuery.addEventListener('input', function() {
+            if (mobileClearSearch) {
+              mobileClearSearch.style.display = this.value ? 'block' : 'none';
+            }
+          });
+        }
+        
+        if (mobileClearSearch) {
+          mobileClearSearch.addEventListener('click', function() {
+            mobileQuery.value = '';
+            if (desktopQuery) desktopQuery.value = '';
+            this.style.display = 'none';
+            mobileQuery.focus();
+          });
+        }
+      }
+      
+      // Mobile form submit
+      if (mobileSearchForm) {
+        mobileSearchForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const query = mobileQuery ? mobileQuery.value.trim() : '';
+          if (!query) return;
+          
+          // Use existing search form handler
+          const desktopForm = document.getElementById('searchForm');
+          if (desktopForm && desktopQuery) {
+            desktopQuery.value = query;
+            desktopForm.dispatchEvent(new Event('submit'));
+          }
+        });
+      }
+      
+      // Mobile open all button
+      if (mobileOpenAllBtn) {
+        mobileOpenAllBtn.addEventListener('click', function() {
+          const desktopBtn = document.getElementById('open-all-btn');
+          if (desktopBtn) {
+            desktopBtn.click();
+          }
+        });
+      }
+      
+      // Mobile toggle all checkbox
+      if (mobileToggleAllCheckbox) {
+        const desktopToggleAll = document.getElementById('toggle-all-checkbox');
+        if (desktopToggleAll) {
+          mobileToggleAllCheckbox.addEventListener('change', function() {
+            desktopToggleAll.checked = this.checked;
+            desktopToggleAll.dispatchEvent(new Event('change'));
+          });
+          
+          desktopToggleAll.addEventListener('change', function() {
+            mobileToggleAllCheckbox.checked = this.checked;
+          });
+        }
+      }
+      
+      // Helper function to check if we're in portrait/tall aspect ratio
+      function isPortraitOrientation() {
+        return window.innerHeight > window.innerWidth || 
+               window.matchMedia('(orientation: portrait)').matches || 
+               window.matchMedia('(max-aspect-ratio: 1/1)').matches;
+      }
+      
+      // Create mobile market buttons (reuse desktop function)
+      function createMobileMarketButtons() {
+        if (!isPortraitOrientation()) return; // Only create on portrait/tall orientation
+        
+        if (typeof createMarketButtons === 'function' && typeof getMarkets === 'function') {
+          createMarketButtons(getMarkets('asia'), "mobile-asia-markets", "asia");
+          createMarketButtons(getMarkets('international'), "mobile-international-markets", "international");
+          createMarketButtons(getMarkets('special'), "mobile-special-markets", "special");
+        }
+      }
+      
+      // Create mobile markets on load
+      setTimeout(createMobileMarketButtons, 500);
+      
+      // Also recreate when window resizes or orientation changes
+      let lastOrientation = isPortraitOrientation();
+      window.addEventListener('resize', function() {
+        const isPortrait = isPortraitOrientation();
+        if (isPortrait !== lastOrientation) {
+          createMobileMarketButtons();
+          lastOrientation = isPortrait;
+        }
+      });
+      
+      // Listen for orientation change events
+      window.addEventListener('orientationchange', function() {
+        setTimeout(createMobileMarketButtons, 100);
       });
     })();
   </script>
