@@ -2156,7 +2156,7 @@
     <div class="resize-handle resize-handle-bottom" data-resize="sidebar"></div>
   </div>
   <div class="wishlist-section" id="wishlist-section">
-    <img src="mmcs.png" class="wishlist-mascot" alt="MMCS Logo" loading="lazy" onload="this.classList.add('loaded')">
+    <img src="mmcs.png" class="wishlist-mascot" alt="MMCS Logo" loading="lazy" onload="this.classList.add('loaded')" onerror="this.style.display='none'">
     <div class="wishlist-title">Wishlist / Considering</div>
     <form class="wishlist-add-row" id="wishlist-add-form" autocomplete="off">
       <input type="text" class="wishlist-add-input" id="wishlist-link-input" placeholder="Paste item link here..." maxlength="700" required />
@@ -2277,15 +2277,32 @@
   <script>
     // Simple Online Counter
     (function() {
-      const onlineCountEl = document.getElementById('online-count');
+      // Wait for DOM to be ready
+      let onlineCountEl = null;
       
       // Simple online counter using a free service
       // This shows approximate visitor count
       async function updateOnlineCount() {
+        if (!onlineCountEl) return;
+        
         try {
           // Use a simple counter API (free service)
           // This gives an approximate count of visitors
-          const response = await fetch('https://api.countapi.xyz/hit/mmcs-online-counter/visits');
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+          
+          const response = await fetch('https://api.countapi.xyz/hit/mmcs-online-counter/visits', {
+            signal: controller.signal,
+            mode: 'cors',
+            cache: 'no-cache'
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
           const data = await response.json();
           
           if (data && data.value !== undefined) {
@@ -2297,16 +2314,35 @@
             onlineCountEl.textContent = '1+ online';
           }
         } catch (error) {
-          // Fallback if API fails
-          onlineCountEl.textContent = '1+ online';
+          // Fallback if API fails (network error, CORS, timeout, etc.)
+          if (onlineCountEl) {
+            onlineCountEl.textContent = '1+ online';
+          }
+          // Silently fail - don't show errors to users
         }
       }
       
-      // Update on load
-      updateOnlineCount();
+      function initOnlineCounter() {
+        onlineCountEl = document.getElementById('online-count');
+        if (!onlineCountEl) {
+          // Retry if element not found yet
+          setTimeout(initOnlineCounter, 100);
+          return;
+        }
+        
+        // Update on load (with delay to ensure DOM is ready)
+        setTimeout(updateOnlineCount, 500);
+        
+        // Update every 30 seconds
+        setInterval(updateOnlineCount, 30000);
+      }
       
-      // Update every 30 seconds
-      setInterval(updateOnlineCount, 30000);
+      // Initialize counter
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initOnlineCounter);
+      } else {
+        initOnlineCounter();
+      }
     })();
 
     // Mobile detection and optimization
@@ -2597,6 +2633,7 @@
           folderIcon.style.width = '18px';
           folderIcon.style.height = '18px';
           folderIcon.style.marginRight = '4px';
+          folderIcon.onerror = function() { this.style.display = 'none'; };
           folderIcon.style.verticalAlign = 'middle';
           nameBtn.appendChild(folderIcon);
           // Folder name text
