@@ -1843,23 +1843,47 @@
             options: {
               data: {
                 username: username.trim()
-              }
+              },
+              emailRedirectTo: window.location.origin // For email confirmation
             }
           });
           
           if (error) {
-            return { success: false, error: error.message || 'Error creating account.' };
+            console.error('Supabase signup error:', error);
+            // Provide more helpful error messages
+            let errorMessage = error.message || 'Error creating account.';
+            
+            if (error.message.includes('already registered')) {
+              errorMessage = 'This email is already registered. Please login instead.';
+            } else if (error.message.includes('password')) {
+              errorMessage = 'Password does not meet requirements. Please use a stronger password.';
+            } else if (error.message.includes('email')) {
+              errorMessage = 'Invalid email address. Please check and try again.';
+            } else if (error.message.includes('rate limit')) {
+              errorMessage = 'Too many signup attempts. Please wait a moment and try again.';
+            }
+            
+            return { success: false, error: errorMessage };
           }
           
           if (data.user) {
             setCurrentUser(username.trim());
-            return { success: true, user: data.user, needsEmailVerification: !data.session };
+            // Check if email confirmation is required
+            const needsVerification = !data.session;
+            return { 
+              success: true, 
+              user: data.user, 
+              needsEmailVerification: needsVerification 
+            };
           }
           
-          return { success: false, error: 'Account creation failed.' };
+          return { success: false, error: 'Account creation failed. Please try again.' };
         } catch (err) {
           console.error('Error signing up:', err);
-          return { success: false, error: 'Error creating account. Please try again.' };
+          return { 
+            success: false, 
+            error: `Database error: ${err.message || 'Unable to create account. Please check your connection and try again.'}` 
+          };
         }
       }
       
@@ -2131,8 +2155,11 @@
               }
             } else {
               if (loginError) {
-                loginErrorText.textContent = result.error || 'Account creation failed. Please try again.';
+                // Show the actual error message from Supabase
+                const errorMsg = result.error || 'Account creation failed. Please try again.';
+                loginErrorText.textContent = errorMsg;
                 loginError.style.display = 'block';
+                console.error('Signup error:', result.error);
               }
             }
           };
