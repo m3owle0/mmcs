@@ -681,6 +681,16 @@
       background: #444; 
       color: #fff; 
     }
+    
+    /* Mobile import/export button styles */
+    @media (max-width: 768px) {
+      .sidebar-exp-btn, .sidebar-imp-btn {
+        padding: 10px 16px;
+        font-size: 14px;
+        margin: 0;
+        width: 100%;
+      }
+    }
     .sidebar-reset-btn {
       background: #232323;
       color: #e3e3e3;
@@ -1590,6 +1600,31 @@
         background: transparent;
       }
       
+      /* Mobile import/export buttons */
+      .mobile-sidebar .sidebar-exp-btn,
+      .mobile-sidebar .sidebar-imp-btn {
+        background: #232323;
+        color: #e3e3e3;
+        border: none;
+        border-radius: 5px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 10px 16px;
+        transition: background .18s, box-shadow .18s, transform .13s;
+        box-shadow: 0 1px 4px #2224;
+        opacity: 0.93;
+        backdrop-filter: blur(2px);
+        flex: 1;
+        text-align: center;
+      }
+      
+      .mobile-sidebar .sidebar-exp-btn:hover,
+      .mobile-sidebar .sidebar-imp-btn:hover {
+        background: #444;
+        color: #fff;
+      }
+      
       .mobile-folder-item {
         padding: 8px 12px;
         margin-bottom: 0;
@@ -2043,6 +2078,13 @@
     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #232323;">
       <button class="sidebar-randomize-btn" id="mobile-randomize-btn" style="width: 100%; margin-bottom: 10px;">Randomize Search</button>
       <button class="sidebar-reset-btn" id="mobile-reset-highlights-btn" style="width: 100%; margin-bottom: 10px;">Reset Highlights</button>
+      <div style="display: flex; gap: 8px; margin-top: 10px;">
+        <button class="sidebar-exp-btn" id="mobile-export-btn" type="button" style="flex: 1;">Export</button>
+        <label class="sidebar-imp-btn" title="Import" style="flex: 1; text-align: center; cursor: pointer; padding: 7px 13px; background: #232323; color: #e3e3e3; border-radius: 5px; font-size: 13px; font-weight: bold;">
+          Import
+          <input type="file" id="mobile-import-input" accept=".json" style="display: none;">
+        </label>
+      </div>
     </div>
   </div>
 
@@ -5322,6 +5364,69 @@
           updateMobileSearches();
           renderSavedSearches();
           alert('All highlights have been reset');
+        });
+      }
+
+      // Mobile export functionality
+      const mobileExportBtn = document.getElementById('mobile-export-btn');
+      if (mobileExportBtn) {
+        mobileExportBtn.addEventListener('click', function() {
+          const dataStr = JSON.stringify(foldersObj, null, 2);
+          const blob = new Blob([dataStr], {type: 'application/json'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'saved-searches-with-folders-and-websites.json';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 50);
+        });
+      }
+
+      // Mobile import functionality
+      const mobileImportInput = document.getElementById('mobile-import-input');
+      if (mobileImportInput) {
+        mobileImportInput.addEventListener('change', function(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            try {
+              const imported = JSON.parse(e.target.result);
+              // If imported is array, legacy format
+              if (Array.isArray(imported)) {
+                foldersObj = { folders: imported, customMarkets: loadCustomMarketsFromFolders(imported) };
+              } else if (imported && Array.isArray(imported.folders) && imported.customMarkets) {
+                foldersObj = imported;
+              } else {
+                alert('Invalid file format.');
+                return;
+              }
+              savedFolders = foldersObj.folders;
+              customMarkets = foldersObj.customMarkets || { asia: [], international: [], special: [] };
+              if (savedFolders.length === 0) savedFolders = [{ name: 'Default', searches: [] }];
+              currentFolderIdx = 0;
+              saveFoldersObj(foldersObj);
+              refreshAllMarketButtons();
+              renderFolders();
+              renderSavedSearches();
+              updateMobileFolderTabs();
+              updateMobileFolderTabs();
+              updateMobileSearches();
+              alert('Import successful!');
+              
+              // Close mobile sidebar after import
+              if (mobileSidebar) mobileSidebar.classList.remove('active');
+              if (mobileSidebarOverlay) mobileSidebarOverlay.classList.remove('active');
+            } catch (err) {
+              alert('Failed to import: ' + err.message);
+            }
+          };
+          reader.readAsText(file);
+          event.target.value = '';
         });
       }
       
