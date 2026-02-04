@@ -2100,6 +2100,15 @@
         
         console.log('initUnlockSystem check:', { unlocked, currentUser });
         
+        // If user has a valid session, check verification status
+        let hasValidSession = false;
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          hasValidSession = !!session;
+        } catch (err) {
+          console.error('Error checking session:', err);
+        }
+        
         if (unlocked && currentUser) {
           document.body.classList.remove('site-locked');
           
@@ -2194,23 +2203,62 @@
             { type: 'keydown', handler: keyHandler }
           ];
           
-          // Only show modal if no current user (first visit), not on every check
-          if (!currentUser && !suppressModal) {
-            // First visit - show modal
-            if (unlockModalBg) {
-              unlockModalBg.classList.add('show');
-              unlockModalBg.style.display = 'flex';
+          // Show modal if user is logged in but not verified, or if no user at all
+          if (!suppressModal) {
+            // Check if user has a session (logged in)
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              
+              if (session && currentUser) {
+                // User is logged in but not verified - show modal with error message
+                if (unlockModalBg) {
+                  unlockModalBg.classList.add('show');
+                  unlockModalBg.style.display = 'flex';
+                }
+                // Show error message if not already showing
+                const loginErrorEl = document.getElementById('login-error');
+                const loginErrorTextEl = document.getElementById('login-error-text');
+                if (loginErrorEl && loginErrorTextEl) {
+                  loginErrorTextEl.textContent = 'Your account is not verified yet. Please wait for verification after donation.';
+                  loginErrorEl.style.display = 'block';
+                }
+                // Hide success message if showing
+                const loginSuccessEl = document.getElementById('login-success');
+                if (loginSuccessEl) loginSuccessEl.style.display = 'none';
+              } else if (!currentUser) {
+                // No user - show modal for login/signup
+                if (unlockModalBg) {
+                  unlockModalBg.classList.add('show');
+                  unlockModalBg.style.display = 'flex';
+                }
+              } else {
+                // Hide modal, show button instead
+                if (unlockModalBg) {
+                  unlockModalBg.classList.remove('show');
+                  unlockModalBg.style.display = 'none';
+                }
+              }
+            } catch (err) {
+              console.error('Error checking session:', err);
+              // Default: show modal if no user
+              if (!currentUser && unlockModalBg) {
+                unlockModalBg.classList.add('show');
+                unlockModalBg.style.display = 'flex';
+              }
             }
           } else {
-            // User exists but not verified OR modal suppressed - hide modal, show button instead
+            // Modal suppressed - hide it
             if (unlockModalBg) {
               unlockModalBg.classList.remove('show');
               unlockModalBg.style.display = 'none';
             }
           }
+          
           if (unlockBtn) unlockBtn.style.display = 'inline-block';
           if (userDisplay) userDisplay.style.display = 'none';
         }
+        
+        isInitializing = false;
         
         // Show login modal button
         if (unlockBtn) {
@@ -2280,48 +2328,69 @@
               // Hide error message if showing
               if (loginError) loginError.style.display = 'none';
               
-              // Show success message briefly
-              if (loginSuccess) {
-                loginSuccessText.textContent = 'Login successful! Welcome!';
-                loginSuccess.style.display = 'block';
-              }
-              
               // Clear password field
               if (loginPasswordInput) loginPasswordInput.value = '';
               // Clear username field
               if (loginUsernameInput) loginUsernameInput.value = '';
               
-              // Wait a moment then refresh unlock system
-              setTimeout(async () => {
-                console.log('Refreshing unlock system after login...');
+              // Immediately check unlock status
+              const unlocked = await isUnlocked();
+              console.log('Unlock status after login:', unlocked);
+              
+              if (unlocked) {
+                // User is verified - unlock immediately!
+                console.log('User verified - unlocking site now');
                 
-                // Force a check to make sure it unlocked
-                const unlocked = await isUnlocked();
-                console.log('Unlock status after login:', unlocked);
+                // Hide modal immediately
+                if (unlockModalBg) {
+                  unlockModalBg.classList.remove('show');
+                  unlockModalBg.style.display = 'none';
+                }
                 
-                // Refresh the unlock system (this will show/hide modal appropriately)
-                await initUnlockSystem();
+                // Hide success/error messages
+                if (loginSuccess) loginSuccess.style.display = 'none';
+                if (loginError) loginError.style.display = 'none';
                 
-                // Hide success message after checking
+                // Unlock the site
+                document.body.classList.remove('site-locked');
+                
+                // Remove interaction blockers
+                if (window._lockBlockers && Array.isArray(window._lockBlockers)) {
+                  window._lockBlockers.forEach(({ type, handler }) => {
+                    document.removeEventListener(type, handler, true);
+                  });
+                  window._lockBlockers = [];
+                }
+                
+                // Update UI
+                if (unlockBtn) unlockBtn.style.display = 'none';
+                if (userDisplay) {
+                  const currentUser = getCurrentUser();
+                  userDisplay.textContent = `Welcome, ${currentUser || result.user?.email || 'User'}`;
+                  userDisplay.style.display = 'inline';
+                }
+                
+                // Start session heartbeat
+                startSessionHeartbeat();
+                
+                console.log('Site unlocked successfully for verified user!');
+                
+                // IMPORTANT: Don't call initUnlockSystem here - it might re-lock!
+                // The site is already unlocked above
+                return; // Exit early - don't continue
+              } else {
+                // User logged in but not verified - show error, keep modal open
+                console.warn('User logged in but not verified');
                 if (loginSuccess) {
-                  setTimeout(() => {
-                    loginSuccess.style.display = 'none';
-                  }, 2000); // Hide after 2 seconds
+                  loginSuccess.style.display = 'none';
                 }
-                
-                if (!unlocked) {
-                  // User logged in but not verified - show error
-                  console.warn('User logged in but site still locked - checking verification...');
-                  if (loginError) {
-                    loginErrorText.textContent = 'Your account is not verified yet. Please wait for verification after donation.';
-                    loginError.style.display = 'block';
-                    // Hide success message immediately when showing error
-                    if (loginSuccess) {
-                      loginSuccess.style.display = 'none';
-                    }
-                  }
+                if (loginError) {
+                  loginErrorText.textContent = 'Your account is not verified yet. Please wait for verification after donation.';
+                  loginError.style.display = 'block';
                 }
-              }, 800); // Wait 800ms before checking
+                // Keep modal open so they can see the message
+                // Don't call initUnlockSystem - it will re-lock them
+              }
             } else {
               if (loginError) {
                 loginErrorText.textContent = result.error || 'Login failed. Please try again.';
