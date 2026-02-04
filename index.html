@@ -2224,20 +2224,24 @@
     // ============================================
     // PASSWORD PROTECTION SYSTEM
     // ============================================
-    // This protects your website with a password.
-    // The password is stored obfuscated (not plain text) for basic security.
+    // This protects your website with passwords.
+    // Passwords are stored obfuscated (not plain text) for basic security.
     // 
-    // TO CHANGE THE PASSWORD:
-    // 1. The current password is stored as character codes: [110, 105, 109, 100, 97, 111, 101, 108]
-    // 2. Convert these codes to letters, reverse them, and that's your password
-    // 3. To set a new password:
-    //    - Write your new password
-    //    - Reverse it
-    //    - Convert each letter to its character code
-    //    - Replace the codes array above
+    // CURRENT PASSWORDS:
+    // 1. "leoadmin" - stored as codes [110, 105, 109, 100, 97, 111, 101, 108]
+    // 2. "eemiladmin" - stored as codes [110, 105, 109, 100, 97, 108, 105, 109, 101, 101]
+    // 
+    // TO ADD A NEW PASSWORD:
+    // 1. Write your new password
+    // 2. Reverse it
+    // 3. Convert each letter to its character code
+    // 4. Add a new password check in the checkPassword() function
     // 
     // Example: Password "leoadmin" reversed = "nimdaoel"
     // Character codes: n=110, i=105, m=109, d=100, a=97, o=111, e=101, l=108
+    // 
+    // Example: Password "eemiladmin" reversed = "nimdalimee"
+    // Character codes: n=110, i=105, m=109, d=100, a=97, l=108, i=105, m=109, e=101, e=101
     // ============================================
     
     (function() {
@@ -2247,15 +2251,31 @@
       const loginError = document.getElementById('login-error');
       const LOGIN_SESSION_KEY = 'mmcs_auth_session';
 
-      // Password check function
-      // CURRENT PASSWORD: "leoadmin" (stored obfuscated)
+      // Password check function - supports multiple passwords
+      // PASSWORDS: "leoadmin" and "eemiladmin" (stored obfuscated)
       function checkPassword(input) {
-        if (!input || input.length !== 8) return false;
-        // Password stored as char codes, reversed, then checked
-        // Codes [110, 105, 109, 100, 97, 111, 101, 108] = "nimdaoel" reversed = "leoadmin"
-        const codes = [110, 105, 109, 100, 97, 111, 101, 108];
-        const expected = codes.map(c => String.fromCharCode(c)).reverse().join('');
-        return input.toLowerCase() === expected.toLowerCase();
+        if (!input) return false;
+        const inputLower = input.toLowerCase();
+        
+        // List of valid passwords (stored as character codes, reversed)
+        // Password 1: "leoadmin" reversed = "nimdaoel"
+        const password1Codes = [110, 105, 109, 100, 97, 111, 101, 108];
+        const password1 = password1Codes.map(c => String.fromCharCode(c)).reverse().join('').toLowerCase();
+        
+        // Password 2: "eemiladmin" reversed = "nimdalimee"
+        const password2Codes = [110, 105, 109, 100, 97, 108, 105, 109, 101, 101];
+        const password2 = password2Codes.map(c => String.fromCharCode(c)).reverse().join('').toLowerCase();
+        
+        // Check if input matches any valid password
+        if (inputLower === password1 || inputLower === password2) {
+          // Store which password was used (for username lookup)
+          try {
+            sessionStorage.setItem('mmcs_used_password', inputLower);
+          } catch {}
+          return true;
+        }
+        
+        return false;
       }
 
       function setLoginLocked(locked) {
@@ -2537,10 +2557,15 @@
         }
 
         // Get current password hash (simple hash for privacy)
-        // Since password is cleared after login, we'll use the default password
-        // This means all users with the same password share the same username storage
-        const password = 'leoadmin'; // Default password - change this if you change the password
-        const passwordHash = btoa(password).substr(0, 8);
+        // Get the password that was used for login from sessionStorage
+        let password = 'leoadmin'; // Default fallback
+        try {
+          const usedPassword = sessionStorage.getItem('mmcs_used_password');
+          if (usedPassword) {
+            password = usedPassword;
+          }
+        } catch {}
+        const passwordHash = btoa(password).substr(0, 12); // Increased length for longer passwords
         
         // Get or prompt for username
         let username = getUsernameForPassword(passwordHash);
@@ -2887,9 +2912,15 @@
           }
           
           // Get current password hash
-          // Use the same default password as in initChat
-          const password = 'leoadmin'; // Default password - change this if you change the password
-          const passwordHash = btoa(password).substr(0, 8);
+          // Get the password that was used for login from sessionStorage
+          let password = 'leoadmin'; // Default fallback
+          try {
+            const usedPassword = sessionStorage.getItem('mmcs_used_password');
+            if (usedPassword) {
+              password = usedPassword;
+            }
+          } catch {}
+          const passwordHash = btoa(password).substr(0, 12); // Increased length for longer passwords
           
           // Save username for this password
           saveUsernameForPassword(passwordHash, username);
