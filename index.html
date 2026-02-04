@@ -1621,7 +1621,25 @@
           }
           
           // User must exist AND be verified (verified = true)
-          return data !== null && data.verified === true;
+          // Handle both boolean true and string "true" from database
+          if (data === null) {
+            console.log('User not found in database:', currentUser);
+            return false;
+          }
+          
+          const isVerified = data.verified === true || 
+                             data.verified === 'true' || 
+                             data.verified === 1 ||
+                             String(data.verified).toLowerCase() === 'true';
+          
+          console.log('Verification check:', {
+            email: currentUser,
+            verified: data.verified,
+            verifiedType: typeof data.verified,
+            isVerified: isVerified
+          });
+          
+          return isVerified;
         } catch (err) {
           console.error('Error checking unlock status:', err);
           return false;
