@@ -1590,28 +1590,53 @@
       const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
       
       const CURRENT_USER_KEY = 'mmcs_current_user';
+      const SESSION_ID_KEY = 'mmcs_session_id';
+      
+      // Generate unique session ID
+      function generateSessionId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
+      }
       
       function getCurrentUser() {
         return localStorage.getItem(CURRENT_USER_KEY);
       }
       
+      function getSessionId() {
+        let sessionId = localStorage.getItem(SESSION_ID_KEY);
+        if (!sessionId) {
+          sessionId = generateSessionId();
+          localStorage.setItem(SESSION_ID_KEY, sessionId);
+        }
+        return sessionId;
+      }
+      
       function setCurrentUser(email) {
         if (email) {
           localStorage.setItem(CURRENT_USER_KEY, email);
+          // Generate new session ID when user logs in
+          const sessionId = generateSessionId();
+          localStorage.setItem(SESSION_ID_KEY, sessionId);
         } else {
           localStorage.removeItem(CURRENT_USER_KEY);
+          localStorage.removeItem(SESSION_ID_KEY);
         }
       }
       
-      // Check if user is unlocked and verified in Supabase
+      function clearSession() {
+        localStorage.removeItem(CURRENT_USER_KEY);
+        localStorage.removeItem(SESSION_ID_KEY);
+      }
+      
+      // Check if user is unlocked and verified in Supabase, and session is valid
       async function isUnlocked() {
         const currentUser = getCurrentUser();
+        const currentSessionId = getSessionId();
         if (!currentUser || !supabase) return false;
         
         try {
           const { data, error } = await supabase
             .from(TABLE_NAME)
-            .select('email, verified')
+            .select('email, verified, session_id, last_active')
             .eq('email', currentUser.toLowerCase())
             .maybeSingle();
           
@@ -1632,10 +1657,26 @@
                              data.verified === 1 ||
                              String(data.verified).toLowerCase() === 'true';
           
+          if (!isVerified) {
+            console.log('User not verified:', currentUser);
+            return false;
+          }
+          
+          // Check session: if session_id exists and doesn't match, another session is active
+          if (data.session_id && data.session_id !== currentSessionId) {
+            console.log('Another session is active. Logging out current session.');
+            clearSession();
+            alert('Another session is active with this account. You have been logged out.');
+            return false;
+          }
+          
+          // Update session_id and last_active in database
+          await updateUserSession(currentUser, currentSessionId);
+          
           console.log('Verification check:', {
             email: currentUser,
             verified: data.verified,
-            verifiedType: typeof data.verified,
+            sessionMatch: data.session_id === currentSessionId,
             isVerified: isVerified
           });
           
@@ -1643,6 +1684,27 @@
         } catch (err) {
           console.error('Error checking unlock status:', err);
           return false;
+        }
+      }
+      
+      // Update user session in database
+      async function updateUserSession(email, sessionId) {
+        if (!supabase || !email) return;
+        
+        try {
+          const { error } = await supabase
+            .from(TABLE_NAME)
+            .update({ 
+              session_id: sessionId,
+              last_active: new Date().toISOString()
+            })
+            .eq('email', email.toLowerCase());
+          
+          if (error) {
+            console.error('Error updating session:', error);
+          }
+        } catch (err) {
+          console.error('Error updating session:', err);
         }
       }
       
@@ -1694,8 +1756,10 @@
           
           if (existing) {
             if (existing.verified === true) {
-              // User is already verified
+              // User is already verified - update session
               setCurrentUser(emailLower);
+              const sessionId = getSessionId();
+              await updateUserSession(emailLower, sessionId);
               return { success: true, verified: true };
             } else {
               // User exists but pending verification
@@ -1720,6 +1784,8 @@
               
               if (existing2 && existing2.verified === true) {
                 setCurrentUser(emailLower);
+                const sessionId = getSessionId();
+                await updateUserSession(emailLower, sessionId);
                 return { success: true, verified: true };
               }
               return { success: true, verified: false, pending: true };
@@ -1781,6 +1847,8 @@
             userDisplay.textContent = `Welcome, ${currentUser}`;
             userDisplay.style.display = 'inline';
           }
+          // Start session heartbeat for active session
+          startSessionHeartbeat();
         } else {
           document.body.classList.add('site-locked');
           if (unlockModalBg) unlockModalBg.style.display = 'flex';
@@ -1820,8 +1888,11 @@
             
             if (result.success) {
               if (result.verified) {
-                // User is already verified
-                setCurrentUser(email.toLowerCase().trim());
+                // User is already verified - update session
+                const emailLower = email.toLowerCase().trim();
+                setCurrentUser(emailLower);
+                const sessionId = getSessionId();
+                await updateUserSession(emailLower, sessionId);
                 alert('Site unlocked! Welcome, ' + email);
                 await initUnlockSystem(); // Refresh UI
               } else {
@@ -1882,12 +1953,111 @@
         }
       }
       
+      // Session heartbeat - update last_active every 30 seconds while user is active
+      let sessionHeartbeatInterval = null;
+      function startSessionHeartbeat() {
+        if (sessionHeartbeatInterval) {
+          clearInterval(sessionHeartbeatInterval);
+        }
+        
+        sessionHeartbeatInterval = setInterval(async () => {
+          const currentUser = getCurrentUser();
+          const currentSessionId = getSessionId();
+          if (currentUser && currentSessionId && supabase) {
+            // Verify session is still valid before updating
+            const { data } = await supabase
+              .from(TABLE_NAME)
+              .select('session_id')
+              .eq('email', currentUser.toLowerCase())
+              .maybeSingle();
+            
+            // Only update if session matches (user hasn't been logged out)
+            if (data && data.session_id === currentSessionId) {
+              await updateUserSession(currentUser, currentSessionId);
+            } else {
+              // Session invalidated, clear local session
+              clearSession();
+              clearInterval(sessionHeartbeatInterval);
+              location.reload();
+            }
+          }
+        }, 30000); // Update every 30 seconds
+      }
+      
+      function stopSessionHeartbeat() {
+        if (sessionHeartbeatInterval) {
+          clearInterval(sessionHeartbeatInterval);
+          sessionHeartbeatInterval = null;
+        }
+      }
+      
+      // Clear session on page close/unload
+      function handlePageUnload() {
+        const currentUser = getCurrentUser();
+        if (currentUser && supabase) {
+          // Clear session_id in database (allows new login)
+          supabase
+            .from(TABLE_NAME)
+            .update({ session_id: null })
+            .eq('email', currentUser.toLowerCase())
+            .then(() => {
+              clearSession();
+            })
+            .catch(err => {
+              console.error('Error clearing session:', err);
+              clearSession();
+            });
+        } else {
+          clearSession();
+        }
+      }
+      
       // Initialize on page load
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initUnlockSystem);
+        document.addEventListener('DOMContentLoaded', () => {
+          initUnlockSystem().then(() => {
+            // Start heartbeat after initialization
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+              startSessionHeartbeat();
+            }
+          });
+        });
       } else {
-        setTimeout(initUnlockSystem, 100);
+        setTimeout(() => {
+          initUnlockSystem().then(() => {
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+              startSessionHeartbeat();
+            }
+          });
+        }, 100);
       }
+      
+      // Set up page unload handler
+      window.addEventListener('beforeunload', handlePageUnload);
+      window.addEventListener('pagehide', handlePageUnload);
+      
+      // Also handle visibility change (tab switch)
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          // Tab is hidden, but don't clear session yet (user might come back)
+        } else {
+          // Tab is visible again, verify session is still valid
+          const currentUser = getCurrentUser();
+          if (currentUser) {
+            isUnlocked().then(unlocked => {
+              if (!unlocked) {
+                clearSession();
+                stopSessionHeartbeat();
+                location.reload();
+              } else {
+                startSessionHeartbeat();
+              }
+            });
+          }
+        }
+      });
     })();
 
     // Custom Market Storage
