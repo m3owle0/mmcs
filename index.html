@@ -1375,6 +1375,8 @@
   }
 }
   </style>
+  <!-- Supabase Client Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <!-- Top Header with PayPal Donation -->
@@ -1398,20 +1400,26 @@
     <div class="unlock-modal">
       <h3>Unlock Site</h3>
       <p style="color: #b0b0b0; margin-bottom: 20px;">
-        After making a donation via PayPal, enter your PayPal email address to unlock the site permanently.
+        <strong style="color: #ff6b6b;">Donation Required:</strong> You must make a donation via PayPal first, then enter your PayPal email address. Your account will be verified and unlocked within 24 hours.
       </p>
+      <div id="verification-status" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(255, 193, 7, 0.2); border: 1px solid rgba(255, 193, 7, 0.5);">
+        <p style="color: #ffc107; margin: 0; font-size: 14px;">
+          ⏳ <strong>Pending Verification:</strong> Your email has been submitted. Please wait for verification after your donation is processed.
+        </p>
+      </div>
       <input type="email" id="unlock-email-input" placeholder="Enter your PayPal email" class="unlock-input" />
       <div class="unlock-btn-row">
-        <button id="unlock-submit-btn" class="unlock-submit-btn">Unlock</button>
+        <button id="unlock-submit-btn" class="unlock-submit-btn">Submit for Verification</button>
         <button id="unlock-cancel-btn" class="unlock-cancel-btn">Cancel</button>
       </div>
       <p style="color: #888; font-size: 12px; margin-top: 15px;">
-        <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
+        <strong>Step 1:</strong> <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
            target="_blank" 
            rel="noopener noreferrer" 
            style="color: #00e6d6;">
           Donate via PayPal
-        </a>
+        </a><br>
+        <strong>Step 2:</strong> Enter your PayPal email above and submit for verification
       </p>
     </div>
   </div>
@@ -1567,19 +1575,21 @@
     </div>
   </div>
   <script>
-    // Site Unlock System
+    // Site Unlock System with Supabase
     (function() {
-      const UNLOCKED_USERS_KEY = 'mmcs_unlocked_users';
+      // ============================================
+      // SUPABASE CONFIGURATION
+      // Replace these with your Supabase credentials
+      // Get them from: Project Settings → API
+      // ============================================
+      const SUPABASE_URL = 'https://wbpfuuiznsmysbskywdx.supabase.co'; // e.g., 'https://xxxxx.supabase.co'
+      const SUPABASE_ANON_KEY = 'sb_publishable_rIy_-DWT87Gj9ao1WvN3gA_WA6eME-x'; // Your anon/public key
+      const TABLE_NAME = 'unlocked_users'; // Your table name
+      
+      // Initialize Supabase client
+      const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+      
       const CURRENT_USER_KEY = 'mmcs_current_user';
-      
-      function getUnlockedUsers() {
-        const stored = localStorage.getItem(UNLOCKED_USERS_KEY);
-        return stored ? JSON.parse(stored) : [];
-      }
-      
-      function saveUnlockedUsers(users) {
-        localStorage.setItem(UNLOCKED_USERS_KEY, JSON.stringify(users));
-      }
       
       function getCurrentUser() {
         return localStorage.getItem(CURRENT_USER_KEY);
@@ -1593,33 +1603,126 @@
         }
       }
       
-      function isUnlocked() {
+      // Check if user is unlocked and verified in Supabase
+      async function isUnlocked() {
         const currentUser = getCurrentUser();
-        if (!currentUser) return false;
-        const unlockedUsers = getUnlockedUsers();
-        return unlockedUsers.includes(currentUser.toLowerCase());
+        if (!currentUser || !supabase) return false;
+        
+        try {
+          const { data, error } = await supabase
+            .from(TABLE_NAME)
+            .select('email, verified')
+            .eq('email', currentUser.toLowerCase())
+            .maybeSingle();
+          
+          if (error) {
+            console.error('Supabase error:', error);
+            return false;
+          }
+          
+          // User must exist AND be verified (verified = true)
+          return data !== null && data.verified === true;
+        } catch (err) {
+          console.error('Error checking unlock status:', err);
+          return false;
+        }
       }
       
-      function unlockUser(email) {
+      // Check if user exists but is pending verification
+      async function isPendingVerification(email) {
+        if (!email || !supabase) return false;
+        
+        try {
+          const { data, error } = await supabase
+            .from(TABLE_NAME)
+            .select('email, verified')
+            .eq('email', email.toLowerCase())
+            .maybeSingle();
+          
+          if (error) {
+            console.error('Supabase error:', error);
+            return false;
+          }
+          
+          // User exists but not verified yet
+          return data !== null && data.verified === false;
+        } catch (err) {
+          console.error('Error checking verification status:', err);
+          return false;
+        }
+      }
+      
+      // Submit email for verification (user must donate first)
+      async function submitForVerification(email) {
         if (!email || !email.includes('@')) {
           alert('Please enter a valid email address.');
           return false;
         }
         
-        const emailLower = email.toLowerCase().trim();
-        const unlockedUsers = getUnlockedUsers();
-        
-        if (!unlockedUsers.includes(emailLower)) {
-          unlockedUsers.push(emailLower);
-          saveUnlockedUsers(unlockedUsers);
+        if (!supabase) {
+          alert('Database connection not configured. Please check Supabase settings.');
+          return false;
         }
         
-        setCurrentUser(emailLower);
-        return true;
+        const emailLower = email.toLowerCase().trim();
+        
+        try {
+          // Check if user already exists
+          const { data: existing } = await supabase
+            .from(TABLE_NAME)
+            .select('email, verified')
+            .eq('email', emailLower)
+            .maybeSingle();
+          
+          if (existing) {
+            if (existing.verified === true) {
+              // User is already verified
+              setCurrentUser(emailLower);
+              return { success: true, verified: true };
+            } else {
+              // User exists but pending verification
+              return { success: true, verified: false, pending: true };
+            }
+          }
+          
+          // Insert new user with verified = false (pending verification)
+          const { data, error } = await supabase
+            .from(TABLE_NAME)
+            .insert([{ email: emailLower, verified: false }])
+            .select();
+          
+          if (error) {
+            // If it's a unique constraint error, user already exists (race condition)
+            if (error.code === '23505') {
+              const { data: existing2 } = await supabase
+                .from(TABLE_NAME)
+                .select('email, verified')
+                .eq('email', emailLower)
+                .maybeSingle();
+              
+              if (existing2 && existing2.verified === true) {
+                setCurrentUser(emailLower);
+                return { success: true, verified: true };
+              }
+              return { success: true, verified: false, pending: true };
+            } else {
+              console.error('Supabase error:', error);
+              alert('Error submitting email: ' + error.message);
+              return { success: false };
+            }
+          }
+          
+          // User submitted successfully, now pending verification
+          return { success: true, verified: false, pending: true };
+        } catch (err) {
+          console.error('Error submitting email:', err);
+          alert('Error submitting email. Please try again.');
+          return { success: false };
+        }
       }
       
       // Initialize unlock system
-      function initUnlockSystem() {
+      async function initUnlockSystem() {
         const unlockModalBg = document.getElementById('unlock-modal-bg');
         const unlockBtn = document.getElementById('unlock-btn');
         const unlockSubmitBtn = document.getElementById('unlock-submit-btn');
@@ -1627,9 +1730,32 @@
         const unlockEmailInput = document.getElementById('unlock-email-input');
         const userDisplay = document.getElementById('user-display');
         
-        // Check if site is unlocked
-        if (isUnlocked()) {
-          const currentUser = getCurrentUser();
+        // Check if Supabase is configured
+        if (!supabase || SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE') {
+          console.warn('Supabase not configured. Please add your credentials.');
+          // Show error message
+          if (unlockModalBg) {
+            unlockModalBg.innerHTML = `
+              <div class="unlock-modal">
+                <h3>Configuration Required</h3>
+                <p style="color: #ff6b6b; margin-bottom: 20px;">
+                  Please configure your Supabase credentials in the code.
+                </p>
+                <p style="color: #b0b0b0; font-size: 14px;">
+                  Edit the SUPABASE_URL and SUPABASE_ANON_KEY variables in the script.
+                </p>
+              </div>
+            `;
+            unlockModalBg.style.display = 'flex';
+          }
+          return;
+        }
+        
+        // Check if site is unlocked (async)
+        const unlocked = await isUnlocked();
+        const currentUser = getCurrentUser();
+        
+        if (unlocked && currentUser) {
           document.body.classList.remove('site-locked');
           if (unlockModalBg) unlockModalBg.style.display = 'none';
           if (unlockBtn) unlockBtn.style.display = 'none';
@@ -1655,15 +1781,67 @@
           };
         }
         
-        // Submit unlock
+        // Submit for verification (async)
         if (unlockSubmitBtn) {
-          unlockSubmitBtn.onclick = () => {
+          unlockSubmitBtn.onclick = async () => {
             const email = unlockEmailInput ? unlockEmailInput.value.trim() : '';
-            if (unlockUser(email)) {
-              alert('Site unlocked! Welcome, ' + email);
-              initUnlockSystem(); // Refresh UI
+            if (!email) {
+              alert('Please enter your PayPal email address.');
+              return;
+            }
+            
+            // Disable button during request
+            unlockSubmitBtn.disabled = true;
+            unlockSubmitBtn.textContent = 'Submitting...';
+            
+            const result = await submitForVerification(email);
+            
+            // Re-enable button
+            unlockSubmitBtn.disabled = false;
+            unlockSubmitBtn.textContent = 'Submit for Verification';
+            
+            if (result.success) {
+              if (result.verified) {
+                // User is already verified
+                setCurrentUser(email.toLowerCase().trim());
+                alert('Site unlocked! Welcome, ' + email);
+                await initUnlockSystem(); // Refresh UI
+              } else {
+                // User submitted, pending verification
+                const statusDiv = document.getElementById('verification-status');
+                if (statusDiv) {
+                  statusDiv.style.display = 'block';
+                }
+                alert('Email submitted! Your account will be verified after your donation is processed. Please check back in 24 hours or contact support if you\'ve already donated.');
+                
+                // Set current user so they can see pending status
+                setCurrentUser(email.toLowerCase().trim());
+                
+                // Check verification status periodically
+                checkVerificationStatus(email.toLowerCase().trim());
+              }
             }
           };
+        }
+        
+        // Function to periodically check if user has been verified
+        async function checkVerificationStatus(email) {
+          const maxChecks = 20; // Check for 10 minutes (20 checks × 30 seconds)
+          let checks = 0;
+          
+          const checkInterval = setInterval(async () => {
+            checks++;
+            const unlocked = await isUnlocked();
+            
+            if (unlocked) {
+              clearInterval(checkInterval);
+              alert('Your account has been verified! Welcome!');
+              await initUnlockSystem();
+            } else if (checks >= maxChecks) {
+              clearInterval(checkInterval);
+              console.log('Stopped checking verification status');
+            }
+          }, 30000); // Check every 30 seconds
         }
         
         // Cancel unlock
