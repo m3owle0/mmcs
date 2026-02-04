@@ -1269,6 +1269,26 @@
     box-shadow: 0 4px 12px rgba(0, 112, 186, 0.4);
   }
 
+  .donation-link.cashapp {
+    background: linear-gradient(135deg, #00d632 0%, #00b82a 100%);
+    box-shadow: 0 2px 8px rgba(0, 214, 50, 0.3);
+  }
+
+  .donation-link.cashapp:hover {
+    background: linear-gradient(135deg, #00b82a 0%, #009a22 100%);
+    box-shadow: 0 4px 12px rgba(0, 214, 50, 0.4);
+  }
+
+  .donation-link.bitcoin {
+    background: linear-gradient(135deg, #f7931a 0%, #e8840e 100%);
+    box-shadow: 0 2px 8px rgba(247, 147, 26, 0.3);
+  }
+
+  .donation-link.bitcoin:hover {
+    background: linear-gradient(135deg, #e8840e 0%, #d6750a 100%);
+    box-shadow: 0 4px 12px rgba(247, 147, 26, 0.4);
+  }
+
   .unlock-btn {
     background: rgba(0, 230, 214, 0.2);
     color: #00e6d6;
@@ -1454,6 +1474,17 @@
          class="donation-link">
         💝 Donate via PayPal
       </a>
+      <a href="https://cash.app/$0emo" 
+         target="_blank" 
+         rel="noopener noreferrer" 
+         class="donation-link cashapp">
+        💚 Donate via CashApp
+      </a>
+      <a href="bitcoin:bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn" 
+         class="donation-link bitcoin"
+         onclick="navigator.clipboard.writeText('bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); alert('Bitcoin address copied! Address: bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); return false;">
+        ₿ Donate via Bitcoin
+      </a>
       <span id="online-users-count" class="online-users-count" style="margin-left: 15px;">
         <span class="online-dot"></span>
         <span id="online-users-number">Loading...</span> online
@@ -1470,26 +1501,41 @@
     <div class="unlock-modal">
       <h3>Unlock Site</h3>
       <p style="color: #b0b0b0; margin-bottom: 20px;">
-        <strong style="color: #ff6b6b;">Donation Required:</strong> You must make a donation via PayPal first, then enter your PayPal email address. Your account will be verified and unlocked within 24 hours.
+        <strong style="color: #ff6b6b;">Donation Required:</strong> You must make a donation via PayPal, CashApp, or Bitcoin first, then enter your email address. Your account will be verified and unlocked within 24 hours.
       </p>
       <div id="verification-status" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(255, 193, 7, 0.2); border: 1px solid rgba(255, 193, 7, 0.5);">
         <p style="color: #ffc107; margin: 0; font-size: 14px;">
           ⏳ <strong>Pending Verification:</strong> Your email has been submitted. Please wait for verification after your donation is processed.
         </p>
       </div>
-      <input type="email" id="unlock-email-input" placeholder="Enter your PayPal email" class="unlock-input" />
+      <input type="email" id="unlock-email-input" placeholder="Enter your email address" class="unlock-input" />
       <div class="unlock-btn-row">
         <button id="unlock-submit-btn" class="unlock-submit-btn">Submit for Verification</button>
         <button id="unlock-cancel-btn" class="unlock-cancel-btn">Cancel</button>
       </div>
-      <p style="color: #888; font-size: 12px; margin-top: 15px;">
-        <strong>Step 1:</strong> <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
+      <p style="color: #888; font-size: 12px; margin-top: 15px; line-height: 1.6;">
+        <strong>Step 1:</strong> Donate via 
+        <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
            target="_blank" 
            rel="noopener noreferrer" 
            style="color: #00e6d6;">
-          Donate via PayPal
+          PayPal
+        </a>, 
+        <a href="https://cash.app/$0emo" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           style="color: #00d632;">
+          CashApp ($0emo)
+        </a>, or 
+        <a href="bitcoin:bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn" 
+           onclick="navigator.clipboard.writeText('bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); alert('Bitcoin address copied!'); return false;"
+           style="color: #f7931a;">
+          Bitcoin
         </a><br>
-        <strong>Step 2:</strong> Enter your PayPal email above and submit for verification
+        <strong>Step 2:</strong> If using CashApp, write your email as a note/memo in the payment<br>
+        <strong>Step 3:</strong> If using Bitcoin, message <a href="https://www.instagram.com/bandagearchive" target="_blank" rel="noopener noreferrer" style="color: #e1306c;">@bandagearchive</a> on Instagram with your email after payment<br>
+        <strong>Step 4:</strong> Enter your email above and submit for verification<br>
+        <strong style="color: #f7931a;">Bitcoin Address:</strong> <code style="background: rgba(247, 147, 26, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; cursor: pointer;" onclick="navigator.clipboard.writeText('bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); alert('Bitcoin address copied!');">bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn</code>
       </p>
     </div>
   </div>
