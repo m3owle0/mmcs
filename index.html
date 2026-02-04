@@ -2370,6 +2370,24 @@
     }
     let foldersObj = loadFoldersObj();
     let savedFolders = foldersObj.folders;
+    
+    // Migrate saved searches: normalize string format to object format
+    if (savedFolders && Array.isArray(savedFolders)) {
+      savedFolders = savedFolders.map(folder => {
+        if (folder.searches && Array.isArray(folder.searches)) {
+          folder.searches = folder.searches.map(s => {
+            if (typeof s === 'string') {
+              return { term: s };
+            }
+            return s;
+          });
+        }
+        return folder;
+      });
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj); // Save normalized data
+    }
+    
     let customMarkets = foldersObj.customMarkets || { asia: [], international: [], special: [] };
     let currentFolderIdx = 0; // Default folder on start
     // Market Data
@@ -2690,16 +2708,33 @@
       const currentFolder = savedFolders[currentFolderIdx];
       if (!currentFolder) return;
       
-      const searches = (currentFolder.searches || []).slice().sort((a, b) => (a.term || '').localeCompare(b.term || ''));
+      // Normalize searches: handle both string format and object format
+      const rawSearches = currentFolder.searches || [];
+      const normalizedSearches = rawSearches.map(s => {
+        if (typeof s === 'string') {
+          return { term: s };
+        }
+        return s;
+      });
+      
+      const searches = normalizedSearches.slice().sort((a, b) => {
+        const termA = a.term || (typeof a === 'string' ? a : '');
+        const termB = b.term || (typeof b === 'string' ? b : '');
+        return termA.localeCompare(termB);
+      });
       
       searches.forEach((search, idx) => {
+        // Ensure search has a term property
+        const searchTerm = search.term || (typeof search === 'string' ? search : '');
+        if (!searchTerm) return; // Skip invalid entries
+        
         const li = document.createElement('li');
-        li.className = 'saved-search-item' + (clickedSearches[search.term] ? ' clicked' : '');
+        li.className = 'saved-search-item' + (clickedSearches[searchTerm] ? ' clicked' : '');
         
         if (search.editing) {
           const editInput = document.createElement('input');
           editInput.type = 'text';
-          editInput.value = search.term;
+          editInput.value = searchTerm;
           editInput.className = 'sidebar-add-input';
           editInput.maxLength = 70;
           editInput.autofocus = true;
@@ -2726,10 +2761,10 @@
           const termBtn = document.createElement('button');
           termBtn.type = 'button';
           termBtn.className = 'saved-search-term';
-          termBtn.textContent = search.term;
+          termBtn.textContent = searchTerm;
           termBtn.onclick = () => {
-            document.getElementById('query').value = search.term;
-            clickedSearches[search.term] = true;
+            document.getElementById('query').value = searchTerm;
+            clickedSearches[searchTerm] = true;
             localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
             renderSavedSearches();
             updateUnhighlightedCount();
@@ -2823,7 +2858,10 @@
         countEl.textContent = '0 unhighlighted';
         return;
       }
-      const unhighlighted = currentFolder.searches.filter(s => !clickedSearches[s.term]).length;
+      const unhighlighted = currentFolder.searches.filter(s => {
+        const term = s.term || (typeof s === 'string' ? s : '');
+        return term && !clickedSearches[term];
+      }).length;
       countEl.textContent = unhighlighted + ' unhighlighted';
     }
 
@@ -2891,18 +2929,51 @@
         reader.onload = (event) => {
           try {
             const data = JSON.parse(event.target.result);
+            
+            // Convert imported data: handle both "value" and "term" property names
             if (data.folders && Array.isArray(data.folders)) {
-              savedFolders = data.folders;
+              savedFolders = data.folders.map(folder => {
+                if (folder.searches && Array.isArray(folder.searches)) {
+                  folder.searches = folder.searches.map(search => {
+                    // Convert "value" to "term" if needed
+                    if (typeof search === 'string') {
+                      return { term: search };
+                    }
+                    if (search.value && !search.term) {
+                      return { term: search.value, editing: search.editing || false };
+                    }
+                    // Already has "term" or is already normalized
+                    return search;
+                  });
+                }
+                return folder;
+              });
               foldersObj.folders = savedFolders;
             }
+            
             if (data.customMarkets) {
               customMarkets = data.customMarkets;
               foldersObj.customMarkets = customMarkets;
             }
+            
             if (data.clickedSearches) {
-              clickedSearches = data.clickedSearches;
+              // Convert clickedSearches keys from "value" format to "term" format if needed
+              clickedSearches = {};
+              if (data.folders && Array.isArray(data.folders)) {
+                data.folders.forEach(folder => {
+                  if (folder.searches && Array.isArray(folder.searches)) {
+                    folder.searches.forEach(search => {
+                      const term = search.term || search.value || (typeof search === 'string' ? search : '');
+                      if (term && data.clickedSearches[term]) {
+                        clickedSearches[term] = true;
+                      }
+                    });
+                  }
+                });
+              }
               localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
             }
+            
             saveFoldersObj(foldersObj);
             refreshAllMarketButtons();
             renderFolders();
@@ -2910,6 +2981,7 @@
             alert('Import successful!');
           } catch (err) {
             alert('Import failed: ' + err.message);
+            console.error('Import error:', err);
           }
         };
         reader.readAsText(file);
@@ -2953,14 +3025,17 @@
         const category = randomizeCategorySelect ? randomizeCategorySelect.value : 'all';
         const currentFolder = savedFolders[currentFolderIdx];
         if (!currentFolder || !currentFolder.searches) return;
-        const unhighlighted = currentFolder.searches.filter(s => !clickedSearches[s.term]);
+        const unhighlighted = currentFolder.searches.filter(s => {
+          const term = s.term || (typeof s === 'string' ? s : '');
+          return term && !clickedSearches[term];
+        });
         if (unhighlighted.length === 0) {
           alert('No unhighlighted searches available!');
           return;
         }
         const randomSearch = unhighlighted[Math.floor(Math.random() * unhighlighted.length)];
-        const query = randomSearch.term;
-        if (queryInput) {
+        const query = randomSearch.term || (typeof randomSearch === 'string' ? randomSearch : '');
+        if (queryInput && query) {
           queryInput.value = query;
         }
         
