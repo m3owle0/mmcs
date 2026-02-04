@@ -2252,15 +2252,16 @@
             unlockedError: unlockedError
           });
           
+          // If there's an error accessing the table, fallback to allowing access
           if (unlockedError) {
             console.error('Error checking verification status:', unlockedError);
-            // If table doesn't exist or error, allow access (fallback)
-            // This prevents breaking if unlocked_users table isn't set up yet
-            setCurrentUser(user.user_metadata?.username || user.email || user.id);
+            // Fallback: allow access if we can't check verification
+            const displayName = user.user_metadata?.username || user.email || user.id;
+            setCurrentUser(displayName);
             return true;
           }
           
-          // If no record exists, create one automatically (user signed up before trigger was set up)
+          // If no record exists, create one automatically
           if (!unlockedData) {
             console.warn('User not found in unlocked_users table, creating record:', user.id);
             try {
@@ -2277,8 +2278,9 @@
               
               if (insertError) {
                 console.error('Error creating unlocked_users record:', insertError);
-                // Allow access for now if we can't create record
-                setCurrentUser(user.user_metadata?.username || user.email || user.id);
+                // Fallback: allow access if we can't create record
+                const displayName = user.user_metadata?.username || user.email || user.id;
+                setCurrentUser(displayName);
                 return true;
               }
               
@@ -2287,18 +2289,28 @@
               return false;
             } catch (err) {
               console.error('Error creating unlocked_users record:', err);
-              setCurrentUser(user.user_metadata?.username || user.email || user.id);
-              return true; // Fallback: allow access
+              // Fallback: allow access on error
+              const displayName = user.user_metadata?.username || user.email || user.id;
+              setCurrentUser(displayName);
+              return true;
             }
           }
           
-          // Check if user is verified (handle various true formats)
+          // Check if user is verified - handle various data types
           const verifiedValue = unlockedData.verified;
-          const isVerified = verifiedValue === true || 
-                             verifiedValue === 'true' || 
-                             verifiedValue === 1 ||
-                             verifiedValue === '1' ||
-                             String(verifiedValue).toLowerCase() === 'true';
+          let isVerified = false;
+          
+          // Handle different data types
+          if (verifiedValue === true || verifiedValue === 1) {
+            isVerified = true;
+          } else if (typeof verifiedValue === 'string') {
+            // Handle string values
+            const lowerValue = verifiedValue.toLowerCase().trim();
+            isVerified = lowerValue === 'true' || lowerValue === '1' || lowerValue === 'yes';
+          } else if (verifiedValue !== null && verifiedValue !== undefined) {
+            // Handle other truthy values
+            isVerified = Boolean(verifiedValue);
+          }
           
           console.log('Verification status:', {
             email: user.email,
@@ -2309,7 +2321,7 @@
           
           if (!isVerified) {
             console.log('User not verified:', user.email, 'verified status:', verifiedValue, 'type:', typeof verifiedValue);
-            return false; // User exists but not verified - block access
+            return false;
           }
           
           // User is verified - allow access
@@ -2332,6 +2344,7 @@
           return true;
         } catch (err) {
           console.error('Error checking unlock status:', err);
+          // Fallback: allow access on error
           return false;
         }
       }
@@ -2570,11 +2583,7 @@
           return;
         }
         
-        // First, try to restore session from localStorage
-        const currentUser = getCurrentUser();
-        console.log('Current user from localStorage:', currentUser);
-        
-        // Check if we have a valid session
+        // First, try to restore session from Supabase
         let hasValidSession = false;
         let sessionUser = null;
         
@@ -2586,23 +2595,25 @@
             hasValidSession = true;
             sessionUser = session.user;
             console.log('Valid session found for user:', session.user?.email);
+            
+            // Always update current user from session when we have one
+            const displayName = sessionUser.user_metadata?.username || sessionUser.email || sessionUser.id;
+            setCurrentUser(displayName);
+            console.log('Updated current user from session:', displayName);
           }
         } catch (err) {
           console.error('Error checking session:', err);
         }
         
-        // If we have a session but no currentUser in localStorage, update it
-        if (hasValidSession && sessionUser && !currentUser) {
-          const displayName = sessionUser.user_metadata?.username || sessionUser.email || sessionUser.id;
-          setCurrentUser(displayName);
-          console.log('Restored user from session:', displayName);
-        }
+        // Get current user from localStorage (may have been updated above)
+        const currentUser = getCurrentUser();
+        console.log('Current user from localStorage:', currentUser);
         
         // Check if site is unlocked (async)
         const unlocked = await isUnlocked();
         const updatedCurrentUser = getCurrentUser();
         
-        console.log('initUnlockSystem check:', { unlocked, updatedCurrentUser, hasValidSession });
+        console.log('initUnlockSystem check:', { unlocked, updatedCurrentUser, hasValidSession, sessionUser });
         
         if (unlocked && updatedCurrentUser) {
           document.body.classList.remove('site-locked');
@@ -2971,20 +2982,28 @@
           if (!supabase) return;
           
           try {
+            // Check if we have a current user
+            const currentUser = getCurrentUser();
+            if (!currentUser) {
+              clearInterval(sessionHeartbeatInterval);
+              return;
+            }
+            
             // Refresh the session to keep it alive
             const { data: { session }, error } = await supabase.auth.refreshSession();
             
             if (error || !session) {
+              console.log('Session refresh failed in heartbeat, clearing session');
               // Session invalidated, clear local session
               clearSession();
               clearInterval(sessionHeartbeatInterval);
-              await initUnlockSystem();
+              await initUnlockSystem(true); // Suppress modal during heartbeat
+            } else {
+              console.log('Session refreshed successfully in heartbeat');
             }
           } catch (err) {
-            console.error('Error refreshing session:', err);
-            clearSession();
-            clearInterval(sessionHeartbeatInterval);
-            await initUnlockSystem();
+            console.error('Error refreshing session in heartbeat:', err);
+            // Don't clear session on network errors, etc.
           }
         }, 300000); // Refresh every 5 minutes (Supabase sessions last ~1 hour)
       }
@@ -3008,25 +3027,40 @@
       }
       
       // Initialize on page load
+      async function initializeAuth() {
+        // First, try to refresh the session to ensure it's valid
+        if (supabase) {
+          try {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (session) {
+              console.log('Session found on page load, refreshing if needed');
+              // Try to refresh the session to ensure it's valid
+              const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
+              if (refreshError) {
+                console.log('Session refresh error (may be normal):', refreshError.message);
+              } else if (refreshedData.session) {
+                console.log('Session refreshed successfully');
+              }
+            }
+          } catch (err) {
+            console.log('Error refreshing session on page load:', err);
+          }
+        }
+        
+        // Then initialize the unlock system
+        await initUnlockSystem();
+        
+        // Start heartbeat if user is logged in
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+          startSessionHeartbeat();
+        }
+      }
+      
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-          initUnlockSystem().then(() => {
-            // Start heartbeat after initialization
-            const currentUser = getCurrentUser();
-            if (currentUser) {
-              startSessionHeartbeat();
-            }
-          });
-        });
+        document.addEventListener('DOMContentLoaded', initializeAuth);
       } else {
-        setTimeout(() => {
-          initUnlockSystem().then(() => {
-            const currentUser = getCurrentUser();
-            if (currentUser) {
-              startSessionHeartbeat();
-            }
-          });
-        }, 100);
+        setTimeout(initializeAuth, 100);
       }
       
       // Set up page unload handler
