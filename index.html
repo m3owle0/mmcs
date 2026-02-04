@@ -1614,8 +1614,8 @@
       }
       
       /* Mobile searches container */
-      #mobile-searches-container {
-        max-height: 400px;
+      #mobile-folders-container {
+        max-height: 500px;
         overflow-y: auto;
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 8px;
@@ -1623,15 +1623,15 @@
         background: rgba(30,32,34,0.5);
       }
       
-      #mobile-searches-container::-webkit-scrollbar {
+      #mobile-folders-container::-webkit-scrollbar {
         width: 6px;
       }
       
-      #mobile-searches-container::-webkit-scrollbar-track {
+      #mobile-folders-container::-webkit-scrollbar-track {
         background: rgba(30,32,34,0.5);
       }
       
-      #mobile-searches-container::-webkit-scrollbar-thumb {
+      #mobile-folders-container::-webkit-scrollbar-thumb {
         background: rgba(120,120,120,0.5);
         border-radius: 3px;
       }
@@ -2020,22 +2020,17 @@
     <div style="margin-bottom: 20px;">
       <h3 style="color: #e3e3e3; margin-bottom: 15px;">Saved Searches</h3>
       
-      <!-- Folder Selection - Simplified -->
+      <!-- Add new search input -->
       <div style="margin-bottom: 15px;">
-        <div class="mobile-folder-list" id="mobile-folder-list" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: none; border: none; padding: 0; background: transparent;">
-          <!-- Folders will be populated by JavaScript -->
+        <div class="sidebar-add-row" style="display: flex; gap: 8px; margin-bottom: 15px;">
+          <input type="text" placeholder="Add search to current folder..." id="mobile-add-input" class="sidebar-add-input" maxlength="70" style="flex: 1;">
+          <button class="sidebar-add-btn" id="mobile-add-btn" title="Save Search">+</button>
         </div>
       </div>
       
-      <!-- Saved Searches List - Now shows terms directly -->
-      <div style="margin-bottom: 15px;">
-        <div class="sidebar-add-row" style="display: flex; gap: 8px; margin-bottom: 15px;">
-          <input type="text" placeholder="Add search..." id="mobile-add-input" class="sidebar-add-input" maxlength="70" style="flex: 1;">
-          <button class="sidebar-add-btn" id="mobile-add-btn" title="Save Search">+</button>
-        </div>
-        <div id="mobile-searches-container" style="max-height: 400px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; background: rgba(30,32,34,0.5);">
-          <ul class="saved-searches-list" id="mobile-searches-list" style="list-style: none; padding: 0; margin: 0;"></ul>
-        </div>
+      <!-- All folders with their saved searches -->
+      <div id="mobile-folders-container" style="max-height: 500px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; background: rgba(30,32,34,0.5);">
+        <!-- Folders and their searches will be populated here -->
       </div>
     </div>
     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #232323;">
@@ -5004,8 +4999,7 @@
           mobileSidebar.classList.add('active');
           mobileSidebarOverlay.classList.add('active');
           // Update folders and searches when opening - ensure latest data
-          updateMobileFolders();
-          updateMobileSearches();
+          updateMobileFoldersAndSearches();
           // Also update the main saved searches to sync
           renderSavedSearches();
         });
@@ -5019,8 +5013,7 @@
       // Initialize mobile folders and searches immediately
       setTimeout(() => {
         console.log('Initializing mobile folders and searches');
-        updateMobileFolders();
-        updateMobileSearches();
+        updateMobileFoldersAndSearches();
       }, 100);
       
       // Make sure mobile searches are updated when saved searches change
@@ -5252,7 +5245,7 @@
           if (value) {
             addSavedSearch(value);
             mobileAddInput.value = '';
-            updateMobileSearches();
+            updateMobileFoldersAndSearches();
             renderSavedSearches();
           }
         });
@@ -5263,7 +5256,7 @@
             if (value) {
               addSavedSearch(value);
               this.value = '';
-              updateMobileSearches();
+              updateMobileFoldersAndSearches();
               renderSavedSearches();
             }
           }
@@ -5301,7 +5294,7 @@
           if (mobileSidebarOverlay) mobileSidebarOverlay.classList.remove('active');
           
           // Update UI
-          updateMobileSearches();
+          updateMobileFoldersAndSearches();
           renderSavedSearches();
         });
       }
@@ -5312,7 +5305,7 @@
         mobileResetBtn.addEventListener('click', function() {
           clickedSearches = {};
           localStorage.removeItem(CLICKED_SEARCHES_KEY);
-          updateMobileSearches();
+          updateMobileFoldersAndSearches();
           renderSavedSearches();
           alert('All highlights have been reset');
         });
