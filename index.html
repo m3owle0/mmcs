@@ -3,10 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Multi-Market Secondhand Clothing Search</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=1920, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
   <link rel="icon" type="image/png" href="miku.png">
   <style>
     :root {
@@ -28,17 +25,13 @@
     /* Main Styles */
     html, body {
       height: 100%;
-      background-color: var(--theme-bg);
-      color: var(--theme-text);
-      min-height: 100vh;
-      overflow: hidden;
-    }
-    /* Background image - browsers handle background-size/position/attachment gracefully when image is 'none' */
-    html, body {
-      background-image: var(--theme-bg-image);
+      background: var(--theme-bg) var(--theme-bg-image);
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
+      color: var(--theme-text);
+      min-height: 100vh;
+      overflow: hidden;
     }
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
@@ -217,12 +210,6 @@
       color: #fff;
       box-shadow: 0 4px 16px #2226;
       transform: translateY(-2px) scale(1.04);
-    }
-    #theme-editor-btn:hover, #monitor-view-btn:hover {
-      background: #444 !important;
-      color: #fff !important;
-      box-shadow: 0 4px 16px #2226 !important;
-      transform: translateY(-2px) scale(1.04) !important;
     }
     .tip { font-size: 14px; color: #b0b0b0; margin-bottom: 20px; }
     .market-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
@@ -905,165 +892,6 @@
       margin-top: 2px;
       font-weight: bold;
     }
-
-    /* Monitor modal (Archivist-style "board") */
-    .monitor-modal-bg {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(10,10,10,0.68);
-      z-index: 3100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(3px);
-    }
-    .monitor-modal {
-      background: rgba(32,34,36, 0.98);
-      border-radius: 18px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 1.5px 0 #232323;
-      border: 1.5px solid #232323;
-      width: min(1200px, 96vw);
-      height: min(740px, 86vh);
-      padding: 16px 16px 14px 16px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .monitor-modal-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 6px 6px 10px 6px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-    .monitor-title {
-      font-size: 0.98rem;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-      color: #eaeaea;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 180px;
-    }
-    .monitor-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
-      justify-content: flex-end;
-      min-width: 0;
-    }
-    .monitor-select {
-      background: rgba(30,32,34,0.93);
-      border: 1.5px solid #232323;
-      color: #e3e3e3;
-      border-radius: 10px;
-      padding: 10px 12px;
-      outline: none;
-      max-width: 520px;
-      width: 100%;
-    }
-    .monitor-select:focus { border-color: rgba(0,230,214,0.6); }
-    .monitor-close-btn {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.10);
-      color: #b0b0b0;
-      border-radius: 10px;
-      padding: 10px 12px;
-      cursor: pointer;
-      transition: background .14s, color .14s, border-color .14s;
-      white-space: nowrap;
-    }
-    .monitor-close-btn:hover { background: rgba(255,255,255,0.06); color: #fff; border-color: rgba(255,255,255,0.20); }
-    .monitor-board {
-      display: flex;
-      gap: 12px;
-      flex: 1;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding: 12px 6px 6px 6px;
-    }
-    .monitor-board::-webkit-scrollbar { height: 8px; }
-    .monitor-board::-webkit-scrollbar-thumb { background: rgba(120,120,120,0.35); border-radius: 999px; }
-    .monitor-col {
-      min-width: 280px;
-      max-width: 280px;
-      height: 100%;
-      background: rgba(17,17,17,0.75);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .monitor-col-header {
-      padding: 12px 12px 10px 12px;
-      background: rgba(255,255,255,0.03);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .monitor-col-title {
-      font-weight: 800;
-      font-size: 0.9rem;
-      color: #e3e3e3;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .monitor-col-count {
-      font-size: 0.75rem;
-      color: #9a9a9a;
-      background: rgba(0,0,0,0.25);
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.07);
-      flex: 0 0 auto;
-    }
-    .monitor-col-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px;
-    }
-    .monitor-col-body::-webkit-scrollbar { width: 6px; }
-    .monitor-col-body::-webkit-scrollbar-thumb { background: rgba(120,120,120,0.35); border-radius: 999px; }
-    .monitor-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: rgba(8,8,8,0.7);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 12px;
-      padding: 10px 10px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      transition: transform .12s ease, border-color .14s, background .14s;
-    }
-    .monitor-item:hover { transform: translateY(-1px); border-color: rgba(0,230,214,0.55); background: rgba(20,20,20,0.85); }
-    .monitor-item-text {
-      color: #dcdcdc;
-      font-size: 0.88rem;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
-      min-width: 0;
-    }
-    .monitor-item-tag {
-      font-size: 0.72rem;
-      color: #000;
-      background: var(--theme-highlight);
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-weight: 800;
-      flex: 0 0 auto;
-    }
-
     /* Add website buttons */
     .add-market-row {
       display: flex;
@@ -1334,778 +1162,258 @@
       box-shadow: 0 0 0 2px rgba(120,120,120,0.3);
       transition: none;
     }
-    /* Mobile-first responsive design */
-    @media (max-width: 768px) {
-      /* Mobile: Full-width, stacked layout */
-      body {
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      .container {
-        position: relative;
-        left: auto;
-        top: auto;
-        transform: none;
-        max-width: 100vw;
-        width: 100%;
-        min-width: 0;
-        max-height: none;
-        height: auto;
-        margin: 0;
-        padding: 16px 12px;
-        border-radius: 0;
-        box-shadow: none;
-        border: none;
-      }
-
-      .sidebar {
-        position: relative;
-        width: 100%;
-        height: auto;
-        max-height: 50vh;
-        overflow-y: auto;
-        box-shadow: none;
-        border-right: none;
-        border-bottom: 1.5px solid #232323;
-        padding: 12px 10px;
-        margin-bottom: 12px;
-        font-size: 0.95em;
-      }
-
-      .wishlist-section {
-        position: relative;
-        width: 100%;
-        height: auto;
-        max-height: 50vh;
-        overflow-y: auto;
-        border-right: none;
-        border-top: 1.5px solid #232323;
-        padding: 12px 10px;
-        margin-top: 12px;
-      }
-
-      h1 {
-        font-size: 1.5em;
-        margin-bottom: 10px;
-      }
-
-      h2 {
-        font-size: 1.1em;
-        margin-top: 20px;
-        margin-bottom: 10px;
-      }
-
-      input[type="text"] {
-        font-size: 16px; /* Prevents zoom on iOS */
-        padding: 14px 12px;
-        min-width: 0;
-        width: 100%;
-      }
-
-      .market-row {
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .markets {
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .market-btn {
-        min-width: 0;
-        width: 100%;
-        padding: 14px 12px;
-        font-size: 0.95em;
-        touch-action: manipulation; /* Faster tap response */
-      }
-
-      .add-market-row {
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .add-market-btn {
-        min-width: 0;
-        width: 100%;
-        padding: 12px;
-        font-size: 0.9em;
-      }
-
-      #open-all-btn,
-      .section-openall-btn {
-        width: 100%;
-        padding: 14px;
-        font-size: 0.95em;
-        margin-bottom: 8px;
-      }
-
-      .section-header-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-
-      .randomize-section {
-        flex-direction: column;
-        width: 100%;
-        gap: 8px;
-      }
-
-      .randomize-select,
-      #sidebar-randomize-btn,
-      #theme-editor-btn,
-      #monitor-view-btn {
-        width: 100%;
-        padding: 12px;
-        font-size: 0.9em;
-      }
-
-      .sidebar-add-row,
-      .sidebar-folder-row {
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .sidebar-add-input,
-      .sidebar-folder-input {
-        width: 100%;
-        font-size: 16px; /* Prevents zoom on iOS */
-        padding: 12px;
-      }
-
-      .sidebar-add-btn,
-      .sidebar-folder-btn {
-        width: 100%;
-        padding: 12px;
-        font-size: 1em;
-      }
-
-      .sidebar-import-export-row {
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .sidebar-exp-btn,
-      .sidebar-imp-btn,
-      .sidebar-reset-btn {
-        width: 100%;
-        padding: 12px;
-        font-size: 0.9em;
-      }
-
-      .saved-search-term {
-        padding: 12px 10px;
-        font-size: 0.95em;
-        min-height: 44px; /* iOS touch target minimum */
-        display: flex;
-        align-items: center;
-      }
-
-      .saved-folder-item {
-        padding: 12px 10px;
-        min-height: 44px;
-      }
-
-      .custom-market-modal {
-        max-width: 95vw;
-        width: 95vw;
-        padding: 20px 16px;
-        margin: 10px;
-      }
-
-      .monitor-modal {
-        width: 100vw;
-        height: 100vh;
-        max-width: 100vw;
-        max-height: 100vh;
-        border-radius: 0;
-        padding: 12px;
-      }
-
-      .monitor-board {
-        flex-direction: column;
-        overflow-y: auto;
-        overflow-x: hidden;
-      }
-
-      .monitor-col {
-        min-width: 100%;
-        max-width: 100%;
-        margin-bottom: 12px;
-      }
-
-      .wishlist-add-row {
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .wishlist-add-input {
-        width: 100%;
-        font-size: 16px; /* Prevents zoom on iOS */
-        padding: 12px;
-      }
-
-      .wishlist-add-btn {
-        width: 100%;
-        padding: 12px;
-      }
-
-      .wishlist-item {
-        padding: 10px;
-        font-size: 0.9em;
-      }
-
-      .wishlist-link {
-        max-width: 100%;
-        word-break: break-all;
-      }
-
-      .tip {
-        font-size: 0.9em;
-        line-height: 1.5;
-      }
-
-      .special-group {
-        padding: 12px 8px;
-      }
-
-      /* Disable dragging on mobile */
-      .drag-handle {
-        cursor: default;
-        pointer-events: none;
-      }
-
-      .container.minimized,
-      .sidebar.minimized,
-      .wishlist-section.minimized {
-        width: 100% !important;
-        height: auto !important;
-        min-width: 0 !important;
-        min-height: 0 !important;
-        transform: none !important;
-      }
-
-      /* Better touch targets */
-      button,
-      .market-btn,
-      .sidebar-add-btn,
-      .sidebar-folder-btn,
-      .edit-btn,
-      .remove-btn {
-        min-height: 44px;
-        touch-action: manipulation;
-      }
-
-      /* Hide resize handles on mobile */
-      .resize-handle {
-        display: none;
-      }
-
-      /* Adjust panel controls for mobile */
-      .panel-controls {
-        top: 8px;
-        right: 8px;
-      }
-
-      .panel-close {
-        width: 32px;
-        height: 32px;
-        font-size: 1.2em;
-      }
-
-      /* Login modal */
-      .login-modal-bg {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        background: rgba(0, 0, 0, 0.95) !important;
-        backdrop-filter: blur(8px) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        z-index: 99999 !important;
-      }
-
-      .login-modal {
-        background: rgba(20, 20, 20, 0.98);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 18px;
-        padding: 32px 28px;
-        width: min(400px, 90vw);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-        text-align: center;
-      }
-
-      .login-title {
-        font-size: 1.5em;
-        font-weight: 900;
-        color: #fff;
-        margin-bottom: 8px;
-        letter-spacing: 0.02em;
-      }
-
-      .login-subtitle {
-        color: #b0b0b0;
-        font-size: 0.95em;
-        margin-bottom: 24px;
-      }
-
-      .login-input {
-        width: 100%;
-        background: rgba(30, 32, 34, 0.93);
-        border: 1.5px solid #2a2d2f;
-        color: #e3e3e3;
-        border-radius: 10px;
-        padding: 14px 16px;
-        font-size: 1em;
-        outline: none;
-        margin-bottom: 16px;
-        box-sizing: border-box;
-      }
-
-      .login-input:focus {
-        border-color: rgba(0, 230, 214, 0.55);
-        background: rgba(40, 42, 44, 0.98);
-      }
-
-      .login-btn {
-        width: 100%;
-        background: #232323;
-        color: #e3e3e3;
-        border: none;
-        border-radius: 10px;
-        padding: 14px;
-        font-size: 1em;
-        font-weight: 800;
-        cursor: pointer;
-        transition: background 0.18s, transform 0.13s;
-      }
-
-      .login-btn:hover {
-        background: #444;
-        transform: translateY(-1px);
-      }
-
-      .login-error {
-        color: #ff6b6b;
-        font-size: 0.9em;
-        margin-top: 12px;
-        display: none;
-      }
-
-    body.login-locked .sidebar,
-    body.login-locked .container,
-    body.login-locked .wishlist-section,
-    body.login-locked .minimized-panels {
-      pointer-events: none !important;
-      filter: blur(3px) !important;
-      opacity: 0.4 !important;
-      z-index: 1 !important;
-    }
-
-    /* Ensure login modal is always on top */
-    .login-modal-bg.show,
-    .login-modal-bg:not(.hidden) {
-      z-index: 99999 !important;
-    }
-
-    /* Hide sidebar and other elements behind login */
-    body.login-locked .sidebar {
-      z-index: 1 !important;
-    }
-
-      /* Landscape orientation on mobile */
-      @media (max-width: 768px) and (orientation: landscape) {
-        .sidebar {
-          max-height: 40vh;
-        }
-
-        .wishlist-section {
-          max-height: 40vh;
-        }
-
-        .container {
-          padding: 12px 10px;
-        }
-
-        h1 {
-          font-size: 1.3em;
-          margin-bottom: 8px;
-        }
-      }
-
-      /* Very small screens */
-      @media (max-width: 360px) {
-        .container {
-          padding: 12px 8px;
-        }
-
-        h1 {
-          font-size: 1.3em;
-        }
-
-        .market-btn {
-          font-size: 0.85em;
-          padding: 12px 8px;
-        }
-
-        .sidebar {
-          font-size: 0.9em;
-          padding: 10px 8px;
-        }
-      }
-    }
-
     @media (max-width: 1200px) {
       .wishlist-section { display: none; }
       .container { margin-right: 0; }
       .custom-market-modal-bg { justify-content: center; align-items: center; }
       .custom-market-modal { margin: auto; }
     }
-
-    @media (min-width: 1200px) {
-      .container {
-        margin-left: 320px;
-        margin-right: 405px;
-      }
-    }
-
-    /* Tablet adjustments */
-    @media (min-width: 769px) and (max-width: 1024px) {
-      .container {
-        max-width: 95vw;
-        margin: 0 auto;
-        padding: 24px 16px;
-      }
-
+    @media (max-width: 1000px) {
       .sidebar {
-        width: 280px;
-      }
-
-      .wishlist-section {
-        width: 300px;
-      }
-    }
-
-    /* Chat Styles */
-    .chat-widget {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 350px;
-      max-width: calc(100vw - 40px);
-      background: rgba(15,15,15,0.98);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      max-height: 500px;
-      backdrop-filter: blur(12px);
-    }
-
-    .chat-header {
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .chat-header-title {
-      font-weight: bold;
-      font-size: 14px;
-      color: #e3e3e3;
-    }
-
-    .chat-online-count {
-      font-size: 12px;
-      color: #00e6d6;
-      background: rgba(0,230,214,0.15);
-      padding: 4px 8px;
-      border-radius: 12px;
-    }
-
-    .chat-toggle {
-      background: none;
-      border: none;
-      color: #888;
-      font-size: 18px;
-      cursor: pointer;
-      padding: 0;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .chat-body {
-      display: flex;
-      flex-direction: column;
-      height: 400px;
-      overflow: hidden;
-    }
-
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .chat-message {
-      padding: 8px 12px;
-      border-radius: 8px;
-      background: rgba(30,32,34,0.7);
-      font-size: 13px;
-      line-height: 1.4;
-      word-wrap: break-word;
-    }
-
-    .chat-message-username {
-      font-weight: bold;
-      color: #00e6d6;
-      margin-right: 6px;
-    }
-
-    .chat-message-time {
-      font-size: 11px;
-      color: #888;
-      margin-left: 6px;
-    }
-
-    .chat-input-area {
-      padding: 12px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      display: flex;
-      gap: 8px;
-    }
-
-    .chat-input {
-      flex: 1;
-      background: rgba(30,32,34,0.7);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      padding: 8px 12px;
-      color: #e3e3e3;
-      font-size: 13px;
-      outline: none;
-    }
-
-    .chat-input:focus {
-      border-color: rgba(0,230,214,0.5);
-    }
-
-    .chat-send-btn {
-      background: #232323;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      color: #e3e3e3;
-      font-size: 13px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .chat-send-btn:hover {
-      background: #444;
-    }
-
-    .chat-widget.minimized .chat-body {
-      display: none;
-    }
-
-    .chat-widget.minimized {
-      height: auto;
-      max-height: none;
-    }
-
-    .username-modal {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      background: rgba(0,0,0,0.95) !important;
-      backdrop-filter: blur(8px) !important;
-      display: none !important; /* Hidden by default */
-      align-items: center !important;
-      justify-content: center !important;
-      z-index: 99998 !important; /* Slightly lower than login modal */
-      visibility: hidden !important;
-      opacity: 0 !important;
-    }
-
-    .username-modal.show {
-      display: flex !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      z-index: 99999 !important;
-    }
-
-    .username-modal.hidden {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      z-index: -1 !important;
-    }
-
-    .username-modal-content {
-      background: rgba(20,20,20,0.98);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 18px;
-      padding: 32px 28px;
-      width: min(400px, 90vw);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-      text-align: center;
-    }
-
-    .username-input {
-      width: 100%;
-      background: rgba(30,32,34,0.93);
-      border: 1.5px solid #2a2d2f;
-      color: #e3e3e3;
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-size: 1em;
-      outline: none;
-      margin-bottom: 16px;
-      box-sizing: border-box;
-    }
-
-    .username-input:focus {
-      border-color: rgba(0,230,214,0.55);
-      background: rgba(40,42,44,0.98);
-    }
-
-    /* Mobile chat styles */
-    @media (max-width: 768px) {
-      .chat-widget {
+        position: static;
         width: 100%;
-        max-width: 100%;
-        bottom: 0;
-        right: 0;
-        border-radius: 0;
-        border-left: none;
+        height: auto;
+        box-shadow: none;
         border-right: none;
-        border-bottom: none;
-        max-height: 50vh;
+        border-bottom: 1.5px solid #232323;
+        padding: 13px 8px 7px 8px;
+        margin-bottom: 18px;
+        max-width: 100vw;
       }
-
-      .chat-body {
-        height: calc(50vh - 60px);
-      }
-
-      .username-modal-content {
-        width: 95vw;
-        padding: 24px 20px;
-      }
+      .container { max-width: 98vw; margin: 0.5em; }
+      .custom-market-modal-bg { justify-content: center !important; align-items: center !important; }
+      .custom-market-modal { margin: auto !important; }
     }
-    /* Top Header Bar */
-    .top-header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: rgba(15, 15, 15, 0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    @media (max-width: 700px) {
+      .market-row, .markets { flex-direction: column; gap: 8px; }
+      .market-btn { min-width: 0; width: 100%; }
+      .add-market-btn { min-width: 0; width: 100%; }
+      input[type="text"] { min-width: 0; }
+      .special-group { padding: 10px 4px 6px 4px; }
+      #open-all-btn { max-width: 100%; }
+      .sidebar { padding: 9px 3px 7px 6px; font-size: 0.97em; }
+      .custom-market-modal-bg { justify-content: center !important; align-items: center !important; }
+      .custom-market-modal { margin: auto !important; }
     }
+    @media (min-width: 1200px) {
+  .container {
+    margin-left: 320px;  /* Increased from 255px for more space from sidebar */
+    margin-right: 405px; /* Keeps it visually centered */
+  }
 
-    .online-counter {
-      font-size: 14px;
-      color: var(--theme-text);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+  /* Top Header Styles */
+  .top-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
 
-    .online-dot {
-      width: 8px;
-      height: 8px;
-      background: #00e6d6;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
+  .header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
+  .donation-link {
+    background: linear-gradient(135deg, #0070ba 0%, #1546a0 100%);
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 112, 186, 0.3);
+  }
 
-    .donation-link {
-      background: linear-gradient(135deg, #0070ba 0%, #1546a0 100%);
-      color: white;
-      text-decoration: none;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 2px 8px rgba(0, 112, 186, 0.3);
-    }
+  .donation-link:hover {
+    background: linear-gradient(135deg, #005a9a 0%, #0f3a80 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 112, 186, 0.4);
+  }
 
-    .donation-link:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 112, 186, 0.4);
-    }
+  .unlock-btn {
+    background: rgba(0, 230, 214, 0.2);
+    color: #00e6d6;
+    border: 1px solid #00e6d6;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
 
-    body {
-      padding-top: 50px; /* Space for fixed header */
-    }
+  .unlock-btn:hover {
+    background: rgba(0, 230, 214, 0.3);
+    transform: translateY(-1px);
+  }
 
-    @media (max-width: 768px) {
-      .top-header {
-        padding: 10px 15px;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
+  /* Unlock Modal Styles */
+  .unlock-modal-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+  }
 
-      .online-counter {
-        font-size: 12px;
-      }
+  .unlock-modal {
+    background: rgba(20, 20, 20, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    padding: 32px 28px;
+    width: min(400px, 90vw);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    text-align: center;
+  }
 
-      .donation-link {
-        padding: 6px 12px;
-        font-size: 12px;
-      }
+  .unlock-modal h3 {
+    color: #e3e3e3;
+    margin: 0 0 10px 0;
+    font-size: 24px;
+  }
 
-      body {
-        padding-top: 60px; /* More space on mobile */
-      }
-    }
+  .unlock-input {
+    width: 100%;
+    background: rgba(30, 32, 34, 0.93);
+    border: 1.5px solid #2a2d2f;
+    color: #e3e3e3;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 1em;
+    outline: none;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+  }
+
+  .unlock-input:focus {
+    border-color: rgba(0, 230, 214, 0.55);
+    background: rgba(40, 42, 44, 0.98);
+  }
+
+  .unlock-btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .unlock-submit-btn {
+    background: #00e6d6;
+    color: #0a0a0a;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .unlock-submit-btn:hover {
+    background: #00d4c4;
+    transform: translateY(-1px);
+  }
+
+  .unlock-cancel-btn {
+    background: rgba(60, 60, 60, 0.8);
+    color: #e3e3e3;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .unlock-cancel-btn:hover {
+    background: rgba(80, 80, 80, 0.9);
+  }
+
+  /* Adjust body padding for top header */
+  body {
+    padding-top: 60px;
+  }
+
+  /* Lock overlay when site is locked */
+  body.site-locked::before {
+    content: '';
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 99998;
+    pointer-events: all;
+  }
+
+  body.site-locked .container,
+  body.site-locked .sidebar,
+  body.site-locked .wishlist-section {
+    pointer-events: none;
+    filter: blur(3px);
+    opacity: 0.5;
+  }
+}
   </style>
 </head>
 <body>
-  <!-- Top Header with Online Counter and Donation Link -->
+  <!-- Top Header with PayPal Donation -->
   <div class="top-header">
-    <div class="online-counter">
-      <span class="online-dot"></span>
-      <span id="online-count">Loading...</span>
+    <div class="header-left">
+      <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
+         target="_blank" 
+         rel="noopener noreferrer" 
+         class="donation-link">
+        💝 Donate via PayPal
+      </a>
     </div>
-    <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
-       target="_blank" 
-       rel="noopener noreferrer" 
-       class="donation-link">
-      💝 Donate via PayPal
-    </a>
+    <div class="header-right">
+      <span id="user-display" style="display: none; color: #00e6d6; font-size: 14px; margin-right: 15px;"></span>
+      <button id="unlock-btn" class="unlock-btn" style="display: none;">Unlock Site</button>
+    </div>
+  </div>
+
+  <!-- Login/Unlock Modal -->
+  <div id="unlock-modal-bg" class="unlock-modal-bg" style="display: none;">
+    <div class="unlock-modal">
+      <h3>Unlock Site</h3>
+      <p style="color: #b0b0b0; margin-bottom: 20px;">
+        After making a donation via PayPal, enter your PayPal email address to unlock the site permanently.
+      </p>
+      <input type="email" id="unlock-email-input" placeholder="Enter your PayPal email" class="unlock-input" />
+      <div class="unlock-btn-row">
+        <button id="unlock-submit-btn" class="unlock-submit-btn">Unlock</button>
+        <button id="unlock-cancel-btn" class="unlock-cancel-btn">Cancel</button>
+      </div>
+      <p style="color: #888; font-size: 12px; margin-top: 15px;">
+        <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           style="color: #00e6d6;">
+          Donate via PayPal
+        </a>
+      </p>
+    </div>
   </div>
 
   <div class="minimized-panels" id="minimized-panels"></div>
@@ -2156,7 +1464,7 @@
     <div class="resize-handle resize-handle-bottom" data-resize="sidebar"></div>
   </div>
   <div class="wishlist-section" id="wishlist-section">
-    <img src="mmcs.png" class="wishlist-mascot" alt="MMCS Logo" loading="lazy" onload="this.classList.add('loaded')" onerror="this.style.display='none'">
+    <img src="mmcs.png" class="wishlist-mascot" alt="MMCS Logo" loading="lazy" onload="this.classList.add('loaded')">
     <div class="wishlist-title">Wishlist / Considering</div>
     <form class="wishlist-add-row" id="wishlist-add-form" autocomplete="off">
       <input type="text" class="wishlist-add-input" id="wishlist-link-input" placeholder="Paste item link here..." maxlength="700" required />
@@ -2204,7 +1512,6 @@
           <button class="sidebar-randomize-btn" id="sidebar-randomize-btn" type="button" style="background: #232323; color: #e3e3e3; border: none; border-radius: 5px; font-size: 13px; font-weight: bold; padding: 7px 13px; cursor: pointer; box-shadow: 0 1px 4px #2224; opacity: 0.93; backdrop-filter: blur(2px);">Randomize</button>
         </div>
         <button type="button" id="theme-editor-btn" style="background: #232323; color: #e3e3e3; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 7px 18px 8px 18px; cursor: pointer; letter-spacing: .01em; box-shadow: 0 2px 8px #2224; transition: background .18s, box-shadow .18s, transform .13s; margin-left: 0; margin-bottom: 2px; backdrop-filter: blur(2px); opacity: 0.93;">Theme Editor</button>
-        <button type="button" id="monitor-view-btn" style="background: #232323; color: #e3e3e3; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 7px 18px 8px 18px; cursor: pointer; letter-spacing: .01em; box-shadow: 0 2px 8px #2224; transition: background .18s, box-shadow .18s, transform .13s; margin-left: 0; margin-bottom: 2px; backdrop-filter: blur(2px); opacity: 0.93;">Monitor</button>
       </div>
       <div class="add-market-row">
         <button type="button" class="add-market-btn" data-section="asia">+ Add Website to Asia</button>
@@ -2259,124 +1566,136 @@
       </div>
     </div>
   </div>
-
-  <!-- Monitor Modal (Archivist-like board view) -->
-  <div id="monitor-modal-bg" class="monitor-modal-bg" style="display:none;">
-    <div class="monitor-modal" role="dialog" aria-modal="true" aria-label="Monitor view">
-      <div class="monitor-modal-top">
-        <div class="monitor-title">Monitor View</div>
-        <div class="monitor-controls">
-          <select id="monitor-market-select" class="monitor-select" title="Choose a site to monitor"></select>
-          <button type="button" class="monitor-close-btn" id="monitor-close-btn" title="Close (Esc)">Close</button>
-        </div>
-      </div>
-      <div class="monitor-board" id="monitor-board"></div>
-    </div>
-  </div>
-
   <script>
-    // Simple Online Counter
+    // Site Unlock System
     (function() {
-      // Wait for DOM to be ready
-      let onlineCountEl = null;
+      const UNLOCKED_USERS_KEY = 'mmcs_unlocked_users';
+      const CURRENT_USER_KEY = 'mmcs_current_user';
       
-      // Simple online counter using a free service
-      // This shows approximate visitor count
-      async function updateOnlineCount() {
-        if (!onlineCountEl) return;
-        
-        try {
-          // Use a simple counter API (free service)
-          // This gives an approximate count of visitors
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-          
-          const response = await fetch('https://api.countapi.xyz/hit/mmcs-online-counter/visits', {
-            signal: controller.signal,
-            mode: 'cors',
-            cache: 'no-cache'
-          });
-          
-          clearTimeout(timeoutId);
-          
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-          
-          const data = await response.json();
-          
-          if (data && data.value !== undefined) {
-            // Show the count (this is total hits, not concurrent users)
-            // For a simple solution, we'll show "X+ online" based on recent activity
-            const count = Math.max(1, Math.floor(data.value / 10)); // Rough estimate
-            onlineCountEl.textContent = `${count}+ online`;
-          } else {
-            onlineCountEl.textContent = '1+ online';
-          }
-        } catch (error) {
-          // Fallback if API fails (network error, CORS, timeout, etc.)
-          if (onlineCountEl) {
-            onlineCountEl.textContent = '1+ online';
-          }
-          // Silently fail - don't show errors to users
+      function getUnlockedUsers() {
+        const stored = localStorage.getItem(UNLOCKED_USERS_KEY);
+        return stored ? JSON.parse(stored) : [];
+      }
+      
+      function saveUnlockedUsers(users) {
+        localStorage.setItem(UNLOCKED_USERS_KEY, JSON.stringify(users));
+      }
+      
+      function getCurrentUser() {
+        return localStorage.getItem(CURRENT_USER_KEY);
+      }
+      
+      function setCurrentUser(email) {
+        if (email) {
+          localStorage.setItem(CURRENT_USER_KEY, email);
+        } else {
+          localStorage.removeItem(CURRENT_USER_KEY);
         }
       }
       
-      function initOnlineCounter() {
-        onlineCountEl = document.getElementById('online-count');
-        if (!onlineCountEl) {
-          // Retry if element not found yet
-          setTimeout(initOnlineCounter, 100);
-          return;
-        }
-        
-        // Update on load (with delay to ensure DOM is ready)
-        setTimeout(updateOnlineCount, 500);
-        
-        // Update every 30 seconds
-        setInterval(updateOnlineCount, 30000);
+      function isUnlocked() {
+        const currentUser = getCurrentUser();
+        if (!currentUser) return false;
+        const unlockedUsers = getUnlockedUsers();
+        return unlockedUsers.includes(currentUser.toLowerCase());
       }
       
-      // Initialize counter
+      function unlockUser(email) {
+        if (!email || !email.includes('@')) {
+          alert('Please enter a valid email address.');
+          return false;
+        }
+        
+        const emailLower = email.toLowerCase().trim();
+        const unlockedUsers = getUnlockedUsers();
+        
+        if (!unlockedUsers.includes(emailLower)) {
+          unlockedUsers.push(emailLower);
+          saveUnlockedUsers(unlockedUsers);
+        }
+        
+        setCurrentUser(emailLower);
+        return true;
+      }
+      
+      // Initialize unlock system
+      function initUnlockSystem() {
+        const unlockModalBg = document.getElementById('unlock-modal-bg');
+        const unlockBtn = document.getElementById('unlock-btn');
+        const unlockSubmitBtn = document.getElementById('unlock-submit-btn');
+        const unlockCancelBtn = document.getElementById('unlock-cancel-btn');
+        const unlockEmailInput = document.getElementById('unlock-email-input');
+        const userDisplay = document.getElementById('user-display');
+        
+        // Check if site is unlocked
+        if (isUnlocked()) {
+          const currentUser = getCurrentUser();
+          document.body.classList.remove('site-locked');
+          if (unlockModalBg) unlockModalBg.style.display = 'none';
+          if (unlockBtn) unlockBtn.style.display = 'none';
+          if (userDisplay) {
+            userDisplay.textContent = `Welcome, ${currentUser}`;
+            userDisplay.style.display = 'inline';
+          }
+        } else {
+          document.body.classList.add('site-locked');
+          if (unlockModalBg) unlockModalBg.style.display = 'flex';
+          if (unlockBtn) unlockBtn.style.display = 'inline-block';
+          if (userDisplay) userDisplay.style.display = 'none';
+        }
+        
+        // Show unlock modal button
+        if (unlockBtn) {
+          unlockBtn.onclick = () => {
+            if (unlockModalBg) unlockModalBg.style.display = 'flex';
+            if (unlockEmailInput) {
+              unlockEmailInput.value = '';
+              setTimeout(() => unlockEmailInput.focus(), 100);
+            }
+          };
+        }
+        
+        // Submit unlock
+        if (unlockSubmitBtn) {
+          unlockSubmitBtn.onclick = () => {
+            const email = unlockEmailInput ? unlockEmailInput.value.trim() : '';
+            if (unlockUser(email)) {
+              alert('Site unlocked! Welcome, ' + email);
+              initUnlockSystem(); // Refresh UI
+            }
+          };
+        }
+        
+        // Cancel unlock
+        if (unlockCancelBtn) {
+          unlockCancelBtn.onclick = () => {
+            if (unlockModalBg) unlockModalBg.style.display = 'none';
+          };
+        }
+        
+        // Enter key to submit
+        if (unlockEmailInput) {
+          unlockEmailInput.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+              if (unlockSubmitBtn) unlockSubmitBtn.click();
+            }
+            if (e.key === 'Escape') {
+              if (unlockCancelBtn) unlockCancelBtn.click();
+            }
+          };
+        }
+      }
+      
+      // Initialize on page load
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initOnlineCounter);
+        document.addEventListener('DOMContentLoaded', initUnlockSystem);
       } else {
-        initOnlineCounter();
+        setTimeout(initUnlockSystem, 100);
       }
     })();
-
-    // Mobile detection and optimization
-    (function() {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                       (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) ||
-                       ('ontouchstart' in window);
-      
-      if (isMobile) {
-        document.documentElement.classList.add('is-mobile');
-        document.body.classList.add('is-mobile');
-        
-        // Prevent double-tap zoom on buttons
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(e) {
-          const now = Date.now();
-          if (now - lastTouchEnd <= 300) {
-            e.preventDefault();
-          }
-          lastTouchEnd = now;
-        }, false);
-        
-        // Optimize scroll performance
-        document.addEventListener('touchmove', function(e) {
-          // Allow native scrolling
-        }, { passive: true });
-      }
-    })();
-
-    // Compatibility helper: older code still calls scopedKey(...) in a few places.
-    function scopedKey(baseKey) { return baseKey; }
 
     // Custom Market Storage
-    const CUSTOM_MARKETS_KEY = scopedKey('customMarkets_v1');
+    const CUSTOM_MARKETS_KEY = 'customMarkets_v1';
     function loadCustomMarketsFromFolders(foldersObj) {
       return (foldersObj?.customMarkets && typeof foldersObj.customMarkets === 'object') 
         ? foldersObj.customMarkets
@@ -2384,7 +1703,7 @@
     }
     const saveCustomMarkets = data => localStorage.setItem(CUSTOM_MARKETS_KEY, JSON.stringify(data));
     // Folder Storage
-    const FOLDER_KEY = scopedKey('savedFolders_v2');
+    const FOLDER_KEY = 'savedFolders_v2';
     function loadFoldersObj() {
       const raw = localStorage.getItem(FOLDER_KEY);
       if (raw) {
@@ -2406,24 +1725,6 @@
     }
     let foldersObj = loadFoldersObj();
     let savedFolders = foldersObj.folders;
-    
-    // Migrate saved searches: normalize string format to object format
-    if (savedFolders && Array.isArray(savedFolders)) {
-      savedFolders = savedFolders.map(folder => {
-        if (folder.searches && Array.isArray(folder.searches)) {
-          folder.searches = folder.searches.map(s => {
-            if (typeof s === 'string') {
-              return { term: s };
-            }
-            return s;
-          });
-        }
-        return folder;
-      });
-      foldersObj.folders = savedFolders;
-      saveFoldersObj(foldersObj); // Save normalized data
-    }
-    
     let customMarkets = foldersObj.customMarkets || { asia: [], international: [], special: [] };
     let currentFolderIdx = 0; // Default folder on start
     // Market Data
@@ -2454,7 +1755,7 @@
       ]
     };
     // Market toggle state storage
-    const MARKET_TOGGLE_KEY = scopedKey('marketToggleStates');
+    const MARKET_TOGGLE_KEY = 'marketToggleStates';
     function loadMarketToggleState(marketKey) {
       return toggleStatesCache[marketKey] !== false; // Default to true if not set
     }
@@ -2633,7 +1934,6 @@
           folderIcon.style.width = '18px';
           folderIcon.style.height = '18px';
           folderIcon.style.marginRight = '4px';
-          folderIcon.onerror = function() { this.style.display = 'none'; };
           folderIcon.style.verticalAlign = 'middle';
           nameBtn.appendChild(folderIcon);
           // Folder name text
@@ -2702,6 +2002,7 @@
       foldersObj.folders = savedFolders;
       saveFoldersObj(foldersObj);
       renderFolders();
+      renderSavedSearches();
     }
     function cancelFolderEdit(idx) {
       savedFolders[idx].editing = false;
@@ -2709,970 +2010,1794 @@
       saveFoldersObj(foldersObj);
       renderFolders();
     }
-
-    if (folderAddBtn && folderInputEl) {
-      folderAddBtn.addEventListener('click', () => {
-        const name = folderInputEl.value.trim();
-        if (name) {
-          addFolder(name);
-          folderInputEl.value = '';
-        }
-      });
-      folderInputEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          const name = folderInputEl.value.trim();
-          if (name) {
-            addFolder(name);
-            folderInputEl.value = '';
-          }
-        }
-      });
-    }
-
+    folderAddBtn.addEventListener('click', function() {
+      addFolder(folderInputEl.value);
+      folderInputEl.value = '';
+      folderInputEl.focus();
+    });
+    folderInputEl.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        addFolder(folderInputEl.value);
+        folderInputEl.value = '';
+      }
+    });
     renderFolders();
 
-    // --- Saved Searches UI ---
-    const CLICKED_SEARCHES_KEY = scopedKey('clickedSearches');
+    // --- Saved Searches Logic (Now Folder-Specific) ---
+    const listEl = document.getElementById('saved-searches-list');
+    const addInput = document.getElementById('sidebar-add-input');
+    const addBtn = document.getElementById('sidebar-add-btn');
+    const exportBtn = document.getElementById('sidebar-export-btn');
+    const importInput = document.getElementById('sidebar-import-input');
+    function sortSavedSearches(searches) {
+      searches.sort((a, b) => (a.value || "").localeCompare(b.value || "", undefined, {sensitivity: 'base'}));
+    }
+    const CLICKED_SEARCHES_KEY = 'clickedSearches';
     let clickedSearches = JSON.parse(localStorage.getItem(CLICKED_SEARCHES_KEY)) || {};
 
-    const savedSearchesListEl = document.getElementById('saved-searches-list');
-    const sidebarAddInputEl = document.getElementById('sidebar-add-input');
-    const sidebarAddBtnEl = document.getElementById('sidebar-add-btn');
+    function updateUnhighlightedCount() {
+      const folder = savedFolders[currentFolderIdx];
+      const unhighlightedCount = folder.searches.filter(term => !clickedSearches[term.value]).length;
+      document.getElementById('unhighlighted-count').textContent = `${unhighlightedCount} unhighlighted`;
+    }
 
     function renderSavedSearches() {
-      if (!savedSearchesListEl) return;
-      savedSearchesListEl.innerHTML = '';
-      const currentFolder = savedFolders[currentFolderIdx];
-      if (!currentFolder) return;
-      
-      // Normalize searches: handle both string format and object format
-      const rawSearches = currentFolder.searches || [];
-      const normalizedSearches = rawSearches.map(s => {
-        if (typeof s === 'string') {
-          return { term: s };
-        }
-        // Handle objects with "value" property (from imports)
-        if (s && typeof s === 'object') {
-          if (s.value && !s.term) {
-            return { term: s.value, editing: s.editing || false };
-          }
-          // Ensure term exists
-          if (!s.term && s.value) {
-            s.term = s.value;
-            delete s.value;
-          }
-        }
-        return s;
-      }).filter(s => {
-        // Filter out invalid entries
-        const term = s.term || (s.value || (typeof s === 'string' ? s : ''));
-        return term && term.trim().length > 0;
-      });
-      
-      const searches = normalizedSearches.slice().sort((a, b) => {
-        const termA = a.term || a.value || (typeof a === 'string' ? a : '');
-        const termB = b.term || b.value || (typeof b === 'string' ? b : '');
-        return termA.localeCompare(termB);
-      });
-      
-      searches.forEach((search, idx) => {
-        // Ensure search has a term property - check both "term" and "value"
-        let searchTerm = search.term;
-        if (!searchTerm && search.value) {
-          searchTerm = search.value;
-          // Fix it for future renders
-          search.term = search.value;
-          delete search.value;
-        }
-        if (!searchTerm && typeof search === 'string') {
-          searchTerm = search;
-        }
-        if (!searchTerm || !searchTerm.trim()) {
-          return; // Skip invalid entries
-        }
-        
+      const folder = savedFolders[currentFolderIdx];
+      sortSavedSearches(folder.searches);
+      listEl.innerHTML = '';
+      folder.searches.forEach((term, idx) => {
         const li = document.createElement('li');
-        li.className = 'saved-search-item' + (clickedSearches[searchTerm] ? ' clicked' : '');
-        
-        if (search.editing) {
+        li.className = 'saved-search-item';
+        if (term.editing) {
           const editInput = document.createElement('input');
           editInput.type = 'text';
-          editInput.value = searchTerm;
+          editInput.value = term.value;
           editInput.className = 'sidebar-add-input';
+          editInput.style.marginRight = '5px';
           editInput.maxLength = 70;
           editInput.autofocus = true;
           editInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') saveSearchEdit(currentFolderIdx, idx, editInput.value.trim());
-            if (e.key === 'Escape') cancelSearchEdit(currentFolderIdx, idx);
+            if (e.key === 'Enter') saveEdit(idx, editInput.value.trim());
+            if (e.key === 'Escape') cancelEdit(idx);
           });
-          li.appendChild(editInput);
           const saveBtn = document.createElement('button');
           saveBtn.type = 'button';
-          saveBtn.className = 'sidebar-folder-edit-btn';
+          saveBtn.className = 'save-edit-btn';
           saveBtn.title = 'Save';
           saveBtn.textContent = '✔';
-          saveBtn.onclick = () => saveSearchEdit(currentFolderIdx, idx, editInput.value.trim());
+          saveBtn.onclick = () => saveEdit(idx, editInput.value.trim());
           const cancelBtn = document.createElement('button');
           cancelBtn.type = 'button';
-          cancelBtn.className = 'sidebar-folder-edit-btn';
+          cancelBtn.className = 'cancel-edit-btn';
           cancelBtn.title = 'Cancel';
           cancelBtn.textContent = '✕';
-          cancelBtn.onclick = () => cancelSearchEdit(currentFolderIdx, idx);
+          cancelBtn.onclick = () => cancelEdit(idx);
+          li.appendChild(editInput);
           li.appendChild(saveBtn);
           li.appendChild(cancelBtn);
         } else {
           const termBtn = document.createElement('button');
           termBtn.type = 'button';
           termBtn.className = 'saved-search-term';
-          termBtn.textContent = searchTerm;
-          termBtn.onclick = () => {
-            document.getElementById('query').value = searchTerm;
-            clickedSearches[searchTerm] = true;
+          termBtn.title = 'Load into search bar';
+          
+          // Add checkbox
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'search-term-checkbox';
+          checkbox.checked = selectedSearchTerms[term.value] || false;
+          checkbox.addEventListener('change', function(e) {
+            e.stopPropagation();
+            selectedSearchTerms[term.value] = checkbox.checked;
+            localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+          });
+          
+          // Add text
+          const textSpan = document.createElement('span');
+          textSpan.className = 'search-term-text';
+          textSpan.textContent = term.value;
+          textSpan.onclick = () => {
+            document.getElementById('query').value = term.value;
+            document.getElementById('query').focus();
+            
+            // Mark as clicked with category
+            clickedSearches[term.value] = { 
+              clicked: true, 
+              category: determineSearchCategory(term.value) 
+            };
             localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
-            renderSavedSearches();
+        
+            // Update UI
+            termBtn.classList.add('active');
+            termBtn.setAttribute('data-category', determineSearchCategory(term.value));
             updateUnhighlightedCount();
           };
-          li.appendChild(termBtn);
           
+          termBtn.appendChild(checkbox);
+          termBtn.appendChild(textSpan);
+          
+          // Check if previously clicked
+          if (clickedSearches[term.value] && clickedSearches[term.value].clicked) {
+            termBtn.classList.add('active');
+            termBtn.setAttribute('data-category', clickedSearches[term.value].category || 'all');
+          }
           const editBtn = document.createElement('button');
           editBtn.type = 'button';
           editBtn.className = 'edit-btn';
           editBtn.title = 'Edit';
           editBtn.textContent = '✎';
-          editBtn.onclick = () => editSearch(currentFolderIdx, idx);
-          li.appendChild(editBtn);
-          
+          editBtn.onclick = () => editSavedSearch(idx);
           const removeBtn = document.createElement('button');
           removeBtn.type = 'button';
           removeBtn.className = 'remove-btn';
           removeBtn.title = 'Remove';
           removeBtn.textContent = '🗑';
-          removeBtn.onclick = () => removeSearch(currentFolderIdx, idx);
+          removeBtn.onclick = () => removeSavedSearch(idx);
+          li.appendChild(termBtn);
+          li.appendChild(editBtn);
           li.appendChild(removeBtn);
         }
-        
-        savedSearchesListEl.appendChild(li);
+        listEl.appendChild(li);
       });
       updateUnhighlightedCount();
     }
-
-    function addSearch(term) {
+    function addSavedSearch(term) {
       term = term.trim();
       if (!term) return;
-      const currentFolder = savedFolders[currentFolderIdx];
-      if (!currentFolder) return;
-      if (!currentFolder.searches) currentFolder.searches = [];
-      if (currentFolder.searches.some(s => s.term === term)) return;
-      currentFolder.searches.push({ term });
+      const folder = savedFolders[currentFolderIdx];
+      if (folder.searches.some(t => t.value === term)) return;
+      folder.searches.push({ value: term });
+      sortSavedSearches(folder.searches);
       foldersObj.folders = savedFolders;
       saveFoldersObj(foldersObj);
       renderSavedSearches();
+      updateUnhighlightedCount();
+      
+      // Clear selection when adding new term
+      selectedSearchTerms = {};
+      localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
     }
-
-    function removeSearch(folderIdx, searchIdx) {
-      const folder = savedFolders[folderIdx];
-      if (!folder || !folder.searches) return;
-      folder.searches.splice(searchIdx, 1);
+    function removeSavedSearch(idx) {
+      const folder = savedFolders[currentFolderIdx];
+      const removedTerm = folder.searches[idx].value;
+      folder.searches.splice(idx, 1);
+      sortSavedSearches(folder.searches);
       foldersObj.folders = savedFolders;
       saveFoldersObj(foldersObj);
+      
+      // Remove from selected terms if present
+      if (selectedSearchTerms[removedTerm]) {
+        delete selectedSearchTerms[removedTerm];
+        localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+      }
+      
       renderSavedSearches();
+      updateUnhighlightedCount();
     }
-
-    function editSearch(folderIdx, searchIdx) {
-      const folder = savedFolders[folderIdx];
-      if (!folder || !folder.searches) return;
-      folder.searches = folder.searches.map((s, i) => i === searchIdx ? { ...s, editing: true } : { ...s, editing: false });
+    function editSavedSearch(idx) {
+      const folder = savedFolders[currentFolderIdx];
+      folder.searches = folder.searches.map((t, i) => i === idx ? { ...t, editing: true } : { ...t, editing: false });
       foldersObj.folders = savedFolders;
       saveFoldersObj(foldersObj);
       renderSavedSearches();
       setTimeout(() => {
-        const input = savedSearchesListEl.querySelector('input.sidebar-add-input');
+        const input = listEl.querySelector('input.sidebar-add-input');
         if (input) input.focus();
       }, 50);
     }
-
-    function saveSearchEdit(folderIdx, searchIdx, value) {
+    function saveEdit(idx, value) {
       value = value.trim();
       if (!value) return;
-      const folder = savedFolders[folderIdx];
-      if (!folder || !folder.searches) return;
-      if (folder.searches.some((s, i) => s.term === value && i !== searchIdx)) return;
-      folder.searches[searchIdx].term = value;
-      folder.searches[searchIdx].editing = false;
+      const folder = savedFolders[currentFolderIdx];
+      const oldValue = folder.searches[idx].value;
+      if (folder.searches.some((t, i) => t.value === value && i !== idx)) return;
+      folder.searches[idx] = { value: value };
+      sortSavedSearches(folder.searches);
       foldersObj.folders = savedFolders;
       saveFoldersObj(foldersObj);
-      renderSavedSearches();
-    }
-
-    function cancelSearchEdit(folderIdx, searchIdx) {
-      const folder = savedFolders[folderIdx];
-      if (!folder || !folder.searches) return;
-      folder.searches[searchIdx].editing = false;
-      foldersObj.folders = savedFolders;
-      saveFoldersObj(foldersObj);
-      renderSavedSearches();
-    }
-
-    function updateUnhighlightedCount() {
-      const countEl = document.getElementById('unhighlighted-count');
-      if (!countEl) return;
-      const currentFolder = savedFolders[currentFolderIdx];
-      if (!currentFolder || !currentFolder.searches) {
-        countEl.textContent = '0 unhighlighted';
-        return;
+      
+      // Update selected terms if the old value was selected
+      if (selectedSearchTerms[oldValue]) {
+        selectedSearchTerms[value] = true;
+        delete selectedSearchTerms[oldValue];
+        localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
       }
-      const unhighlighted = currentFolder.searches.filter(s => {
-        const term = s.term || (typeof s === 'string' ? s : '');
-        return term && !clickedSearches[term];
-      }).length;
-      countEl.textContent = unhighlighted + ' unhighlighted';
+      
+      renderSavedSearches();
+      updateUnhighlightedCount();
     }
+    function cancelEdit(idx) {
+      const folder = savedFolders[currentFolderIdx];
+      folder.searches[idx].editing = false;
+      foldersObj.folders = savedFolders;
+      saveFoldersObj(foldersObj);
+      renderSavedSearches();
+    }
+    addBtn.addEventListener('click', function() {
+      addSavedSearch(addInput.value);
+      addInput.value = '';
+      addInput.focus();
+    });
+    addInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        addSavedSearch(addInput.value);
+        addInput.value = '';
+      }
+    });
 
-    if (sidebarAddBtnEl && sidebarAddInputEl) {
-      sidebarAddBtnEl.addEventListener('click', () => {
-        const term = sidebarAddInputEl.value.trim();
-        if (term) {
-          addSearch(term);
-          sidebarAddInputEl.value = '';
-        }
-      });
-      sidebarAddInputEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          const term = sidebarAddInputEl.value.trim();
-          if (term) {
-            addSearch(term);
-            sidebarAddInputEl.value = '';
+    exportBtn.addEventListener('click', function() {
+      const dataStr = JSON.stringify(foldersObj, null, 2);
+      const blob = new Blob([dataStr], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'saved-searches-with-folders-and-websites.json';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 50);
+    });
+
+    importInput.addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          // If imported is array, legacy format
+          if (Array.isArray(imported)) {
+            foldersObj = { folders: imported, customMarkets: loadCustomMarketsFromFolders(imported) };
+          } else if (imported && Array.isArray(imported.folders) && imported.customMarkets) {
+            foldersObj = imported;
+          } else {
+            alert('Invalid file format.');
+            return;
           }
+          savedFolders = foldersObj.folders;
+          customMarkets = foldersObj.customMarkets || { asia: [], international: [], special: [] };
+          if (savedFolders.length === 0) savedFolders = [{ name: 'Default', searches: [] }];
+          currentFolderIdx = 0;
+          saveFoldersObj(foldersObj);
+          refreshAllMarketButtons();
+          renderFolders();
+          renderSavedSearches();
+        } catch (err) {
+          alert('Failed to import: ' + err.message);
         }
-      });
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    });
+
+    // Helper function to determine search category (you can customize this logic)
+    function determineSearchCategory(searchTerm) {
+      // This is a simple implementation - you can enhance it based on your needs
+      // For now, we'll just return 'all' as a default
+      return 'all';
     }
 
-    renderSavedSearches();
-
-    // --- Multi-select functionality ---
-    const SELECTED_SEARCH_TERMS_KEY = scopedKey('selectedSearchTerms');
+    // Track selected search terms
+    const SELECTED_SEARCH_TERMS_KEY = 'selectedSearchTerms';
     let selectedSearchTerms = JSON.parse(localStorage.getItem(SELECTED_SEARCH_TERMS_KEY)) || {};
 
-    const multiClearBtn = document.getElementById('sidebar-multi-clear-btn');
-    if (multiClearBtn) {
-      multiClearBtn.addEventListener('click', () => {
-        selectedSearchTerms = {};
-        localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
-        renderSavedSearches();
-      });
-    }
-
-    // --- Export/Import functionality ---
-    const exportBtn = document.getElementById('sidebar-export-btn');
-    const importInput = document.getElementById('sidebar-import-input');
-    const resetHighlightsBtn = document.getElementById('sidebar-reset-highlights-btn');
-
-    if (exportBtn) {
-      exportBtn.addEventListener('click', () => {
-        const data = {
-          folders: savedFolders,
-          customMarkets: customMarkets,
-          clickedSearches: clickedSearches
-        };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'mmcs-backup.json';
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-    }
-
-    if (importInput) {
-      importInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-            const data = JSON.parse(event.target.result);
-            
-            // Convert imported data: handle both "value" and "term" property names
-            if (data.folders && Array.isArray(data.folders)) {
-              savedFolders = data.folders.map(folder => {
-                if (folder.searches && Array.isArray(folder.searches)) {
-                  folder.searches = folder.searches.map(search => {
-                    // Convert "value" to "term" if needed
-                    if (typeof search === 'string') {
-                      return { term: search };
-                    }
-                    // Handle object with "value" property
-                    if (search && typeof search === 'object') {
-                      if (search.value && !search.term) {
-                        // Convert "value" to "term"
-                        const converted = { term: search.value };
-                        // Preserve other properties like "editing"
-                        if (search.editing !== undefined) converted.editing = search.editing;
-                        return converted;
-                      }
-                      // If it has "term", use it; if neither, create empty term
-                      if (!search.term && !search.value) {
-                        return { term: '' }; // Empty term as fallback
-                      }
-                      // Already has "term" - ensure it exists
-                      if (!search.term && search.value) {
-                        search.term = search.value;
-                        delete search.value;
-                      }
-                    }
-                    // Already has "term" or is already normalized
-                    return search;
-                  }).filter(search => {
-                    // Remove entries with empty terms
-                    const term = search.term || (search.value || '');
-                    return term && term.trim().length > 0;
-                  });
-                } else if (!folder.searches) {
-                  // Ensure searches array exists
-                  folder.searches = [];
-                }
-                return folder;
-              });
-              foldersObj.folders = savedFolders;
-            }
-            
-            if (data.customMarkets) {
-              customMarkets = data.customMarkets;
-              foldersObj.customMarkets = customMarkets;
-            }
-            
-            if (data.clickedSearches) {
-              // Convert clickedSearches keys from "value" format to "term" format if needed
-              clickedSearches = {};
-              if (data.folders && Array.isArray(data.folders)) {
-                data.folders.forEach(folder => {
-                  if (folder.searches && Array.isArray(folder.searches)) {
-                    folder.searches.forEach(search => {
-                      const term = search.term || search.value || (typeof search === 'string' ? search : '');
-                      if (term && data.clickedSearches[term]) {
-                        clickedSearches[term] = true;
-                      }
-                    });
-                  }
-                });
-              }
-              localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
-            }
-            
-            // Ensure we have at least one folder
-            if (!savedFolders || savedFolders.length === 0) {
-              savedFolders = [{ name: 'Default', searches: [] }];
-              foldersObj.folders = savedFolders;
-            }
-            
-            // Normalize all folders after import to ensure data consistency
-            savedFolders = savedFolders.map(folder => {
-              if (!folder.searches) folder.searches = [];
-              folder.searches = folder.searches.map(search => {
-                if (typeof search === 'string') {
-                  return { term: search };
-                }
-                if (search && typeof search === 'object') {
-                  if (search.value && !search.term) {
-                    const converted = { term: search.value };
-                    if (search.editing !== undefined) converted.editing = search.editing;
-                    return converted;
-                  }
-                  if (!search.term && search.value) {
-                    search.term = search.value;
-                    delete search.value;
-                  }
-                }
-                return search;
-              }).filter(s => {
-                const term = s.term || s.value || '';
-                return term && term.trim().length > 0;
-              });
-              return folder;
-            });
-            
-            foldersObj.folders = savedFolders;
-            saveFoldersObj(foldersObj);
-            
-            // Reset to first folder if current index is invalid
-            if (currentFolderIdx >= savedFolders.length) {
-              currentFolderIdx = 0;
-            }
-            
-            refreshAllMarketButtons();
-            renderFolders();
-            renderSavedSearches();
-            alert('Import successful! Loaded ' + savedFolders.length + ' folder(s) with ' + savedFolders.reduce((sum, f) => sum + (f.searches ? f.searches.length : 0), 0) + ' total searches.');
-          } catch (err) {
-            alert('Import failed: ' + err.message);
-            console.error('Import error:', err);
-            console.error('Import data:', data);
-          }
-        };
-        reader.readAsText(file);
-        e.target.value = ''; // Reset input
-      });
-    }
-
-    if (resetHighlightsBtn) {
-      resetHighlightsBtn.addEventListener('click', () => {
-        if (confirm('Reset all search highlights? This cannot be undone.')) {
-          clickedSearches = {};
-          localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
-          renderSavedSearches();
-        }
-      });
-    }
-
-    // --- Randomize functionality ---
-    const randomizeBtn = document.getElementById('sidebar-randomize-btn');
-    const randomizeCategorySelect = document.getElementById('randomize-category-select');
-    const randomizeColorIndicator = document.getElementById('randomize-color-indicator');
-
-    function updateRandomizeIndicator() {
-      if (!randomizeColorIndicator) return;
-      const category = randomizeCategorySelect ? randomizeCategorySelect.value : 'all';
-      const currentFolder = savedFolders[currentFolderIdx];
-      if (!currentFolder || !currentFolder.searches) {
-        randomizeColorIndicator.style.background = '#666';
-        return;
-      }
-      const unhighlighted = currentFolder.searches.filter(s => !clickedSearches[s.term]);
-      if (unhighlighted.length === 0) {
-        randomizeColorIndicator.style.background = '#666';
-      } else {
-        randomizeColorIndicator.style.background = '#00e6d6';
-      }
-    }
-
-    if (randomizeBtn) {
-      randomizeBtn.addEventListener('click', () => {
-        const category = randomizeCategorySelect ? randomizeCategorySelect.value : 'all';
-        const currentFolder = savedFolders[currentFolderIdx];
-        if (!currentFolder || !currentFolder.searches) return;
-        const unhighlighted = currentFolder.searches.filter(s => {
-          const term = s.term || (typeof s === 'string' ? s : '');
-          return term && !clickedSearches[term];
-        });
-        if (unhighlighted.length === 0) {
-          alert('No unhighlighted searches available!');
-          return;
-        }
-        const randomSearch = unhighlighted[Math.floor(Math.random() * unhighlighted.length)];
-        const query = randomSearch.term || (typeof randomSearch === 'string' ? randomSearch : '');
-        if (queryInput && query) {
-          queryInput.value = query;
-        }
-        
-        // Open markets based on category
-        if (category === 'all') {
-          // Open first market from each section
-          ['asia', 'international', 'special'].forEach(section => {
-            const markets = getMarkets(section);
-            if (markets.length > 0) {
-              const market = markets[0];
-              openMarket(market.key, section, query, market.custom ? market.urlTemplate : null);
-            }
-          });
-        } else {
-          const markets = getMarkets(category);
-          if (markets.length > 0) {
-            const market = markets[0];
-            openMarket(market.key, category, query, market.custom ? market.urlTemplate : null);
-          }
-        }
-      });
-    }
-
-    if (randomizeCategorySelect) {
-      randomizeCategorySelect.addEventListener('change', updateRandomizeIndicator);
-    }
-    updateRandomizeIndicator();
-
-    // --- Wishlist functionality ---
-    const WISHLIST_KEY = scopedKey('wishlist_links_v1');
-    const wishlistListEl = document.getElementById('wishlist-list');
-    const wishlistInput = document.getElementById('wishlist-link-input');
-    const wishlistForm = document.getElementById('wishlist-add-form');
-
-    let wishlistItems = JSON.parse(localStorage.getItem(WISHLIST_KEY)) || [];
-
-    function renderWishlist() {
-      if (!wishlistListEl) return;
-      wishlistListEl.innerHTML = '';
-      wishlistItems.forEach((item, idx) => {
+    // Update renderSavedSearches to handle category-based highlighting
+    function renderSavedSearches() {
+      const folder = savedFolders[currentFolderIdx];
+      sortSavedSearches(folder.searches);
+      listEl.innerHTML = '';
+      folder.searches.forEach((term, idx) => {
         const li = document.createElement('li');
-        li.className = 'wishlist-item';
-        
-        if (item.editing) {
+        li.className = 'saved-search-item';
+        if (term.editing) {
           const editInput = document.createElement('input');
           editInput.type = 'text';
-          editInput.value = item.title || item.url;
-          editInput.className = 'wishlist-add-input';
-          editInput.maxLength = 200;
+          editInput.value = term.value;
+          editInput.className = 'sidebar-add-input';
+          editInput.style.marginRight = '5px';
+          editInput.maxLength = 70;
           editInput.autofocus = true;
           editInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') saveWishlistEdit(idx, editInput.value.trim());
-            if (e.key === 'Escape') cancelWishlistEdit(idx);
+            if (e.key === 'Enter') saveEdit(idx, editInput.value.trim());
+            if (e.key === 'Escape') cancelEdit(idx);
           });
-          li.appendChild(editInput);
           const saveBtn = document.createElement('button');
           saveBtn.type = 'button';
-          saveBtn.className = 'sidebar-folder-edit-btn';
+          saveBtn.className = 'save-edit-btn';
+          saveBtn.title = 'Save';
           saveBtn.textContent = '✔';
-          saveBtn.onclick = () => saveWishlistEdit(idx, editInput.value.trim());
+          saveBtn.onclick = () => saveEdit(idx, editInput.value.trim());
           const cancelBtn = document.createElement('button');
           cancelBtn.type = 'button';
-          cancelBtn.className = 'sidebar-folder-edit-btn';
+          cancelBtn.className = 'cancel-edit-btn';
+          cancelBtn.title = 'Cancel';
           cancelBtn.textContent = '✕';
-          cancelBtn.onclick = () => cancelWishlistEdit(idx);
+          cancelBtn.onclick = () => cancelEdit(idx);
+          li.appendChild(editInput);
           li.appendChild(saveBtn);
           li.appendChild(cancelBtn);
         } else {
-          const link = document.createElement('a');
-          link.href = item.url;
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          link.className = 'wishlist-link';
-          link.textContent = item.title || item.url;
-          link.onclick = (e) => {
-            if (e.ctrlKey || e.metaKey) return; // Allow ctrl/cmd+click to open in new tab
-            e.preventDefault();
-            window.open(item.url, '_blank', 'noopener,noreferrer');
-          };
-          li.appendChild(link);
+          const termBtn = document.createElement('button');
+          termBtn.type = 'button';
+          termBtn.className = 'saved-search-term';
+          termBtn.title = 'Load into search bar';
           
+          // Add checkbox
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'search-term-checkbox';
+          checkbox.checked = selectedSearchTerms[term.value] || false;
+          checkbox.addEventListener('change', function(e) {
+            e.stopPropagation();
+            selectedSearchTerms[term.value] = checkbox.checked;
+            localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+          });
+          
+          // Add text
+          const textSpan = document.createElement('span');
+          textSpan.className = 'search-term-text';
+          textSpan.textContent = term.value;
+          textSpan.onclick = () => {
+            document.getElementById('query').value = term.value;
+            document.getElementById('query').focus();
+            
+            // Mark as clicked with category
+            clickedSearches[term.value] = { 
+              clicked: true, 
+              category: determineSearchCategory(term.value) 
+            };
+            localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+        
+            // Update UI
+            termBtn.classList.add('active');
+            termBtn.setAttribute('data-category', determineSearchCategory(term.value));
+            updateUnhighlightedCount();
+          };
+          
+          termBtn.appendChild(checkbox);
+          termBtn.appendChild(textSpan);
+          
+          // Check if previously clicked
+          if (clickedSearches[term.value] && clickedSearches[term.value].clicked) {
+            termBtn.classList.add('active');
+            termBtn.setAttribute('data-category', clickedSearches[term.value].category || 'all');
+          }
           const editBtn = document.createElement('button');
           editBtn.type = 'button';
           editBtn.className = 'edit-btn';
+          editBtn.title = 'Edit';
           editBtn.textContent = '✎';
-          editBtn.onclick = () => editWishlistItem(idx);
-          li.appendChild(editBtn);
-          
+          editBtn.onclick = () => editSavedSearch(idx);
           const removeBtn = document.createElement('button');
           removeBtn.type = 'button';
           removeBtn.className = 'remove-btn';
+          removeBtn.title = 'Remove';
           removeBtn.textContent = '🗑';
-          removeBtn.onclick = () => removeWishlistItem(idx);
+          removeBtn.onclick = () => removeSavedSearch(idx);
+          li.appendChild(termBtn);
+          li.appendChild(editBtn);
           li.appendChild(removeBtn);
         }
+        listEl.appendChild(li);
+      });
+      updateUnhighlightedCount();
+    }
+
+    // Function to get selected search terms
+    function getSelectedSearchTerms() {
+      return Object.entries(selectedSearchTerms)
+        .filter(([term, isSelected]) => isSelected)
+        .map(([term]) => term);
+    }
+    
+    // Function to open each selected term in separate tabs
+    function openSelectedTermsInSeparateTabs(terms, marketFunction) {
+      terms.forEach(term => {
+        marketFunction(term);
+      });
+    }
+
+    // Clear selection
+    document.getElementById('sidebar-multi-clear-btn').addEventListener('click', function() {
+      selectedSearchTerms = {};
+      localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+      renderSavedSearches();
+    });
+
+    renderSavedSearches();
+    updateUnhighlightedCount();
+
+
+    function openRandomizedTerm(query, category) {
+      // Set the query in the search bar
+      document.getElementById('query').value = query;
+      
+      // Mark as clicked/highlighted with category
+      clickedSearches[query] = { 
+        clicked: true, 
+        category: category 
+      };
+      localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+      updateUnhighlightedCount();
         
+      // Get markets for the selected category
+      let markets = [];
+      if (category === 'all') {
+          markets = [...getMarkets('asia'), ...getMarkets('international'), ...getMarkets('special')];
+      } else {
+          markets = getMarkets(category);
+      }
+      
+      // Filter to only enabled markets
+      const enabledMarkets = markets.filter(market => loadMarketToggleState(market.key));
+      
+      if (enabledMarkets.length === 0) {
+        alert('No enabled markets in this category');
+        return;
+      }
+      
+      // Open all market URLs immediately without delays
+      enabledMarkets.forEach(market => {
+        if (market.custom) {
+          const parts = market.key.split("-");
+          const customId = parts.slice(2).join("-");
+          const section = market.key.split("-")[1]; // Get the section from the key
+          const url = getCustomMarketUrl(section, customId, query);
+          if (url) tabQueue.add(url);
+        } else if (marketUrls[market.key]) {
+          tabQueue.add(marketUrls[market.key](query));
+        }
+      });
+      
+      // Re-render to update highlights
+      renderSavedSearches();
+    }
+
+    // --- Wishlist Logic with Editable Titles ---
+    const WISHLIST_KEY = 'wishlist_links_v1';
+    const wishlistListEl = document.getElementById('wishlist-list');
+    const wishlistInput = document.getElementById('wishlist-link-input');
+    const wishlistForm = document.getElementById('wishlist-add-form');
+    let wishlistLinks = [];
+
+    function loadWishlistLinks() {
+      const raw = localStorage.getItem(WISHLIST_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }
+    function saveWishlistLinks(links) {
+      localStorage.setItem(WISHLIST_KEY, JSON.stringify(links));
+    }
+    function renderWishlist() {
+      wishlistListEl.innerHTML = '';
+      wishlistLinks.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.className = 'wishlist-item';
+
+        // Title (editable)
+        let titleElem;
+        if (item.editing) {
+          titleElem = document.createElement('input');
+          titleElem.type = 'text';
+          titleElem.value = item.title || '';
+          titleElem.className = 'wishlist-title-input';
+          titleElem.autofocus = true;
+          titleElem.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') saveTitleEdit(idx, titleElem.value.trim());
+            if (e.key === 'Escape') cancelTitleEdit(idx);
+          });
+          titleElem.addEventListener('blur', function() {
+            saveTitleEdit(idx, titleElem.value.trim());
+          });
+        } else {
+          titleElem = document.createElement('span');
+          titleElem.className = 'wishlist-title-text';
+          titleElem.textContent = item.title ? item.title : 'Loading...';
+          titleElem.title = 'Click to edit title';
+          titleElem.onclick = () => beginTitleEdit(idx);
+        }
+
+        // Link
+        const a = document.createElement('a');
+        a.href = item.url;
+        a.className = 'wishlist-link';
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = item.url;
+
+        // Remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'wishlist-remove-btn';
+        removeBtn.title = 'Remove';
+        removeBtn.textContent = '🗑';
+        removeBtn.onclick = () => {
+          wishlistLinks.splice(idx, 1);
+          saveWishlistLinks(wishlistLinks);
+          renderWishlist();
+        };
+
+        li.appendChild(titleElem);
+        li.appendChild(a);
+        li.appendChild(removeBtn);
         wishlistListEl.appendChild(li);
       });
     }
 
+    function beginTitleEdit(idx) {
+      wishlistLinks = wishlistLinks.map((item, i) => i === idx ? {...item, editing: true} : {...item, editing: false});
+      renderWishlist();
+      setTimeout(() => {
+        const input = wishlistListEl.querySelector('input.wishlist-title-input');
+        if (input) input.focus();
+      }, 50);
+    }
+    function saveTitleEdit(idx, value) {
+      wishlistLinks[idx].title = value || wishlistLinks[idx].title || 'Untitled';
+      wishlistLinks[idx].editing = false;
+      saveWishlistLinks(wishlistLinks);
+      renderWishlist();
+    }
+    function cancelTitleEdit(idx) {
+      wishlistLinks[idx].editing = false;
+      renderWishlist();
+    }
+
     async function fetchTitle(url) {
+      // Sanitize URL first
       try {
-        // Use a CORS proxy or fetch from your own backend
-        // For now, just return the URL
-        return url;
+        const parsedUrl = new URL(url);
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+          throw new Error('Invalid protocol');
+        }
+        
+        // Use a CORS proxy (public) for demonstration (should use own backend for prod)
+        const proxy = "https://corsproxy.io/?";
+        const res = await fetch(proxy + encodeURIComponent(url));
+        const text = await res.text();
+        const titleMatch = text.match(/<title.*?>([\s\S]*?)<\/title>/i);
+        if (titleMatch) {
+          let title = titleMatch[1].replace(/\n/g, ' ').trim();
+          title = title.replace(/\s+/g, ' ');
+          return title.length > 100 ? title.slice(0, 100) + "..." : title;
+        }
+      } catch (e) {}
+      try {
+        const u = new URL(url);
+        return u.hostname;
       } catch {
         return url;
       }
     }
 
-    function addWishlistItem(url) {
-      url = url.trim();
-      if (!url) return;
-      if (wishlistItems.some(item => item.url === url)) return;
-      const newItem = { url, title: url, editing: false };
-      wishlistItems.push(newItem);
-      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
-      renderWishlist();
-      // Try to fetch title
-      fetchTitle(url).then(title => {
-        const item = wishlistItems.find(i => i.url === url);
-        if (item) {
-          item.title = title;
-          localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
-          renderWishlist();
-        }
-      });
-    }
-
-    function removeWishlistItem(idx) {
-      wishlistItems.splice(idx, 1);
-      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
-      renderWishlist();
-    }
-
-    function editWishlistItem(idx) {
-      wishlistItems[idx].editing = true;
-      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
-      renderWishlist();
-    }
-
-    function saveWishlistEdit(idx, title) {
-      title = title.trim();
-      if (!title) return;
-      wishlistItems[idx].title = title;
-      wishlistItems[idx].editing = false;
-      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
-      renderWishlist();
-    }
-
-    function cancelWishlistEdit(idx) {
-      wishlistItems[idx].editing = false;
-      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlistItems));
-      renderWishlist();
-    }
-
-    if (wishlistForm && wishlistInput) {
-      wishlistForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const url = wishlistInput.value.trim();
-        if (url) {
-          addWishlistItem(url);
-          wishlistInput.value = '';
-        }
-      });
-    }
-
-    renderWishlist();
-
-    // --- Search form functionality ---
-    const searchForm = document.getElementById('searchForm');
-    const queryInput = document.getElementById('query');
-    const openAllBtn = document.getElementById('open-all-btn');
-    const toggleAllCheckbox = document.getElementById('toggle-all-checkbox');
-    const clearSearchBtn = document.getElementById('clear-search');
-
-    // Prevent form submission (page reload) when pressing Enter
-    if (searchForm) {
-      searchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        // Optionally trigger "Open All" when Enter is pressed
-        if (openAllBtn && queryInput && queryInput.value.trim()) {
-          openAllBtn.click();
-        }
-      });
-    }
-
-    // Market URL templates
-    const marketUrls = {
-      "mercari-jp": "https://www.mercari.com/jp/search/?keyword=example",
-      "paypay-fleamarket": "https://paypayfleamarket.yahoo.co.jp/search/example",
-      "rakuma": "https://fril.jp/s?query=example",
-      "rakuten-jp": "https://search.rakuten.co.jp/search/mall/example",
-      "xianyu": "https://www.goofish.com/search?q=example",
-      "yahoo-auctions": "https://auctions.yahoo.co.jp/search/search?va=example",
-      "depop": "https://www.depop.com/search/?q=example",
-      "ebay": "https://www.ebay.com/sch/i.html?_nkw=example",
-      "facebook": "https://www.facebook.com/marketplace/search/?query=example",
-      "gem": "https://www.gem.app/search?q=example",
-      "grailed": "https://www.grailed.com/shop?query=example",
-      "mercari-us": "https://www.mercari.com/us/search/?keyword=example",
-      "poshmark": "https://poshmark.com/search?query=example",
-      "shopgoodwill": "https://www.shopgoodwill.com/search?keywords=example",
-      "vinted": "https://www.vinted.com/catalog?search_text=example",
-      "secondstreet": "https://www.2ndstreet.jp/search?q=example",
-      "therealreal": "https://www.therealreal.com/search?q=example",
-      "vestiaire": "https://www.vestiairecollective.com/search/?q=example"
-    };
-
-    function getMarketUrl(marketKey, query, customUrlTemplate) {
-      if (customUrlTemplate) {
-        return customUrlTemplate.replace(/example/g, encodeURIComponent(query));
-      }
-      const template = marketUrls[marketKey];
-      if (!template) return null;
-      return template.replace(/example/g, encodeURIComponent(query));
-    }
-
-    function openMarket(marketKey, section, query, customUrlTemplate) {
-      const url = getMarketUrl(marketKey, query, customUrlTemplate);
-      if (!url) return;
-      const isMobile = document.documentElement.classList.contains('is-mobile');
-      if (isMobile) {
-        window.open(url, '_blank', 'noopener,noreferrer');
-      } else {
-        window.open(url, '_blank', 'noopener,noreferrer');
+    function isValidUrl(u) {
+      try {
+        const test = new URL(u);
+        return /^https?:/.test(test.protocol);
+      } catch {
+        return false;
       }
     }
 
-    // Handle market button clicks
-    document.addEventListener('click', (e) => {
-      const marketBtn = e.target.closest('.market-btn');
-      if (!marketBtn) return;
-      const marketKey = marketBtn.getAttribute('data-market');
-      const section = marketBtn.getAttribute('data-section');
-      const query = queryInput ? queryInput.value.trim() : '';
-      if (!query) {
-        alert('Please enter a search term first');
+    wishlistForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      let url = wishlistInput.value.trim();
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+      if (!isValidUrl(url)) {
+        alert('Please enter a valid URL.');
         return;
       }
-      if (marketBtn.classList.contains('disabled')) return;
+      if (wishlistLinks.some(item => item.url === url)) {
+        wishlistInput.value = '';
+        return;
+      }
+      wishlistLinks.push({ url, title: '', editing: false });
+      saveWishlistLinks(wishlistLinks);
+      renderWishlist();
+      const idx = wishlistLinks.length - 1;
+      const title = await fetchTitle(url);
+      wishlistLinks[idx].title = title;
+      saveWishlistLinks(wishlistLinks);
+      renderWishlist();
+      wishlistInput.value = '';
+    });
+
+    wishlistLinks = loadWishlistLinks();
+    renderWishlist();
+    wishlistLinks.forEach(async (item, idx) => {
+      if (!item.title && item.url) {
+        const title = await fetchTitle(item.url);
+        wishlistLinks[idx].title = title;
+        saveWishlistLinks(wishlistLinks);
+        renderWishlist();
+      }
+    });
+
+    // --- Main Search UI Logic ---
+    function getVintedTime() {
+      return Math.floor(Date.now() / 1000);
+    }
+    function getShopGoodwillDate() {
+      const now = new Date();
+      const month = now.getUTCMonth() + 1;
+      const day = now.getUTCDate();
+      const year = now.getUTCFullYear();
+      return `${month}/${day}/${year}`;
+    }
+    const marketUrls = {
+      "mercari-jp":      q => `https://jp.mercari.com/en/search?keyword=${encodeURIComponent(q)}&sort=created_time&order=desc`,
+      "paypay-fleamarket": q => `https://paypayfleamarket.yahoo.co.jp/search/${encodeURIComponent(q)}?page=1&sort=openTime&order=desc`,
+      "rakuma":          q => `https://fril.jp/s?order=desc&query=${encodeURIComponent(q)}&sort=created_at&transaction=selling`,
+      "rakuten-jp":      q => `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(q)}/?s=4&st=O`,
+      "xianyu":          q => `https://2.taobao.com/search?word=${encodeURIComponent(q)}&spm=a2170.xianyu_tbpc_search.0.0`,
+      "yahoo-auctions":  q => `https://auctions.yahoo.co.jp/search/search?p=${encodeURIComponent(q)}&s1=new&o1=d`,
+      "depop":           q => `https://www.depop.com/search/?q=${encodeURIComponent(q)}&sort=newlyListed`,
+      "ebay":            q => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}&_sop=10`,
+      "facebook":        q => `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(q)}`,
+      "gem":             q => `https://gem.app/search?terms=${encodeURIComponent(q)}&sort=newestFirst`,
+      "grailed":         q => `https://www.grailed.com/shop?query=${encodeURIComponent(q)}&sort=new`,
+      "mercari-us":      q => `https://www.mercari.com/search/?keyword=${encodeURIComponent(q)}&sortBy=2`,
+      "poshmark":        q => `https://poshmark.com/search?query=${encodeURIComponent(q)}&sort_by=added_desc`,
+      "shopgoodwill":    q => `https://shopgoodwill.com/categories/listing?st=${encodeURIComponent(q)}&sg=Keyword&c=&s=&lp=0&hp=999999&sbn=&spo=false&snpo=false&socs=false&sd=false&sca=false&caed=${encodeURIComponent(getShopGoodwillDate())}&cadb=7&scs=false&sis=false&col=1&p=1&ps=40&desc=true&ss=0&UseBuyerPrefs=true&sus=false&cln=1&catIds=&pn=&wc=false&mci=false&hmt=false&layout=grid&ihp=`,
+      "vinted":          q => `https://www.vinted.com/catalog?search_text=${encodeURIComponent(q)}&time=${getVintedTime()}&order=newest_first&page=1`,
+      "secondstreet":    q => `https://ec.2ndstreetusa.com/pages/search-results-page?q=${encodeURIComponent(q)}&tab=products&sort_by=created&page=1`,
+      "therealreal":     q => `https://www.therealreal.com/products?keywords=${encodeURIComponent(q)}`,
+      "vestiaire":       q => `https://us.vestiairecollective.com/search/?q=${encodeURIComponent(q)}&sortBy=3`
+    };
+    // Custom market URLs: key is "custom-section-id"
+    function getCustomMarketUrl(section, id, q) {
+      const found = (customMarkets[section] || []).find(item => item.id === id);
+      if (!found) return null;
+      return found.url.replace(/example/g, encodeURIComponent(q));
+    }
+
+    // Instant tab opening queue
+    const tabQueue = {
+      queue: [],
+      isProcessing: false,
       
-      // Get custom URL template if it's a custom market
-      let customUrlTemplate = null;
-      if (marketKey.startsWith('custom-')) {
-        const parts = marketKey.split('-');
-        const marketSection = parts[1];
-        const marketId = parts[2];
-        const customMarket = customMarkets[marketSection]?.find(m => m.id === marketId);
-        if (customMarket) {
-          customUrlTemplate = customMarket.url;
+      add: function(url) {
+        this.queue.push(url);
+        if (!this.isProcessing) {
+          this.process();
+        }
+      },
+      
+      process: function() {
+        if (this.queue.length === 0) {
+          this.isProcessing = false;
+          return;
+        }
+        
+        this.isProcessing = true;
+        
+        // Open all links simultaneously
+        this.queue.forEach(url => {
+          // Use window.open for first tab, then window.open with _blank for others
+          const newWindow = window.open();
+          if (newWindow) {
+            newWindow.location.href = url;
+          } else {
+            window.open(url, '_blank');
+          }
+        });
+        
+        this.queue = []; // Clear the queue
+        this.isProcessing = false;
+      }
+    };
+
+    document.addEventListener('click', function(e) {
+      // --- Market button logic (support custom) ---
+      const marketBtn = e.target.closest('.market-btn');
+      // Only proceed if clicking the button (not checkbox) and not disabled
+      if (marketBtn && !marketBtn.classList.contains('disabled') && !e.target.classList.contains('market-toggle')) {
+        // Check if any search terms are selected
+        const selectedTerms = getSelectedSearchTerms();
+        
+        if (selectedTerms.length > 0) {
+          // Mark each term as clicked
+          selectedTerms.forEach(term => {
+            clickedSearches[term] = { 
+              clicked: true, 
+              category: determineSearchCategory(term) 
+            };
+          });
+          localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+          
+          // Open each selected term in separate tabs for this specific market
+          const market = marketBtn.getAttribute('data-market');
+          const section = marketBtn.getAttribute('data-section');
+          
+          openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
+            if (market.startsWith("custom-")) {
+              const parts = market.split("-");
+              const customId = parts.slice(2).join("-");
+              const url = getCustomMarketUrl(section, customId, term);
+              if (url) tabQueue.add(url);
+            } else if (marketUrls[market]) {
+              tabQueue.add(marketUrls[market](term));
+            }
+          });
+          
+          // Clear selection
+          selectedSearchTerms = {};
+          localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+          
+          // Update UI
+          renderSavedSearches();
+          updateUnhighlightedCount();
+        } else {
+          // Use the current search query
+          const query = document.getElementById('query').value.trim();
+          if (!query) {
+            document.getElementById('query').focus();
+            return;
+          }
+          const market = marketBtn.getAttribute('data-market');
+          const section = marketBtn.getAttribute('data-section');
+          if (market.startsWith("custom-")) {
+            const parts = market.split("-");
+            const customId = parts.slice(2).join("-");
+            const url = getCustomMarketUrl(section, customId, query);
+            if (url) tabQueue.add(url);
+          } else if (marketUrls[market]) {
+            tabQueue.add(marketUrls[market](query));
+          }
         }
       }
-      
-      openMarket(marketKey, section, query, customUrlTemplate);
-    });
-
-    // Open All functionality
-    if (openAllBtn) {
-      openAllBtn.addEventListener('click', () => {
-        const query = queryInput ? queryInput.value.trim() : '';
-        if (!query) {
-          alert('Please enter a search term first');
-          return;
-        }
-        const enabledMarkets = Array.from(document.querySelectorAll('.market-btn:not(.disabled)'));
-        enabledMarkets.forEach(btn => {
-          const marketKey = btn.getAttribute('data-market');
-          const section = btn.getAttribute('data-section');
-          let customUrlTemplate = null;
-          if (marketKey.startsWith('custom-')) {
-            const parts = marketKey.split('-');
-            const marketSection = parts[1];
-            const marketId = parts[2];
-            const customMarket = customMarkets[marketSection]?.find(m => m.id === marketId);
-            if (customMarket) {
-              customUrlTemplate = customMarket.url;
-            }
-          }
-          openMarket(marketKey, section, query, customUrlTemplate);
-        });
-      });
-    }
-
-    // Toggle All functionality
-    if (toggleAllCheckbox) {
-      toggleAllCheckbox.addEventListener('change', (e) => {
-        const allToggles = document.querySelectorAll('.market-toggle');
-        allToggles.forEach(toggle => {
-          toggle.checked = e.target.checked;
-          const btn = toggle.closest('.market-btn');
-          if (btn) {
-            btn.classList.toggle('disabled', !e.target.checked);
-            const marketKey = btn.getAttribute('data-market');
-            if (marketKey) {
-              saveMarketToggleState(marketKey, e.target.checked);
-            }
-          }
-        });
-      });
-    }
-
-    // Clear search button
-    if (clearSearchBtn && queryInput) {
-      queryInput.addEventListener('input', () => {
-        clearSearchBtn.style.display = queryInput.value.trim() ? 'block' : 'none';
-      });
-      clearSearchBtn.addEventListener('click', () => {
-        queryInput.value = '';
-        clearSearchBtn.style.display = 'none';
-        queryInput.focus();
-      });
-    }
-
-    // Section "Open All" buttons
-    document.querySelectorAll('.section-openall-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const section = btn.getAttribute('data-section');
-        const query = queryInput ? queryInput.value.trim() : '';
-        if (!query) {
-          alert('Please enter a search term first');
-          return;
-        }
-        const sectionMarkets = Array.from(document.querySelectorAll(`#${section}-markets .market-btn:not(.disabled)`));
-        sectionMarkets.forEach(marketBtn => {
-          const marketKey = marketBtn.getAttribute('data-market');
-          let customUrlTemplate = null;
-          if (marketKey.startsWith('custom-')) {
-            const parts = marketKey.split('-');
-            const marketSection = parts[1];
-            const marketId = parts[2];
-            const customMarket = customMarkets[marketSection]?.find(m => m.id === marketId);
-            if (customMarket) {
-              customUrlTemplate = customMarket.url;
-            }
-          }
-          openMarket(marketKey, section, query, customUrlTemplate);
-        });
-      });
-    });
-
-    // Custom Market Modal
-    const customMarketModalBg = document.getElementById('custom-market-modal-bg');
-    const customMarketModalSaveBtn = document.getElementById('custom-market-modal-save-btn');
-    const customMarketModalCancelBtn = document.getElementById('custom-market-modal-cancel-btn');
-    const customMarketTitleInput = document.getElementById('custom-market-title-input');
-    const customMarketUrlInput = document.getElementById('custom-market-url-input');
-    const customMarketModalSection = document.getElementById('custom-market-modal-section');
-    let currentCustomMarketSection = null;
-
-    document.querySelectorAll('.add-market-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentCustomMarketSection = btn.getAttribute('data-section');
-        if (customMarketModalSection) {
-          customMarketModalSection.textContent = `Adding to: ${currentCustomMarketSection.charAt(0).toUpperCase() + currentCustomMarketSection.slice(1)}`;
-        }
-        if (customMarketModalBg) {
-          customMarketModalBg.style.display = 'flex';
-        }
-        if (customMarketTitleInput) customMarketTitleInput.value = '';
-        if (customMarketUrlInput) customMarketUrlInput.value = '';
-        if (customMarketTitleInput) customMarketTitleInput.focus();
-      });
-    });
-
-    if (customMarketModalSaveBtn && customMarketTitleInput && customMarketUrlInput) {
-      customMarketModalSaveBtn.addEventListener('click', () => {
-        const title = customMarketTitleInput.value.trim();
-        const url = customMarketUrlInput.value.trim();
-        if (!title || !url) {
-          alert('Please fill in both fields');
-          return;
-        }
-        if (!url.includes('example')) {
-          alert('URL must contain "example" where the search term should appear');
-          return;
-        }
-        if (!currentCustomMarketSection) return;
-        if (!customMarkets[currentCustomMarketSection]) {
-          customMarkets[currentCustomMarketSection] = [];
-        }
-        const newMarket = {
-          id: Date.now().toString(),
-          title: title,
-          url: url
-        };
-        customMarkets[currentCustomMarketSection].push(newMarket);
-        foldersObj.customMarkets = customMarkets;
-        saveFoldersObj(foldersObj);
-        refreshAllMarketButtons();
-        if (customMarketModalBg) {
-          customMarketModalBg.style.display = 'none';
-        }
-      });
-    }
-
-    if (customMarketModalCancelBtn && customMarketModalBg) {
-      customMarketModalCancelBtn.addEventListener('click', () => {
-        customMarketModalBg.style.display = 'none';
-      });
-    }
-
-    // Monitor View functionality
-    const monitorViewBtn = document.getElementById('monitor-view-btn');
-    const monitorModalBg = document.getElementById('monitor-modal-bg');
-    const monitorCloseBtn = document.getElementById('monitor-close-btn');
-    const monitorMarketSelect = document.getElementById('monitor-market-select');
-    const monitorBoard = document.getElementById('monitor-board');
-
-    if (monitorViewBtn && monitorModalBg) {
-      monitorViewBtn.addEventListener('click', () => {
-        monitorModalBg.style.display = 'flex';
-        // Populate market select
-        if (monitorMarketSelect) {
-          monitorMarketSelect.innerHTML = '<option value="">Select a market...</option>';
-          ['asia', 'international', 'special'].forEach(section => {
-            const markets = getMarkets(section);
-            markets.forEach(market => {
-              const option = document.createElement('option');
-              option.value = market.key;
-              option.textContent = market.label;
-              monitorMarketSelect.appendChild(option);
+      // Sectional Open All
+      if (e.target.classList.contains('section-openall-btn')) {
+        // Check if any search terms are selected
+        const selectedTerms = getSelectedSearchTerms();
+        
+        if (selectedTerms.length > 0) {
+          // Mark each term as clicked
+          selectedTerms.forEach(term => {
+            clickedSearches[term] = { 
+              clicked: true, 
+              category: determineSearchCategory(term) 
+            };
+          });
+          localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+          
+          // Open each selected term in separate tabs for all markets in this section
+          const section = e.target.getAttribute('data-section');
+          
+          openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
+            let marketArr = getMarkets(section);
+            
+            // Open all URLs immediately without delays
+            marketArr.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
+              // Skip if this market is toggled off
+              if (!loadMarketToggleState(market.key)) return;
+              
+              if (market.custom) {
+                const parts = market.key.split("-");
+                const customId = parts.slice(2).join("-");
+                const url = getCustomMarketUrl(section, customId, term);
+                if (url) tabQueue.add(url);
+              } else if (marketUrls[market.key]) {
+                tabQueue.add(marketUrls[market.key](term));
+              }
             });
           });
+          
+          // Clear selection
+          selectedSearchTerms = {};
+          localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+          
+          // Update UI
+          renderSavedSearches();
+          updateUnhighlightedCount();
+        } else {
+          // Use the current search query
+          const query = document.getElementById('query').value.trim();
+          if (!query) {
+            document.getElementById('query').focus();
+            return;
+          }
+          const section = e.target.getAttribute('data-section');
+          let marketArr = getMarkets(section);
+          
+          // Collect all URLs first (only enabled markets)
+          const urls = [];
+          marketArr.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
+            // Skip if this market is toggled off
+            if (!loadMarketToggleState(market.key)) return;
+            
+            if (market.custom) {
+              const parts = market.key.split("-");
+              const customId = parts.slice(2).join("-");
+              const url = getCustomMarketUrl(section, customId, query);
+              if (url) urls.push(url);
+            } else if (marketUrls[market.key]) {
+              urls.push(marketUrls[market.key](query));
+            }
+          });
+          
+          // Process URLs with queue
+          urls.forEach(url => tabQueue.add(url));
         }
-      });
+      }
+      // --- Add Custom Market Button ---
+      if (e.target.classList.contains('add-market-btn')) {
+        const section = e.target.getAttribute('data-section');
+        showCustomMarketModal(section);
+      }
+    });
+
+    document.getElementById('open-all-btn').addEventListener('click', function() {
+      // Check if any search terms are selected
+      const selectedTerms = getSelectedSearchTerms();
+      
+      if (selectedTerms.length > 0) {
+        // Mark each term as clicked
+        selectedTerms.forEach(term => {
+          clickedSearches[term] = { 
+            clicked: true, 
+            category: determineSearchCategory(term) 
+          };
+        });
+        localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+        
+        // Open each selected term in separate tabs for all markets
+        openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
+          openAllMarketsWithQuery(term);
+        });
+        
+        // Clear selection
+        selectedSearchTerms = {};
+        localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+        
+        // Update UI
+        renderSavedSearches();
+        updateUnhighlightedCount();
+      } else {
+        // Use the current search query
+        const query = document.getElementById('query').value.trim();
+        if (!query) {
+          document.getElementById('query').focus();
+          return;
+        }
+        openAllMarketsWithQuery(query);
+      }
+    });
+
+    // Update color indicator based on selected category
+    function updateRandomizeColorIndicator() {
+      const select = document.getElementById('randomize-category-select');
+      const indicator = document.getElementById('randomize-color-indicator');
+      const colors = {
+        'all': '#6a0572',
+        'asia': '#ff6b6b',
+        'international': '#4ecdc4',
+        'special': '#ffe66d'
+      };
+      indicator.style.backgroundColor = colors[select.value];
     }
 
-    if (monitorCloseBtn && monitorModalBg) {
-      monitorCloseBtn.addEventListener('click', () => {
-        monitorModalBg.style.display = 'none';
-      });
-    }
+    // Initialize color indicator
+    updateRandomizeColorIndicator();
+    
+    // Update indicator when selection changes
+    document.getElementById('randomize-category-select').addEventListener('change', updateRandomizeColorIndicator);
+    
+    // Randomize button functionality
+    document.getElementById('sidebar-randomize-btn').addEventListener('click', function() {
+      const category = document.getElementById('randomize-category-select').value;
+      
+      // Get the current folder's searches
+      const folder = savedFolders[currentFolderIdx];
+      if (!folder.searches || folder.searches.length === 0) {
+        alert('No saved searches to randomize from');
+        return;
+      }
+      
+      // Find unhighlighted terms (compatibility with new structure)
+      const unhighlightedTerms = folder.searches.filter(term => 
+        !clickedSearches[term.value] || !clickedSearches[term.value].clicked
+      );
+      
+      if (unhighlightedTerms.length === 0) {
+        // Reset all highlights if all terms have been used
+        clickedSearches = {};
+        localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+        // Use all terms
+        const randomTerm = folder.searches[Math.floor(Math.random() * folder.searches.length)];
+        openRandomizedTerm(randomTerm.value, category);
+      } else {
+        // Pick a random unhighlighted term
+        const randomTerm = unhighlightedTerms[Math.floor(Math.random() * unhighlightedTerms.length)];
+        openRandomizedTerm(randomTerm.value, category);
+      }
+    });
 
-    // Theme Editor functionality (simplified - keeping existing theme code)
-    const themeEditorBtn = document.getElementById('theme-editor-btn');
-    // Theme editor would open a modal with color pickers, etc.
-    // Keeping this simple for now
+    // Clear search button
+    const clearBtn = document.getElementById('clear-search');
+    const searchInput = document.getElementById('query');
+    
+    searchInput.addEventListener('input', function() {
+      clearBtn.style.display = this.value ? 'block' : 'none';
+    });
+    
+    clearBtn.addEventListener('click', function() {
+      searchInput.value = '';
+      this.style.display = 'none';
+      searchInput.focus();
+    });
 
-    // Panel close handlers
-    document.querySelectorAll('.panel-close').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const panelName = btn.getAttribute('data-panel');
-        if (panelName) {
-          const panel = document.getElementById(panelName === 'wishlist' ? 'wishlist-section' : panelName);
-          if (panel) {
-            panel.classList.add('minimized');
-            const minimizedPanels = document.getElementById('minimized-panels');
-            if (minimizedPanels) {
-              // Check if button already exists
-              let existingBtn = minimizedPanels.querySelector(`[data-panel="${panelName}"]`);
-              if (!existingBtn) {
-                const minimizedBtn = document.createElement('button');
-                minimizedBtn.className = 'minimized-panel-btn';
-                minimizedBtn.setAttribute('data-panel', panelName);
-                minimizedBtn.textContent = panelName === 'wishlist' ? 'Wishlist' : panelName;
-                minimizedBtn.addEventListener('click', () => {
-                  panel.classList.remove('minimized');
-                  minimizedBtn.remove();
-                });
-                minimizedPanels.appendChild(minimizedBtn);
+    document.getElementById('searchForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      // Check if any search terms are selected
+      const selectedTerms = getSelectedSearchTerms();
+      
+      if (selectedTerms.length > 0) {
+        // Mark each term as clicked
+        selectedTerms.forEach(term => {
+          clickedSearches[term] = { 
+            clicked: true, 
+            category: determineSearchCategory(term) 
+          };
+        });
+        localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+        
+        // Open each selected term in separate tabs for Mercari Japan
+        openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
+          window.open(marketUrls["mercari-jp"](term), '_blank');
+        });
+        
+        // Clear selection
+        selectedSearchTerms = {};
+        localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+        
+        // Update UI
+        renderSavedSearches();
+        updateUnhighlightedCount();
+      } else {
+        // Use the current search query
+        const query = document.getElementById('query').value.trim();
+        if (!query) return;
+        window.open(marketUrls["mercari-jp"](query), '_blank');
+      }
+    });
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      const queryInput = document.getElementById('query');
+      
+      // Ctrl+Enter to open all
+      if (e.ctrlKey && e.key === 'Enter') {
+        document.getElementById('open-all-btn').click();
+        return;
+      }
+      // Escape to clear search
+      if (e.key === 'Escape') {
+        queryInput.value = '';
+        queryInput.focus();
+        return;
+      }
+      
+      // Arrow key navigation
+      if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        
+        // Left-side elements (folders and search terms)
+        const folders = [...document.querySelectorAll('.saved-folder-item button:first-child')].filter(el => el.offsetParent !== null);
+        const searchTerms = [...document.querySelectorAll('.saved-search-term')].filter(el => el.offsetParent !== null);
+        
+        // Right-side elements (open all buttons and market buttons)
+        const openAllBtns = [...document.querySelectorAll('.section-openall-btn')].filter(el => el.offsetParent !== null);
+        const mainOpenAllBtn = document.getElementById('open-all-btn');
+        const marketBtns = [...document.querySelectorAll('.market-btn')].filter(el => el.offsetParent !== null);
+        
+        // Get current focused element
+        const currentEl = document.activeElement;
+        
+        // Handle vertical navigation (up/down)
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          // Left-side navigation (folders and search terms)
+          if (folders.includes(currentEl) || searchTerms.includes(currentEl)) {
+            const leftElements = [...folders, ...searchTerms];
+            const currentIndex = leftElements.indexOf(currentEl);
+            let nextIndex = 0;
+            
+            if (e.key === 'ArrowDown') {
+              nextIndex = currentIndex < leftElements.length - 1 ? currentIndex + 1 : 0;
+            } else {
+              nextIndex = currentIndex > 0 ? currentIndex - 1 : leftElements.length - 1;
+            }
+            
+            leftElements[nextIndex].focus();
+          } 
+          // Right-side navigation (open all and market buttons)
+          else if (openAllBtns.includes(currentEl) || currentEl === mainOpenAllBtn || marketBtns.includes(currentEl)) {
+            const rightElements = [...openAllBtns, mainOpenAllBtn, ...marketBtns];
+            const currentIndex = rightElements.indexOf(currentEl);
+            let nextIndex = 0;
+            
+            if (e.key === 'ArrowDown') {
+              // If on main Open All button, go to first section Open All button
+              if (currentEl === mainOpenAllBtn && openAllBtns.length > 0) {
+                nextIndex = rightElements.indexOf(openAllBtns[0]);
+              } else {
+                nextIndex = currentIndex < rightElements.length - 1 ? currentIndex + 1 : 0;
               }
+            } else {
+              nextIndex = currentIndex > 0 ? currentIndex - 1 : rightElements.length - 1;
+            }
+            
+            rightElements[nextIndex].focus();
+          }
+        }
+        // Handle horizontal navigation (left/right)
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          // Left arrow focuses left-side elements
+          if (e.key === 'ArrowLeft') {
+            if (searchTerms.length > 0) {
+              searchTerms[0].focus();
+            } else if (folders.length > 0) {
+              folders[0].focus();
+            }
+          } 
+          // Right arrow focuses right-side elements
+          else {
+            if (openAllBtns.length > 0) {
+              openAllBtns[0].focus();
+            } else if (marketBtns.length > 0) {
+              marketBtns[0].focus();
+            } else if (mainOpenAllBtn) {
+              mainOpenAllBtn.focus();
             }
           }
+        }
+        return;
+      }
+      
+      // Enter to load focused search term
+      if (e.key === 'Enter' && e.target.classList.contains('saved-search-term')) {
+        const searchTerm = e.target.textContent;
+        const queryInput = document.getElementById('query');
+        queryInput.value = searchTerm;
+        queryInput.focus();
+        
+        // Force selection of all text in input
+        setTimeout(() => {
+          queryInput.setSelectionRange(0, queryInput.value.length);
+        }, 0);
+        
+        // Mark as clicked with category
+        clickedSearches[searchTerm] = { 
+          clicked: true, 
+          category: determineSearchCategory(searchTerm) 
+        };
+        localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+        e.target.classList.add('active');
+        e.target.setAttribute('data-category', determineSearchCategory(searchTerm));
+        updateUnhighlightedCount();
+        
+        // Focus the Open All button
+        setTimeout(() => {
+          document.getElementById('open-all-btn').focus();
+        }, 10);
+        
+        // Prevent form submission
+        e.preventDefault();
+        return false;
+      }
+      
+      // Tab to focus first search term
+      if (e.key === 'Tab' && e.target === queryInput && !e.shiftKey) {
+        e.preventDefault();
+        const firstSearchTerm = document.querySelector('.saved-search-term');
+        if (firstSearchTerm) firstSearchTerm.focus();
+      }
+    });
+
+    // --- Custom Market Modal Logic ---
+    function showCustomMarketModal(section) {
+      const bg = document.getElementById('custom-market-modal-bg');
+      document.getElementById('custom-market-modal-section').textContent = {
+        asia: "Asia Section",
+        international: "International Section",
+        special: "Designer Section"
+      }[section] || "";
+      bg.style.display = 'flex';
+      bg.setAttribute('data-section', section);
+      document.getElementById('custom-market-title-input').value = '';
+      document.getElementById('custom-market-url-input').value = '';
+      setTimeout(() => {
+        document.getElementById('custom-market-title-input').focus();
+      }, 20);
+    }
+    function hideCustomMarketModal() {
+      document.getElementById('custom-market-modal-bg').style.display = 'none';
+    }
+    document.getElementById('custom-market-modal-cancel-btn').onclick = hideCustomMarketModal;
+    document.getElementById('custom-market-modal-bg').onclick = function(e) {
+      if (e.target === this) hideCustomMarketModal();
+    };
+    document.getElementById('custom-market-modal-save-btn').onclick = function() {
+      const section = document.getElementById('custom-market-modal-bg').getAttribute('data-section');
+      const title = document.getElementById('custom-market-title-input').value.trim();
+      const url = document.getElementById('custom-market-url-input').value.trim();
+      if (!title || !url || !url.includes('example')) {
+        alert('Both a title and search layout URL are required. URL must contain "example".');
+        return;
+      }
+      // Generate unique id
+      const id = Date.now().toString(36) + '-' + Math.floor(Math.random()*99999).toString(36);
+      customMarkets[section] = customMarkets[section] || [];
+      customMarkets[section].push({ id, title, url });
+      foldersObj.customMarkets = customMarkets;
+      saveFoldersObj(foldersObj);
+      refreshAllMarketButtons();
+      hideCustomMarketModal();
+    };
+
+    // Container minimize/restore and dragging functionality
+    const container = document.querySelector('.container');
+    const dragHandle = document.getElementById('container-handle');
+    let isMinimized = false;
+    
+    // Double click to minimize/restore
+    dragHandle.addEventListener('dblclick', function() {
+      isMinimized = !isMinimized;
+      
+      if (isMinimized) {
+        // Store current position before minimizing
+        container.dataset.lastLeft = container.style.left;
+        container.dataset.lastTop = container.style.top;
+        
+        // Apply minimized state - force specific dimensions
+        container.classList.add('minimized');
+        container.style.width = '300px';
+        container.style.height = '40px';
+        container.style.left = container.dataset.lastLeft || '50%';
+        container.style.top = container.dataset.lastTop || '50%';
+      } else {
+        // Restore to previous position but use original max dimensions
+        container.classList.remove('minimized');
+        container.style.left = container.dataset.lastLeft || '50%';
+        container.style.top = container.dataset.lastTop || '50%';
+        container.style.width = '';
+        container.style.height = '';
+      }
+      
+      // Force reflow to ensure smooth transition
+      void container.offsetWidth;
+    });
+    let isDragging = false;
+    let offsetX, offsetY;
+    let initialLeft, initialTop;
+
+    dragHandle.addEventListener('mousedown', function(e) {
+      // Don't drag if this is a double click
+      if (e.detail > 1) return;
+      
+      isDragging = true;
+      const rect = container.getBoundingClientRect();
+      // Calculate offset from mouse to container's current position
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      // Store initial position before we change transform
+      initialLeft = rect.left;
+      initialTop = rect.top;
+      container.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      
+      requestAnimationFrame(() => {
+        // Calculate new position using the offset
+        const x = e.clientX - offsetX;
+        const y = e.clientY - offsetY;
+        
+        container.style.left = x + 'px';
+        container.style.top = y + 'px';
+        container.style.transform = 'none';
+        
+        // Store current position for restore
+        container.dataset.lastLeft = x + 'px';
+        container.dataset.lastTop = y + 'px';
+      });
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (isDragging) {
+        isDragging = false;
+        container.style.cursor = '';
+      }
+    });
+
+    // Make custom market modal draggable
+    const modal = document.querySelector('.custom-market-modal');
+    const modalHandle = modal.querySelector('.drag-handle');
+    let isModalDragging = false;
+    let modalOffsetX, modalOffsetY;
+    let modalInitialLeft, modalInitialTop;
+
+    modalHandle.addEventListener('mousedown', function(e) {
+      isModalDragging = true;
+      // Get modal position relative to viewport
+      const rect = modal.getBoundingClientRect();
+      // Calculate offset from mouse to modal's top-left corner
+      modalOffsetX = e.clientX - rect.left;
+      modalOffsetY = e.clientY - rect.top;
+      modal.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!isModalDragging) return;
+      
+      // Calculate new position keeping the same mouse offset
+      const x = e.clientX - modalOffsetX;
+      const y = e.clientY - modalOffsetY;
+      
+      modal.style.left = x + 'px';
+      modal.style.top = y + 'px';
+      modal.style.transform = 'none'; // Remove centering transform
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (isModalDragging) {
+        isModalDragging = false;
+        modal.style.cursor = '';
+      }
+    });
+
+    // Center modal on show
+    function showCustomMarketModal(section) {
+      const bg = document.getElementById('custom-market-modal-bg');
+      document.getElementById('custom-market-modal-section').textContent = {
+        asia: "Asia Section",
+        international: "International Section",
+        special: "Designer Section"
+      }[section] || "";
+      bg.style.display = 'flex';
+      bg.setAttribute('data-section', section);
+      document.getElementById('custom-market-title-input').value = '';
+      document.getElementById('custom-market-url-input').value = '';
+      
+      // Center modal
+      const modal = document.querySelector('.custom-market-modal');
+      modal.style.left = '50%';
+      modal.style.top = '50%';
+      modal.style.transform = 'translate(-50%, -50%)';
+      
+      setTimeout(() => {
+        document.getElementById('custom-market-title-input').focus();
+      }, 20);
+    }
+
+    // Toggle all marketplaces
+    document.getElementById('toggle-all-checkbox').addEventListener('change', function(e) {
+      const isChecked = e.target.checked;
+      const marketButtons = document.querySelectorAll('.market-btn');
+      
+      marketButtons.forEach(btn => {
+        const toggle = btn.querySelector('.market-toggle');
+        if (toggle) {
+          toggle.checked = isChecked;
+          btn.classList.toggle('disabled', !isChecked);
+          const marketKey = btn.getAttribute('data-market');
+          saveMarketToggleState(marketKey, isChecked);
         }
       });
     });
 
-    // Additional initialization
-    if (queryInput) {
-      queryInput.focus();
-    }
+    // On page load, refresh market buttons with custom
+    refreshAllMarketButtons();
+
+    // On folder or custom market change, refresh UI
+    // (already handled above after relevant actions)
   </script>
   <script>
-    // Resize handler for folder/search list divider
+(function() {
+  const folderList = document.getElementById('saved-folder-list');
+  const searchList = document.getElementById('saved-searches-list');
+  const handle = document.getElementById('sidebar-folder-search-resize');
+  let startY, startFolderHeight, startSearchHeight, resizing = false;
+
+  // Set initial heights
+  folderList.style.height = '120px';
+  searchList.style.height = '180px';
+  folderList.style.overflowY = 'auto';
+  searchList.style.overflowY = 'auto';
+
+  handle.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    resizing = true;
+    startY = e.clientY;
+    startFolderHeight = folderList.offsetHeight;
+    startSearchHeight = searchList.offsetHeight;
+    document.body.style.userSelect = 'none';
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!resizing) return;
+    let dy = e.clientY - startY;
+    let newFolderHeight = Math.max(60, Math.min(300, startFolderHeight + dy));
+    let newSearchHeight = Math.max(80, Math.min(400, startSearchHeight - dy));
+    folderList.style.height = newFolderHeight + 'px';
+    searchList.style.height = newSearchHeight + 'px';
+  });
+
+  window.addEventListener('mouseup', function() {
+    if (resizing) {
+      resizing = false;
+      document.body.style.userSelect = '';
+    }
+  });
+})();
+</script>
+<script>
+(function() {
+  const sidebar = document.querySelector('.sidebar');
+  const wishlist = document.querySelector('.wishlist-section');
+  const container = document.querySelector('.container');
+  const resizeHandles = document.querySelectorAll('.resize-handle');
+
+  let resizing = false;
+  let startX, startY, startW, startH;
+
+  resizeHandles.forEach(handle => {
+    handle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      resizing = { type: handle.dataset.resize };
+      startX = e.clientX;
+      startY = e.clientY;
+      startW = parseInt(document.defaultView.getComputedStyle(resizing.type === 'sidebar' ? sidebar : resizing.type === 'wishlist' ? wishlist : container).width, 10);
+      startH = parseInt(document.defaultView.getComputedStyle(container).height, 10);
+      document.body.style.userSelect = 'none';
+    });
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!resizing) return;
+    
+    
+    if (resizing.type === 'sidebar') {
+      const dx = e.clientX - startX;
+      let newW = Math.max(200, Math.min(600, startW + dx));
+      document.querySelector('.sidebar').style.width = newW + 'px';
+      
+      // Adjust container margin when sidebar resizes
+      if (window.innerWidth >= 1200) {
+        document.querySelector('.container').style.marginLeft = newW + 'px';
+      }
+    }
+    if (resizing.type === 'wishlist') {
+      const dx = startX - e.clientX;
+      let newW = Math.max(200, Math.min(600, startW + dx));
+      document.querySelector('.wishlist-section').style.width = newW + 'px';
+    }
+    if (resizing.type === 'container') {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      let newW = Math.max(350, Math.min(900, startW + dx));
+      let newH = Math.max(350, Math.min(window.innerHeight - 40, startH + dy));
+      const container = document.querySelector('.container');
+      container.style.width = newW + 'px';
+      container.style.height = newH + 'px';
+    }
+  });
+
+  window.addEventListener('mouseup', function() {
+    if (resizing) {
+      resizing = false;
+      document.body.style.userSelect = '';
+    }
+  });
+})();
+</script>
+  <!-- Theme Editor Modal -->
+  <div id="theme-editor-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;background:rgba(10,10,10,0.65);backdrop-filter:blur(2.5px);align-items:center;justify-content:center;">
+    <div style="background:rgba(32,34,36,0.98);border-radius:18px;box-shadow:0 8px 32px #000a;padding:28px 22px 18px 22px;max-width:350px;width:96vw;border:1.5px solid #232323;backdrop-filter:blur(7px);cursor:default;">
+      <h3 style="margin-top:0;font-size:1.17em;color:#e3e3e3;margin-bottom:10px;font-weight:bold;letter-spacing:0.01em;text-shadow:0 1px 8px #2224;">Theme Editor</h3>
+      <div style="margin-bottom:15px;">
+        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Background Color</label>
+        <input type="color" id="theme-bg-color" value="#121212" style="width:100%;height:40px;border-radius:5px;border:1.5px solid #232323;">
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Accent Color</label>
+        <input type="color" id="theme-accent-color" value="#666" style="width:100%;height:40px;border-radius:5px;border:1.5px solid #232323;">
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Search Highlight Color</label>
+        <input type="color" id="theme-highlight-color" value="#a0d8ed" style="width:100%;height:40px;border-radius:5px;border:1.5px solid #232323;">
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Background Image</label>
+        <input type="file" id="theme-bg-image" accept="image/*" style="width:100%;border-radius:5px;border:1.5px solid #232323;padding:5px;">
+        <div style="display:flex;gap:5px;margin-top:5px;">
+          <button id="theme-bg-image-remove" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Remove Image</button>
+          <button id="theme-bg-image-preview" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Preview</button>
+        </div>
+      </div>
+      <div style="margin-bottom:15px;">
+        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Logo Image</label>
+        <input type="file" id="theme-logo-image" accept="image/*" style="width:100%;border-radius:5px;border:1.5px solid #232323;padding:5px;">
+        <div style="display:flex;gap:5px;margin-top:5px;">
+          <button id="theme-logo-image-remove" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Reset Default</button>
+          <button id="theme-logo-image-preview" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Preview</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:11px;margin-top:18px;justify-content:flex-end;">
+        <button id="theme-apply-btn" style="background:#232323;color:#e3e3e3;border:none;border-radius:6px;font-size:1em;font-weight:bold;cursor:pointer;padding:8px 22px;transition:background .18s,box-shadow .18s,transform .13s;box-shadow:0 2px 8px #2224;opacity:0.93;backdrop-filter:blur(1.5px);">Apply</button>
+        <button id="theme-reset-btn" style="background:#232323;color:#e3e3e3;border:none;border-radius:6px;font-size:1em;font-weight:bold;cursor:pointer;padding:8px 22px;transition:background .14s,color .14s;opacity:0.93;backdrop-filter:blur(1.5px);">Reset</button>
+        <button id="theme-close-btn" style="background:#232323;color:#e3e3e3;border:none;border-radius:6px;font-size:1em;font-weight:bold;cursor:pointer;padding:8px 22px;transition:background .14s,color .14s;opacity:0.93;backdrop-filter:blur(1.5px);">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Particle Background Effect -->
+  <canvas id="particle-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
+  <script>
+    // Particle background
     (function() {
-      const folderList = document.getElementById('saved-folder-list');
-      const searchList = document.getElementById('saved-searches-list');
-      const handle = document.getElementById('sidebar-folder-search-resize');
-      let startY, startFolderHeight, startSearchHeight, resizing = false;
-
-      // Set initial heights
-      if (folderList) folderList.style.height = '120px';
-      if (searchList) searchList.style.height = '180px';
-      if (folderList) folderList.style.overflowY = 'auto';
-      if (searchList) searchList.style.overflowY = 'auto';
-
-      if (handle && folderList && searchList) {
-        handle.addEventListener('mousedown', (e) => {
-          resizing = true;
-          startY = e.clientY;
-          startFolderHeight = folderList.offsetHeight;
-          startSearchHeight = searchList.offsetHeight;
-          document.body.style.cursor = 'ns-resize';
-          e.preventDefault();
-        });
-
-        document.addEventListener('mousemove', (e) => {
-          if (!resizing) return;
-          const deltaY = e.clientY - startY;
-          const newFolderHeight = Math.max(60, Math.min(400, startFolderHeight + deltaY));
-          const newSearchHeight = Math.max(60, Math.min(400, startSearchHeight - deltaY));
-          folderList.style.height = newFolderHeight + 'px';
-          searchList.style.height = newSearchHeight + 'px';
-        });
-
-        document.addEventListener('mouseup', () => {
-          resizing = false;
-          document.body.style.cursor = '';
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      const particles = [];
+      const particleCount = Math.floor(window.innerWidth / 10);
+      
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2 + 0.5,
+          speedX: Math.random() * 0.2 - 0.1,
+          speedY: Math.random() * 0.2 - 0.1,
+          color: `rgba(100, 220, 255, ${Math.random() * 0.1 + 0.05})`
         });
       }
+      
+      function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          
+          p.x += p.speedX;
+          p.y += p.speedY;
+          
+          if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+          
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+        }
+        
+        requestAnimationFrame(animateParticles);
+      }
+      
+      animateParticles();
+      
+      window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+    })();
+  </script>
+  <script>
+    // Theme Editor Functionality
+    document.getElementById('theme-editor-btn').addEventListener('click', function() {
+      document.getElementById('theme-editor-modal').style.display = 'flex';
+    });
+
+    document.getElementById('theme-close-btn').addEventListener('click', function() {
+      document.getElementById('theme-editor-modal').style.display = 'none';
+    });
+
+    // Handle background image upload
+    document.getElementById('theme-bg-image').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const bgImage = event.target.result;
+          document.documentElement.style.setProperty('--theme-bg-image', `url(${bgImage})`);
+          localStorage.setItem('themeBgImage', bgImage);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Remove background image
+    document.getElementById('theme-bg-image-remove').addEventListener('click', function() {
+      document.documentElement.style.setProperty('--theme-bg-image', 'none');
+      localStorage.removeItem('themeBgImage');
+      document.getElementById('theme-bg-image').value = '';
+    });
+
+    // Preview background image
+    document.getElementById('theme-bg-image-preview').addEventListener('click', function() {
+      const bgImage = localStorage.getItem('themeBgImage');
+      if (bgImage) {
+        document.documentElement.style.setProperty('--theme-bg-image', `url(${bgImage})`);
+      } else {
+        document.documentElement.style.setProperty('--theme-bg-image', 'url("bg.png")');
+      }
+    });
+
+    document.getElementById('theme-apply-btn').addEventListener('click', function() {
+      const bgColor = document.getElementById('theme-bg-color').value;
+      const accentColor = document.getElementById('theme-accent-color').value;
+      const highlightColor = document.getElementById('theme-highlight-color').value;
+      
+      // Apply theme
+      document.documentElement.style.setProperty('--theme-bg', bgColor);
+      document.documentElement.style.setProperty('--theme-accent', accentColor);
+      document.documentElement.style.setProperty('--theme-highlight', highlightColor);
+      
+      // Save to localStorage
+      localStorage.setItem('themeSettings', JSON.stringify({
+        bgColor,
+        accentColor,
+        highlightColor
+      }));
+    });
+
+    document.getElementById('theme-reset-btn').addEventListener('click', function() {
+      // Reset to defaults
+      document.getElementById('theme-bg-color').value = '#121212';
+      document.getElementById('theme-accent-color').value = '#666';
+      document.getElementById('theme-highlight-color').value = '#a0d8ed';
+      
+      // Remove saved theme
+      localStorage.removeItem('themeSettings');
+      localStorage.removeItem('themeBgImage');
+      
+      // Apply defaults
+      document.documentElement.style.setProperty('--theme-bg', '#121212');
+      document.documentElement.style.setProperty('--theme-accent', '#666');
+      document.documentElement.style.setProperty('--theme-highlight', '#a0d8ed');
+      document.documentElement.style.setProperty('--theme-bg-image', 'url("bg.png")');
+      
+      // Reset logo to default
+      document.querySelector('.wishlist-mascot').src = 'mmcs.png';
+      localStorage.removeItem('themeLogoImage');
+      document.getElementById('theme-logo-image').value = '';
+      document.getElementById('theme-bg-image').value = '';
+    });
+
+    // Reset highlights button
+    document.getElementById('sidebar-reset-highlights-btn').addEventListener('click', function() {
+      clickedSearches = {};
+      localStorage.removeItem(CLICKED_SEARCHES_KEY);
+      document.querySelectorAll('.saved-search-term').forEach(btn => {
+        btn.classList.remove('active');
+        btn.removeAttribute('data-category');
+      });
+      updateUnhighlightedCount();
+      
+      // Also clear selection
+      selectedSearchTerms = {};
+      localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+      renderSavedSearches();
+    });
+
+    // Helper function to open all markets with a query
+    function openAllMarketsWithQuery(query) {
+      // Collect all URLs first (only enabled markets)
+      const urls = [];
+      ['asia', 'international', 'special'].forEach(section => {
+        getMarkets(section).forEach(market => {
+          // Skip if this market is toggled off
+          if (!loadMarketToggleState(market.key)) return;
+          
+          if (market.custom) {
+            const parts = market.key.split("-");
+            const customId = parts.slice(2).join("-");
+            const url = getCustomMarketUrl(section, customId, query);
+            if (url) urls.push(url);
+          } else if (marketUrls[market.key]) {
+            urls.push(marketUrls[market.key](query));
+          }
+        });
+      });
+      
+      // Process URLs with queue
+      urls.forEach(url => tabQueue.add(url));
+      
+      // Clear selection after search
+      selectedSearchTerms = {};
+      localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+      renderSavedSearches();
+    }
+
+    // Load saved theme on startup
+    const savedTheme = localStorage.getItem('themeSettings');
+    if (savedTheme) {
+      const theme = JSON.parse(savedTheme);
+      document.getElementById('theme-bg-color').value = theme.bgColor;
+      document.getElementById('theme-accent-color').value = theme.accentColor;
+      document.getElementById('theme-highlight-color').value = theme.highlightColor || '#00e6d6';
+      
+      document.documentElement.style.setProperty('--theme-bg', theme.bgColor);
+      document.documentElement.style.setProperty('--theme-accent', theme.accentColor);
+      document.documentElement.style.setProperty('--theme-highlight', theme.highlightColor || '#00e6d6');
+    } else {
+      // Apply default background image if no saved theme
+      document.documentElement.style.setProperty('--theme-bg-image', 'url("bg.png")');
+    }
+
+    // Load saved background image
+    const savedBgImage = localStorage.getItem('themeBgImage');
+    if (savedBgImage) {
+      document.documentElement.style.setProperty('--theme-bg-image', `url(${savedBgImage})`);
+    }
+
+    // Load saved logo image
+    const savedLogoImage = localStorage.getItem('themeLogoImage');
+    if (savedLogoImage) {
+      document.querySelector('.wishlist-mascot').src = savedLogoImage;
+    }
+
+    // Handle logo image upload
+    document.getElementById('theme-logo-image').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const logoImage = event.target.result;
+          document.querySelector('.wishlist-mascot').src = logoImage;
+          localStorage.setItem('themeLogoImage', logoImage);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Reset logo to default
+    document.getElementById('theme-logo-image-remove').addEventListener('click', function() {
+      document.querySelector('.wishlist-mascot').src = 'mmcs.png';
+      localStorage.removeItem('themeLogoImage');
+      document.getElementById('theme-logo-image').value = '';
+    });
+
+    // Preview logo
+    document.getElementById('theme-logo-image-preview').addEventListener('click', function() {
+      const logoImage = localStorage.getItem('themeLogoImage');
+      if (logoImage) {
+        document.querySelector('.wishlist-mascot').src = logoImage;
+      }
+    });
+
+    // Sidebar detach/reattach functionality
+    (function() {
+      const sidebar = document.getElementById('sidebar');
+      const dragHandle = sidebar.querySelector('.drag-handle');
+      let isDetached = false;
+      let isDragging = false;
+      let dragOffsetX = 0;
+      let dragOffsetY = 0;
+      const originalPosition = { left: 0, top: 0 };
+
+      // Double click to detach/reattach
+      dragHandle.addEventListener('dblclick', function() {
+        if (isDetached) {
+          reattachSidebar();
+        } else {
+          detachSidebar();
+        }
+      });
+
+      // Also allow dragging near left edge to reattach
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging || !isDetached) return;
+        
+        // If dragged near left edge, show reattachment preview
+        if (e.clientX < 50) {
+          sidebar.classList.add('reattach-preview');
+        } else {
+          sidebar.classList.remove('reattach-preview');
+        }
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (isDragging && isDetached) {
+          // If released near left edge, reattach
+          const rect = sidebar.getBoundingClientRect();
+          if (rect.left < 100) {
+            reattachSidebar();
+          }
+          sidebar.classList.remove('reattach-preview');
+        }
+        isDragging = false;
+      });
+
+      function detachSidebar() {
+        isDetached = true;
+        originalPosition.left = sidebar.offsetLeft;
+        originalPosition.top = sidebar.offsetTop;
+        sidebar.classList.add('detached');
+        sidebar.style.left = originalPosition.left + 'px';
+        sidebar.style.top = originalPosition.top + 'px';
+        sidebar.style.width = sidebar.offsetWidth + 'px';
+      }
+
+      function reattachSidebar() {
+        isDetached = false;
+        sidebar.classList.remove('detached');
+        sidebar.style.left = '0';
+        sidebar.style.top = '0';
+        sidebar.style.width = '250px';
+        sidebar.style.height = '';
+        sidebar.style.minHeight = '';
+        sidebar.style.maxHeight = '';
+        sidebar.style.resize = '';
+        
+        // Force reflow to ensure smooth transition
+        void sidebar.offsetWidth;
+      }
+
+      // Dragging when detached
+      dragHandle.addEventListener('mousedown', function(e) {
+        if (!isDetached) return;
+        e.preventDefault();
+        isDragging = true;
+        const rect = sidebar.getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        dragOffsetY = e.clientY - rect.top;
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging || !isDetached) return;
+        sidebar.style.left = (e.clientX - dragOffsetX) + 'px';
+        sidebar.style.top = (e.clientY - dragOffsetY) + 'px';
+      });
+
+      document.addEventListener('mouseup', function() {
+        isDragging = false;
+      });
+
+      // Panel controls functionality
+      const minimizedPanels = document.getElementById('minimized-panels');
+      const PANEL_SIZES_KEY = 'panelSizes';
+      
+      // Create minimized button for wishlist
+      function createWishlistButton() {
+        const btn = document.createElement('button');
+        btn.className = 'minimized-panel-btn';
+        btn.title = 'Show Wishlist';
+        btn.textContent = 'W';
+        btn.style.position = 'fixed';
+        btn.style.right = '10px';
+        btn.style.top = '10px';
+        btn.onclick = function() {
+          document.getElementById('wishlist-section').style.display = '';
+          btn.remove();
+        };
+        document.body.appendChild(btn);
+      }
+
+      // Close panel handler
+      document.addEventListener('click', function(e) {
+        const closeBtn = e.target.closest('.panel-close');
+        if (!closeBtn) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const panelId = closeBtn.dataset.panel;
+        const panel = document.getElementById(panelId === 'wishlist' ? 'wishlist-section' : panelId);
+        if (!panel) return;
+        
+        panel.style.display = 'none';
+        
+        if (panelId === 'wishlist') {
+          createWishlistButton();
+        }
+      });
     })();
   </script>
 </body>
