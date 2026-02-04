@@ -1496,22 +1496,36 @@
     </div>
   </div>
 
-  <!-- Login/Unlock Modal -->
+  <!-- Login Modal -->
   <div id="unlock-modal-bg" class="unlock-modal-bg" style="display: none;">
     <div class="unlock-modal">
-      <h3>Unlock Site</h3>
+      <h3>Login</h3>
       <p style="color: #b0b0b0; margin-bottom: 20px;">
-        <strong style="color: #ff6b6b;">Donation Required:</strong> You must make a donation via PayPal, CashApp, or Bitcoin first, then enter your email address. Your account will be verified and unlocked within 24 hours.
+        <strong style="color: #ff6b6b;">Donation Required:</strong> You must make a donation first, then create an account to access the site.
       </p>
-      <div id="verification-status" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(255, 193, 7, 0.2); border: 1px solid rgba(255, 193, 7, 0.5);">
-        <p style="color: #ffc107; margin: 0; font-size: 14px;">
-          ⏳ <strong>Pending Verification:</strong> Your email has been submitted. Please wait for verification after your donation is processed.
-        </p>
+      <div id="login-error" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(255, 107, 107, 0.2); border: 1px solid rgba(255, 107, 107, 0.5);">
+        <p style="color: #ff6b6b; margin: 0; font-size: 14px;" id="login-error-text"></p>
       </div>
-      <input type="email" id="unlock-email-input" placeholder="Enter your email address" class="unlock-input" />
-      <div class="unlock-btn-row">
-        <button id="unlock-submit-btn" class="unlock-submit-btn">Submit for Verification</button>
-        <button id="unlock-cancel-btn" class="unlock-cancel-btn">Cancel</button>
+      <div id="login-success" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(0, 230, 214, 0.2); border: 1px solid rgba(0, 230, 214, 0.5);">
+        <p style="color: #00e6d6; margin: 0; font-size: 14px;" id="login-success-text"></p>
+      </div>
+      <div id="login-form">
+        <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" />
+        <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" />
+        <div class="unlock-btn-row" style="margin-top: 15px;">
+          <button id="login-submit-btn" class="unlock-submit-btn">Login</button>
+          <button id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
+          <button id="login-cancel-btn" class="unlock-cancel-btn" style="display: none;">Cancel</button>
+        </div>
+      </div>
+      <div id="signup-form" style="display: none;">
+        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" />
+        <input type="email" id="signup-email-input" placeholder="Your email (for verification)" class="unlock-input" style="margin-bottom: 12px;" />
+        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" />
+        <div class="unlock-btn-row" style="margin-top: 15px;">
+          <button id="signup-submit-btn" class="unlock-submit-btn">Create Account</button>
+          <button id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
+        </div>
       </div>
       <p style="color: #888; font-size: 12px; margin-top: 15px; line-height: 1.6;">
         <strong>Step 1:</strong> Donate via 
@@ -1534,7 +1548,7 @@
         </a><br>
         <strong>Step 2:</strong> If using CashApp, write your email as a note/memo in the payment<br>
         <strong>Step 3:</strong> If using Bitcoin, message <a href="https://www.instagram.com/bandagearchive" target="_blank" rel="noopener noreferrer" style="color: #e1306c;">@bandagearchive</a> on Instagram with your email after payment<br>
-        <strong>Step 4:</strong> Enter your email above and submit for verification<br>
+        <strong>Step 4:</strong> Create an account above or login if you already have one<br>
         <strong style="color: #f7931a;">Bitcoin Address:</strong> <code style="background: rgba(247, 147, 26, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; cursor: pointer;" onclick="navigator.clipboard.writeText('bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); alert('Bitcoin address copied!');">bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn</code>
       </p>
     </div>
@@ -1700,224 +1714,152 @@
       // ============================================
       const SUPABASE_URL = 'https://wbpfuuiznsmysbskywdx.supabase.co'; // e.g., 'https://xxxxx.supabase.co'
       const SUPABASE_ANON_KEY = 'sb_publishable_rIy_-DWT87Gj9ao1WvN3gA_WA6eME-x'; // Your anon/public key
-      const TABLE_NAME = 'unlocked_users'; // Your table name
       
       // Initialize Supabase client
       const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
       
       const CURRENT_USER_KEY = 'mmcs_current_user';
-      const SESSION_ID_KEY = 'mmcs_session_id';
-      
-      // Generate unique session ID
-      function generateSessionId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
-      }
       
       function getCurrentUser() {
         return localStorage.getItem(CURRENT_USER_KEY);
       }
       
-      function getSessionId() {
-        let sessionId = localStorage.getItem(SESSION_ID_KEY);
-        if (!sessionId) {
-          sessionId = generateSessionId();
-          localStorage.setItem(SESSION_ID_KEY, sessionId);
-        }
-        return sessionId;
-      }
-      
-      function setCurrentUser(email) {
-        if (email) {
-          localStorage.setItem(CURRENT_USER_KEY, email);
-          // Generate new session ID when user logs in
-          const sessionId = generateSessionId();
-          localStorage.setItem(SESSION_ID_KEY, sessionId);
+      function setCurrentUser(username) {
+        if (username) {
+          localStorage.setItem(CURRENT_USER_KEY, username);
         } else {
           localStorage.removeItem(CURRENT_USER_KEY);
-          localStorage.removeItem(SESSION_ID_KEY);
         }
       }
       
       function clearSession() {
         localStorage.removeItem(CURRENT_USER_KEY);
-        localStorage.removeItem(SESSION_ID_KEY);
+        if (supabase) {
+          supabase.auth.signOut();
+        }
       }
       
-      // Check if user is unlocked and verified in Supabase, and session is valid
+      // Check if user is logged in via Supabase Auth
       async function isUnlocked() {
-        const currentUser = getCurrentUser();
-        const currentSessionId = getSessionId();
-        if (!currentUser || !supabase) return false;
+        if (!supabase) return false;
         
         try {
-          const { data, error } = await supabase
-            .from(TABLE_NAME)
-            .select('email, verified, session_id, last_active')
-            .eq('email', currentUser.toLowerCase())
-            .maybeSingle();
+          const { data: { session }, error } = await supabase.auth.getSession();
           
           if (error) {
-            console.error('Supabase error:', error);
+            console.error('Error getting session:', error);
             return false;
           }
           
-          // User must exist AND be verified (verified = true)
-          // Handle both boolean true and string "true" from database
-          if (data === null) {
-            console.log('User not found in database:', currentUser);
+          if (!session) {
             return false;
           }
           
-          const isVerified = data.verified === true || 
-                             data.verified === 'true' || 
-                             data.verified === 1 ||
-                             String(data.verified).toLowerCase() === 'true';
+          // Check if session is still valid
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
           
-          if (!isVerified) {
-            console.log('User not verified:', currentUser);
+          if (userError || !user) {
             return false;
           }
           
-          // Check session: if session_id exists and doesn't match, another session is active
-          if (data.session_id && data.session_id !== currentSessionId) {
-            console.log('Another session is active. Logging out current session.');
-            clearSession();
-            alert('Another session is active with this account. You have been logged out.');
-            return false;
-          }
+          // Update current user in localStorage
+          setCurrentUser(user.user_metadata?.username || user.email || user.id);
           
-          // Update session_id and last_active in database
-          await updateUserSession(currentUser, currentSessionId);
-          
-          console.log('Verification check:', {
-            email: currentUser,
-            verified: data.verified,
-            sessionMatch: data.session_id === currentSessionId,
-            isVerified: isVerified
-          });
-          
-          return isVerified;
+          return true;
         } catch (err) {
           console.error('Error checking unlock status:', err);
           return false;
         }
       }
       
-      // Update user session in database
-      async function updateUserSession(email, sessionId) {
-        if (!supabase || !email) return;
-        
-        try {
-          const { error } = await supabase
-            .from(TABLE_NAME)
-            .update({ 
-              session_id: sessionId,
-              last_active: new Date().toISOString()
-            })
-            .eq('email', email.toLowerCase());
-          
-          if (error) {
-            console.error('Error updating session:', error);
-          }
-        } catch (err) {
-          console.error('Error updating session:', err);
-        }
-      }
-      
-      // Check if user exists but is pending verification
-      async function isPendingVerification(email) {
-        if (!email || !supabase) return false;
-        
-        try {
-          const { data, error } = await supabase
-            .from(TABLE_NAME)
-            .select('email, verified')
-            .eq('email', email.toLowerCase())
-            .maybeSingle();
-          
-          if (error) {
-            console.error('Supabase error:', error);
-            return false;
-          }
-          
-          // User exists but not verified yet
-          return data !== null && data.verified === false;
-        } catch (err) {
-          console.error('Error checking verification status:', err);
-          return false;
-        }
-      }
-      
-      // Submit email for verification (user must donate first)
-      async function submitForVerification(email) {
-        if (!email || !email.includes('@')) {
-          alert('Please enter a valid email address.');
-          return false;
-        }
-        
+      // Login with username/email and password
+      async function loginUser(usernameOrEmail, password) {
         if (!supabase) {
-          alert('Database connection not configured. Please check Supabase settings.');
-          return false;
+          return { success: false, error: 'Database connection not configured.' };
         }
         
-        const emailLower = email.toLowerCase().trim();
+        if (!usernameOrEmail || !password) {
+          return { success: false, error: 'Please enter both username/email and password.' };
+        }
         
         try {
-          // Check if user already exists
-          const { data: existing } = await supabase
-            .from(TABLE_NAME)
-            .select('email, verified')
-            .eq('email', emailLower)
-            .maybeSingle();
+          // Supabase Auth requires email for login
+          // If user entered username, we need to look it up first
+          let emailToUse = usernameOrEmail;
           
-          if (existing) {
-            if (existing.verified === true) {
-              // User is already verified - update session
-              setCurrentUser(emailLower);
-              const sessionId = getSessionId();
-              await updateUserSession(emailLower, sessionId);
-              return { success: true, verified: true };
-            } else {
-              // User exists but pending verification
-              return { success: true, verified: false, pending: true };
-            }
+          // If it doesn't contain @, treat as username and try to find email
+          if (!usernameOrEmail.includes('@')) {
+            // Query auth.users to find email by username in metadata
+            // Note: This requires admin access or a database function
+            // For now, we'll require users to login with email
+            // You can enhance this later with a database function
+            return { success: false, error: 'Please login with your email address. Username login coming soon!' };
           }
           
-          // Insert new user with verified = false (pending verification)
-          const { data, error } = await supabase
-            .from(TABLE_NAME)
-            .insert([{ email: emailLower, verified: false }])
-            .select();
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: emailToUse.toLowerCase().trim(),
+            password: password
+          });
           
           if (error) {
-            // If it's a unique constraint error, user already exists (race condition)
-            if (error.code === '23505') {
-              const { data: existing2 } = await supabase
-                .from(TABLE_NAME)
-                .select('email, verified')
-                .eq('email', emailLower)
-                .maybeSingle();
-              
-              if (existing2 && existing2.verified === true) {
-                setCurrentUser(emailLower);
-                const sessionId = getSessionId();
-                await updateUserSession(emailLower, sessionId);
-                return { success: true, verified: true };
-              }
-              return { success: true, verified: false, pending: true };
-            } else {
-              console.error('Supabase error:', error);
-              alert('Error submitting email: ' + error.message);
-              return { success: false };
-            }
+            return { success: false, error: error.message || 'Invalid email or password.' };
           }
           
-          // User submitted successfully, now pending verification
-          return { success: true, verified: false, pending: true };
+          if (data.user) {
+            const displayName = data.user.user_metadata?.username || data.user.email || data.user.id;
+            setCurrentUser(displayName);
+            return { success: true, user: data.user };
+          }
+          
+          return { success: false, error: 'Login failed.' };
         } catch (err) {
-          console.error('Error submitting email:', err);
-          alert('Error submitting email. Please try again.');
-          return { success: false };
+          console.error('Error logging in:', err);
+          return { success: false, error: 'Error logging in. Please try again.' };
+        }
+      }
+      
+      // Sign up new user
+      async function signUpUser(username, email, password) {
+        if (!supabase) {
+          return { success: false, error: 'Database connection not configured.' };
+        }
+        
+        if (!username || !email || !password) {
+          return { success: false, error: 'Please fill in all fields.' };
+        }
+        
+        if (password.length < 6) {
+          return { success: false, error: 'Password must be at least 6 characters.' };
+        }
+        
+        if (!email.includes('@')) {
+          return { success: false, error: 'Please enter a valid email address.' };
+        }
+        
+        try {
+          const { data, error } = await supabase.auth.signUp({
+            email: email.toLowerCase().trim(),
+            password: password,
+            options: {
+              data: {
+                username: username.trim()
+              }
+            }
+          });
+          
+          if (error) {
+            return { success: false, error: error.message || 'Error creating account.' };
+          }
+          
+          if (data.user) {
+            setCurrentUser(username.trim());
+            return { success: true, user: data.user, needsEmailVerification: !data.session };
+          }
+          
+          return { success: false, error: 'Account creation failed.' };
+        } catch (err) {
+          console.error('Error signing up:', err);
+          return { success: false, error: 'Error creating account. Please try again.' };
         }
       }
       
@@ -1932,9 +1874,22 @@
         
         const unlockModalBg = document.getElementById('unlock-modal-bg');
         const unlockBtn = document.getElementById('unlock-btn');
-        const unlockSubmitBtn = document.getElementById('unlock-submit-btn');
-        const unlockCancelBtn = document.getElementById('unlock-cancel-btn');
-        const unlockEmailInput = document.getElementById('unlock-email-input');
+        const loginSubmitBtn = document.getElementById('login-submit-btn');
+        const signupSubmitBtn = document.getElementById('signup-submit-btn');
+        const loginToggleBtn = document.getElementById('login-toggle-btn');
+        const signupToggleBtn = document.getElementById('signup-toggle-btn');
+        const loginCancelBtn = document.getElementById('login-cancel-btn');
+        const loginUsernameInput = document.getElementById('login-username-input');
+        const loginPasswordInput = document.getElementById('login-password-input');
+        const signupUsernameInput = document.getElementById('signup-username-input');
+        const signupEmailInput = document.getElementById('signup-email-input');
+        const signupPasswordInput = document.getElementById('signup-password-input');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const loginError = document.getElementById('login-error');
+        const loginErrorText = document.getElementById('login-error-text');
+        const loginSuccess = document.getElementById('login-success');
+        const loginSuccessText = document.getElementById('login-success-text');
         const userDisplay = document.getElementById('user-display');
         
           // Check if Supabase is configured
@@ -2054,95 +2009,138 @@
           if (userDisplay) userDisplay.style.display = 'none';
         }
         
-        // Show unlock modal button
+        // Show login modal button
         if (unlockBtn) {
           unlockBtn.onclick = () => {
             if (unlockModalBg) {
               unlockModalBg.classList.add('show');
               unlockModalBg.style.display = 'flex';
             }
-            if (unlockEmailInput) {
-              unlockEmailInput.value = '';
-              setTimeout(() => unlockEmailInput.focus(), 100);
+            // Show login form by default
+            if (loginForm) loginForm.style.display = 'block';
+            if (signupForm) signupForm.style.display = 'none';
+            if (loginUsernameInput) {
+              setTimeout(() => loginUsernameInput.focus(), 100);
             }
           };
         }
         
-        // Submit for verification (async)
-        if (unlockSubmitBtn) {
-          unlockSubmitBtn.onclick = async () => {
-            const email = unlockEmailInput ? unlockEmailInput.value.trim() : '';
-            if (!email) {
-              alert('Please enter your PayPal email address.');
+        // Toggle between login and signup forms
+        if (signupToggleBtn) {
+          signupToggleBtn.onclick = () => {
+            if (loginForm) loginForm.style.display = 'none';
+            if (signupForm) signupForm.style.display = 'block';
+            if (loginError) loginError.style.display = 'none';
+            if (loginSuccess) loginSuccess.style.display = 'none';
+            if (signupUsernameInput) {
+              setTimeout(() => signupUsernameInput.focus(), 100);
+            }
+          };
+        }
+        
+        if (loginToggleBtn) {
+          loginToggleBtn.onclick = () => {
+            if (loginForm) loginForm.style.display = 'block';
+            if (signupForm) signupForm.style.display = 'none';
+            if (loginError) loginError.style.display = 'none';
+            if (loginSuccess) loginSuccess.style.display = 'none';
+            if (loginUsernameInput) {
+              setTimeout(() => loginUsernameInput.focus(), 100);
+            }
+          };
+        }
+        
+        // Login handler
+        if (loginSubmitBtn) {
+          loginSubmitBtn.onclick = async () => {
+            const usernameOrEmail = loginUsernameInput ? loginUsernameInput.value.trim() : '';
+            const password = loginPasswordInput ? loginPasswordInput.value : '';
+            
+            if (!usernameOrEmail || !password) {
+              if (loginError) {
+                loginErrorText.textContent = 'Please enter both username/email and password.';
+                loginError.style.display = 'block';
+              }
               return;
             }
             
-            // Disable button during request
-            unlockSubmitBtn.disabled = true;
-            unlockSubmitBtn.textContent = 'Submitting...';
+            loginSubmitBtn.disabled = true;
+            loginSubmitBtn.textContent = 'Logging in...';
+            if (loginError) loginError.style.display = 'none';
             
-            const result = await submitForVerification(email);
+            const result = await loginUser(usernameOrEmail, password);
             
-            // Re-enable button
-            unlockSubmitBtn.disabled = false;
-            unlockSubmitBtn.textContent = 'Submit for Verification';
+            loginSubmitBtn.disabled = false;
+            loginSubmitBtn.textContent = 'Login';
             
             if (result.success) {
-              if (result.verified) {
-                // User is already verified - update session
-                const emailLower = email.toLowerCase().trim();
-                setCurrentUser(emailLower);
-                const sessionId = getSessionId();
-                await updateUserSession(emailLower, sessionId);
-                alert('Site unlocked! Welcome, ' + email);
-                await initUnlockSystem(); // Refresh UI
-              } else {
-                // User submitted, pending verification
-                const statusDiv = document.getElementById('verification-status');
-                if (statusDiv) {
-                  statusDiv.style.display = 'block';
-                }
-                alert('Email submitted! Your account will be verified after your donation is processed. Please check back in 24 hours or contact support if you\'ve already donated.');
-                
-                // Set current user so they can see pending status
-                setCurrentUser(email.toLowerCase().trim());
-                
-                // Check verification status periodically
-                checkVerificationStatus(email.toLowerCase().trim());
+              if (loginSuccess) {
+                loginSuccessText.textContent = 'Login successful! Welcome!';
+                loginSuccess.style.display = 'block';
+              }
+              setTimeout(async () => {
+                await initUnlockSystem();
+              }, 500);
+            } else {
+              if (loginError) {
+                loginErrorText.textContent = result.error || 'Login failed. Please try again.';
+                loginError.style.display = 'block';
               }
             }
           };
         }
         
-        // Function to periodically check if user has been verified
-        async function checkVerificationStatus(email) {
-          const maxChecks = 20; // Check for 10 minutes (20 checks × 30 seconds)
-          let checks = 0;
-          
-          const checkInterval = setInterval(async () => {
-            checks++;
-            const unlocked = await isUnlocked();
+        // Signup handler
+        if (signupSubmitBtn) {
+          signupSubmitBtn.onclick = async () => {
+            const username = signupUsernameInput ? signupUsernameInput.value.trim() : '';
+            const email = signupEmailInput ? signupEmailInput.value.trim() : '';
+            const password = signupPasswordInput ? signupPasswordInput.value : '';
             
-            if (unlocked) {
-              clearInterval(checkInterval);
-              // Hide modal before showing alert
-              const unlockModalBg = document.getElementById('unlock-modal-bg');
-              if (unlockModalBg) {
-                unlockModalBg.classList.remove('show');
-                unlockModalBg.style.display = 'none';
+            if (!username || !email || !password) {
+              if (loginError) {
+                loginErrorText.textContent = 'Please fill in all fields.';
+                loginError.style.display = 'block';
               }
-              alert('Your account has been verified! Welcome!');
-              await initUnlockSystem();
-            } else if (checks >= maxChecks) {
-              clearInterval(checkInterval);
-              console.log('Stopped checking verification status');
+              return;
             }
-          }, 30000); // Check every 30 seconds
+            
+            signupSubmitBtn.disabled = true;
+            signupSubmitBtn.textContent = 'Creating account...';
+            if (loginError) loginError.style.display = 'none';
+            
+            const result = await signUpUser(username, email, password);
+            
+            signupSubmitBtn.disabled = false;
+            signupSubmitBtn.textContent = 'Create Account';
+            
+            if (result.success) {
+              if (result.needsEmailVerification) {
+                if (loginSuccess) {
+                  loginSuccessText.textContent = 'Account created! Please check your email to verify your account.';
+                  loginSuccess.style.display = 'block';
+                }
+              } else {
+                if (loginSuccess) {
+                  loginSuccessText.textContent = 'Account created! Welcome!';
+                  loginSuccess.style.display = 'block';
+                }
+                setTimeout(async () => {
+                  await initUnlockSystem();
+                }, 500);
+              }
+            } else {
+              if (loginError) {
+                loginErrorText.textContent = result.error || 'Account creation failed. Please try again.';
+                loginError.style.display = 'block';
+              }
+            }
+          };
         }
         
-        // Cancel unlock
-        if (unlockCancelBtn) {
-          unlockCancelBtn.onclick = () => {
+        // Cancel button
+        if (loginCancelBtn) {
+          loginCancelBtn.onclick = () => {
             if (unlockModalBg) {
               unlockModalBg.classList.remove('show');
               unlockModalBg.style.display = 'none';
@@ -2150,20 +2148,25 @@
           };
         }
         
-        // Enter key to submit
-        if (unlockEmailInput) {
-          unlockEmailInput.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-              if (unlockSubmitBtn) unlockSubmitBtn.click();
+        // Enter key handlers
+        if (loginPasswordInput) {
+          loginPasswordInput.onkeydown = (e) => {
+            if (e.key === 'Enter' && loginSubmitBtn) {
+              loginSubmitBtn.click();
             }
-            if (e.key === 'Escape') {
-              if (unlockCancelBtn) unlockCancelBtn.click();
+          };
+        }
+        
+        if (signupPasswordInput) {
+          signupPasswordInput.onkeydown = (e) => {
+            if (e.key === 'Enter' && signupSubmitBtn) {
+              signupSubmitBtn.click();
             }
           };
         }
       }
       
-      // Session heartbeat - update last_active every 30 seconds while user is active
+      // Session heartbeat - refresh Supabase session periodically
       let sessionHeartbeatInterval = null;
       function startSessionHeartbeat() {
         if (sessionHeartbeatInterval) {
@@ -2171,27 +2174,25 @@
         }
         
         sessionHeartbeatInterval = setInterval(async () => {
-          const currentUser = getCurrentUser();
-          const currentSessionId = getSessionId();
-          if (currentUser && currentSessionId && supabase) {
-            // Verify session is still valid before updating
-            const { data } = await supabase
-              .from(TABLE_NAME)
-              .select('session_id')
-              .eq('email', currentUser.toLowerCase())
-              .maybeSingle();
+          if (!supabase) return;
+          
+          try {
+            // Refresh the session to keep it alive
+            const { data: { session }, error } = await supabase.auth.refreshSession();
             
-            // Only update if session matches (user hasn't been logged out)
-            if (data && data.session_id === currentSessionId) {
-              await updateUserSession(currentUser, currentSessionId);
-            } else {
+            if (error || !session) {
               // Session invalidated, clear local session
               clearSession();
               clearInterval(sessionHeartbeatInterval);
-              location.reload();
+              await initUnlockSystem();
             }
+          } catch (err) {
+            console.error('Error refreshing session:', err);
+            clearSession();
+            clearInterval(sessionHeartbeatInterval);
+            await initUnlockSystem();
           }
-        }, 30000); // Update every 30 seconds
+        }, 300000); // Refresh every 5 minutes (Supabase sessions last ~1 hour)
       }
       
       function stopSessionHeartbeat() {
@@ -2203,23 +2204,13 @@
       
       // Clear session on page close/unload
       function handlePageUnload() {
-        const currentUser = getCurrentUser();
-        if (currentUser && supabase) {
-          // Clear session_id in database (allows new login)
-          supabase
-            .from(TABLE_NAME)
-            .update({ session_id: null })
-            .eq('email', currentUser.toLowerCase())
-            .then(() => {
-              clearSession();
-            })
-            .catch(err => {
-              console.error('Error clearing session:', err);
-              clearSession();
-            });
-        } else {
-          clearSession();
+        if (supabase) {
+          // Sign out from Supabase (this clears the session)
+          supabase.auth.signOut().catch(err => {
+            console.error('Error signing out:', err);
+          });
         }
+        clearSession();
       }
       
       // Initialize on page load
@@ -2269,10 +2260,9 @@
             visibilityCheckTimeout = setTimeout(async () => {
               const unlocked = await isUnlocked();
               if (!unlocked) {
-                // Only reload if truly unlocked - don't show modal here
+                // Session expired, clear and reload
                 clearSession();
                 stopSessionHeartbeat();
-                // Don't reload immediately, let initUnlockSystem handle it (suppress modal)
                 await initUnlockSystem(true); // Suppress modal during visibility check
               } else {
                 startSessionHeartbeat();
