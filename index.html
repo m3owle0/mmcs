@@ -4956,6 +4956,8 @@
     
     // Initialize mobile UI if on mobile
     if (isMobile) {
+      console.log('Mobile device detected, initializing mobile UI');
+      
       // Hide desktop sidebar and wishlist
       const sidebar = document.getElementById('sidebar');
       const wishlist = document.getElementById('wishlist-section');
@@ -4998,6 +5000,7 @@
       if (mobileMenuToggle && mobileSidebar && mobileSidebarOverlay) {
         // Add event listeners
         mobileMenuToggle.addEventListener('click', function() {
+          console.log('Mobile menu opened, updating searches');
           mobileSidebar.classList.add('active');
           mobileSidebarOverlay.classList.add('active');
           // Update folders and searches when opening - ensure latest data
@@ -5012,6 +5015,32 @@
           mobileSidebarOverlay.classList.remove('active');
         });
       }
+      
+      // Initialize mobile folders and searches immediately
+      setTimeout(() => {
+        console.log('Initializing mobile folders and searches');
+        updateMobileFolders();
+        updateMobileSearches();
+      }, 100);
+      
+      // Make sure mobile searches are updated when saved searches change
+      // Override addSavedSearch to update mobile sidebar
+      const originalAddSavedSearch = addSavedSearch;
+      addSavedSearch = function(term) {
+        originalAddSavedSearch.apply(this, arguments);
+        if (isMobile) {
+          updateMobileSearches();
+        }
+      };
+      
+      // Override removeSavedSearch to update mobile sidebar
+      const originalRemoveSavedSearch = removeSavedSearch;
+      removeSavedSearch = function(idx) {
+        originalRemoveSavedSearch.apply(this, arguments);
+        if (isMobile) {
+          updateMobileSearches();
+        }
+      };
       
       // Initialize mobile folders and searches
       updateMobileFolders();
@@ -5058,16 +5087,34 @@
         }
       });
       
+      // Also update mobile searches when the main saved searches are rendered
+      const originalRenderSavedSearches = renderSavedSearches;
+      renderSavedSearches = function() {
+        originalRenderSavedSearches.apply(this, arguments);
+        if (isMobile) {
+          updateMobileSearches();
+        }
+      };
+      
       // Load saved searches into mobile sidebar - Show terms directly
       function updateMobileSearches() {
+        // Make sure we have the current folder
+        if (!savedFolders || savedFolders.length === 0) {
+          console.error('No saved folders found');
+          return;
+        }
+        
         const folder = savedFolders[currentFolderIdx];
         const mobileList = document.getElementById('mobile-searches-list');
-        if (!mobileList) return;
+        if (!mobileList) {
+          console.error('Mobile searches list element not found');
+          return;
+        }
         
         // Clear the list first
         mobileList.innerHTML = '';
         
-        if (!folder.searches || folder.searches.length === 0) {
+        if (!folder || !folder.searches || folder.searches.length === 0) {
           const emptyMsg = document.createElement('li');
           emptyMsg.textContent = 'No saved searches in this folder';
           emptyMsg.style.color = '#888';
@@ -5115,6 +5162,7 @@
           termText.style.overflow = 'hidden';
           termText.style.textOverflow = 'ellipsis';
           termText.style.whiteSpace = 'nowrap';
+          termText.style.flex = '1';
           
           // Remove button
           const removeBtn = document.createElement('button');
