@@ -1580,26 +1580,27 @@
         font-size: 16px;
       }
       
-      /* Mobile folder list */
+      /* Mobile folder list - Updated for tabs */
       .mobile-folder-list {
-        margin-bottom: 20px;
-        max-height: 200px;
-        overflow-y: auto;
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 8px;
-        padding: 10px;
-        background: rgba(30,32,34,0.5);
+        margin-bottom: 15px;
+        max-height: none;
+        overflow-y: visible;
+        border: none;
+        padding: 0;
+        background: transparent;
       }
       
       .mobile-folder-item {
-        padding: 10px;
-        margin-bottom: 8px;
+        padding: 8px 12px;
+        margin-bottom: 0;
         background: rgba(44,46,48,0.7);
         border-radius: 6px;
         color: #e3e3e3;
         cursor: pointer;
         transition: all 0.2s ease;
-        border: 1px solid transparent;
+        border: 1px solid rgba(255,255,255,0.1);
+        font-size: 14px;
+        flex: 0 0 auto;
       }
       
       .mobile-folder-item.active {
@@ -1610,6 +1611,29 @@
       
       .mobile-folder-item:hover {
         background: rgba(60,60,60,0.8);
+      }
+      
+      /* Mobile searches container */
+      #mobile-searches-container {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 10px;
+        background: rgba(30,32,34,0.5);
+      }
+      
+      #mobile-searches-container::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      #mobile-searches-container::-webkit-scrollbar-track {
+        background: rgba(30,32,34,0.5);
+      }
+      
+      #mobile-searches-container::-webkit-scrollbar-thumb {
+        background: rgba(120,120,120,0.5);
+        border-radius: 3px;
       }
       
       /* Fix body padding for mobile */
@@ -1996,30 +2020,26 @@
     <div style="margin-bottom: 20px;">
       <h3 style="color: #e3e3e3; margin-bottom: 15px;">Saved Searches</h3>
       
-      <!-- Folder Selection -->
+      <!-- Folder Selection - Simplified -->
       <div style="margin-bottom: 15px;">
-        <h4 style="color: #b0b0b0; font-size: 14px; margin-bottom: 8px;">Select Folder</h4>
-        <div class="mobile-folder-list" id="mobile-folder-list">
+        <div class="mobile-folder-list" id="mobile-folder-list" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: none; border: none; padding: 0; background: transparent;">
           <!-- Folders will be populated by JavaScript -->
         </div>
       </div>
       
-      <div class="sidebar-add-row" style="display: flex; gap: 8px; margin-bottom: 15px;">
-        <input type="text" placeholder="Save search..." id="mobile-add-input" class="sidebar-add-input" maxlength="70" style="flex: 1;">
-        <button class="sidebar-add-btn" id="mobile-add-btn" title="Save Search">+</button>
+      <!-- Saved Searches List - Now shows terms directly -->
+      <div style="margin-bottom: 15px;">
+        <div class="sidebar-add-row" style="display: flex; gap: 8px; margin-bottom: 15px;">
+          <input type="text" placeholder="Add search..." id="mobile-add-input" class="sidebar-add-input" maxlength="70" style="flex: 1;">
+          <button class="sidebar-add-btn" id="mobile-add-btn" title="Save Search">+</button>
+        </div>
+        <div id="mobile-searches-container" style="max-height: 400px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; background: rgba(30,32,34,0.5);">
+          <ul class="saved-searches-list" id="mobile-searches-list" style="list-style: none; padding: 0; margin: 0;"></ul>
+        </div>
       </div>
-      <ul class="saved-searches-list" id="mobile-searches-list" style="max-height: 300px; overflow-y: auto;"></ul>
     </div>
     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #232323;">
       <button class="sidebar-randomize-btn" id="mobile-randomize-btn" style="width: 100%; margin-bottom: 10px;">Randomize Search</button>
-      <select id="mobile-randomize-category-select" class="randomize-select" style="width: 100%; margin-bottom: 15px;">
-        <option value="all">All Categories</option>
-        <option value="asia">Asia</option>
-        <option value="international">International</option>
-        <option value="special">Designer</option>
-      </select>
-    </div>
-    <div style="margin-top: 20px;">
       <button class="sidebar-reset-btn" id="mobile-reset-highlights-btn" style="width: 100%; margin-bottom: 10px;">Reset Highlights</button>
     </div>
   </div>
@@ -3784,6 +3804,11 @@
       renderSavedSearches();
       updateUnhighlightedCount();
       
+      // Update mobile sidebar if on mobile
+      if (isMobile) {
+        updateMobileSearches();
+      }
+      
       // Clear selection when adding new term
       selectedSearchTerms = {};
       localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
@@ -3804,6 +3829,11 @@
       
       renderSavedSearches();
       updateUnhighlightedCount();
+      
+      // Update mobile sidebar if on mobile
+      if (isMobile) {
+        updateMobileSearches();
+      }
     }
     function editSavedSearch(idx) {
       const folder = savedFolders[currentFolderIdx];
@@ -4970,9 +5000,11 @@
         mobileMenuToggle.addEventListener('click', function() {
           mobileSidebar.classList.add('active');
           mobileSidebarOverlay.classList.add('active');
-          // Update folders and searches when opening
+          // Update folders and searches when opening - ensure latest data
           updateMobileFolders();
           updateMobileSearches();
+          // Also update the main saved searches to sync
+          renderSavedSearches();
         });
         
         mobileSidebarOverlay.addEventListener('click', function() {
@@ -4985,7 +5017,7 @@
       updateMobileFolders();
       updateMobileSearches();
       
-      // Update mobile folder list
+      // Update mobile folder list - Simplified to show as tabs
       function updateMobileFolders() {
         const folderList = document.getElementById('mobile-folder-list');
         if (!folderList) return;
@@ -4994,9 +5026,19 @@
         folderList.innerHTML = '';
         
         savedFolders.forEach((folder, idx) => {
-          const folderItem = document.createElement('div');
+          const folderItem = document.createElement('button');
           folderItem.className = 'mobile-folder-item' + (idx === currentFolderIdx ? ' active' : '');
           folderItem.textContent = folder.name;
+          folderItem.style.padding = '8px 12px';
+          folderItem.style.borderRadius = '6px';
+          folderItem.style.border = '1px solid rgba(255,255,255,0.1)';
+          folderItem.style.background = idx === currentFolderIdx ? 'rgba(0, 230, 214, 0.2)' : 'rgba(44,46,48,0.7)';
+          folderItem.style.color = '#e3e3e3';
+          folderItem.style.fontSize = '14px';
+          folderItem.style.cursor = 'pointer';
+          folderItem.style.transition = 'all 0.2s ease';
+          folderItem.style.flex = '0 0 auto';
+          
           folderItem.onclick = function() {
             currentFolderIdx = idx;
             updateMobileFolders();
@@ -5008,7 +5050,15 @@
         });
       }
       
-      // Load saved searches into mobile sidebar - fixed to prevent duplicates
+      // Ensure mobile sidebar is properly initialized
+      window.addEventListener('load', function() {
+        if (isMobile) {
+          updateMobileFolders();
+          updateMobileSearches();
+        }
+      });
+      
+      // Load saved searches into mobile sidebar - Show terms directly
       function updateMobileSearches() {
         const folder = savedFolders[currentFolderIdx];
         const mobileList = document.getElementById('mobile-searches-list');
@@ -5037,13 +5087,11 @@
         
         sortedSearches.forEach((term, idx) => {
           const li = document.createElement('li');
-          li.className = 'saved-search-item';
-          li.style.marginBottom = '10px';
+          li.style.marginBottom = '8px';
           li.style.padding = '0';
           
           const termBtn = document.createElement('button');
           termBtn.type = 'button';
-          termBtn.className = 'saved-search-term';
           termBtn.style.width = '100%';
           termBtn.style.textAlign = 'left';
           termBtn.style.padding = '12px 14px';
@@ -5054,15 +5102,53 @@
           termBtn.style.border = clickedSearches[term.value] ? 
             '1px solid rgba(0, 230, 214, 0.4)' : '1px solid rgba(255,255,255,0.1)';
           termBtn.style.color = '#e3e3e3';
-          termBtn.style.fontSize = '14px';
+          termBtn.style.fontSize = '15px';
           termBtn.style.fontWeight = clickedSearches[term.value] ? '600' : '400';
           termBtn.style.transition = 'all 0.3s ease';
+          termBtn.style.display = 'flex';
+          termBtn.style.alignItems = 'center';
+          termBtn.style.justifyContent = 'space-between';
           
-          termBtn.textContent = term.value;
+          // Term text
+          const termText = document.createElement('span');
+          termText.textContent = term.value;
+          termText.style.overflow = 'hidden';
+          termText.style.textOverflow = 'ellipsis';
+          termText.style.whiteSpace = 'nowrap';
+          
+          // Remove button
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.innerHTML = '🗑';
+          removeBtn.style.background = 'none';
+          removeBtn.style.border = 'none';
+          removeBtn.style.color = '#ff3b5c';
+          removeBtn.style.cursor = 'pointer';
+          removeBtn.style.padding = '0 5px';
+          removeBtn.style.fontSize = '16px';
+          removeBtn.style.flexShrink = '0';
+          removeBtn.style.marginLeft = '10px';
+          
+          // Find the index of this term in the current folder
+          const termIndex = folder.searches.findIndex(t => t.value === term.value);
+          
+          removeBtn.onclick = function(e) {
+            e.stopPropagation();
+            removeSavedSearch(termIndex);
+            updateMobileSearches();
+            renderSavedSearches();
+          };
+          
+          termBtn.appendChild(termText);
+          termBtn.appendChild(removeBtn);
           
           // Use a closure to capture the current term value
           (function(termValue) {
-            termBtn.onclick = function() {
+            termBtn.onclick = function(e) {
+              // Don't trigger if clicking the remove button
+              if (e.target === removeBtn || removeBtn.contains(e.target)) {
+                return;
+              }
               document.getElementById('query').value = termValue;
               document.getElementById('query').focus();
               
@@ -5136,11 +5222,10 @@
         });
       }
       
-      // Mobile randomize button
+      // Mobile randomize button - Simplified without category selection
       const mobileRandomizeBtn = document.getElementById('mobile-randomize-btn');
       if (mobileRandomizeBtn) {
         mobileRandomizeBtn.addEventListener('click', function() {
-          const category = document.getElementById('mobile-randomize-category-select').value;
           const folder = savedFolders[currentFolderIdx];
           
           if (!folder.searches || folder.searches.length === 0) {
