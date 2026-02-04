@@ -2028,9 +2028,16 @@
         </div>
       </div>
       
-      <!-- All folders with their saved searches -->
-      <div id="mobile-folders-container" style="max-height: 500px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; background: rgba(30,32,34,0.5);">
-        <!-- Folders and their searches will be populated here -->
+      <!-- Folder tabs -->
+      <div id="mobile-folder-tabs" style="display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;">
+        <!-- Folder tabs will be populated here -->
+      </div>
+      
+      <!-- Saved searches for the selected folder -->
+      <div id="mobile-searches-container" style="max-height: 500px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; background: rgba(30,32,34,0.5);">
+        <ul id="mobile-searches-list" style="list-style: none; padding: 0; margin: 0;">
+          <!-- Saved searches will be populated here -->
+        </ul>
       </div>
     </div>
     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #232323;">
@@ -4999,7 +5006,8 @@
           mobileSidebar.classList.add('active');
           mobileSidebarOverlay.classList.add('active');
           // Update folders and searches when opening - ensure latest data
-          updateMobileFoldersAndSearches();
+          updateMobileFolderTabs();
+          updateMobileSearches();
           // Also update the main saved searches to sync
           renderSavedSearches();
         });
@@ -5013,7 +5021,8 @@
       // Initialize mobile folders and searches immediately
       setTimeout(() => {
         console.log('Initializing mobile folders and searches');
-        updateMobileFoldersAndSearches();
+        updateMobileFolderTabs();
+        updateMobileSearches();
       }, 100);
       
       // Make sure mobile searches are updated when saved searches change
@@ -5036,39 +5045,40 @@
       };
       
       // Initialize mobile folders and searches
-      updateMobileFolders();
+      updateMobileFolderTabs();
       updateMobileSearches();
       
-      // Update mobile folder list - Simplified to show as tabs
-      function updateMobileFolders() {
-        const folderList = document.getElementById('mobile-folder-list');
-        if (!folderList) return;
-        
+      // Update mobile folder tabs
+      function updateMobileFolderTabs() {
+        const folderTabs = document.getElementById('mobile-folder-tabs');
+        if (!folderTabs) return;
+      
         // Clear existing content
-        folderList.innerHTML = '';
-        
+        folderTabs.innerHTML = '';
+      
         savedFolders.forEach((folder, idx) => {
-          const folderItem = document.createElement('button');
-          folderItem.className = 'mobile-folder-item' + (idx === currentFolderIdx ? ' active' : '');
-          folderItem.textContent = folder.name;
-          folderItem.style.padding = '8px 12px';
-          folderItem.style.borderRadius = '6px';
-          folderItem.style.border = '1px solid rgba(255,255,255,0.1)';
-          folderItem.style.background = idx === currentFolderIdx ? 'rgba(0, 230, 214, 0.2)' : 'rgba(44,46,48,0.7)';
-          folderItem.style.color = '#e3e3e3';
-          folderItem.style.fontSize = '14px';
-          folderItem.style.cursor = 'pointer';
-          folderItem.style.transition = 'all 0.2s ease';
-          folderItem.style.flex = '0 0 auto';
-          
-          folderItem.onclick = function() {
+          const folderTab = document.createElement('button');
+          folderTab.className = 'mobile-folder-tab' + (idx === currentFolderIdx ? ' active' : '');
+          folderTab.textContent = folder.name;
+          folderTab.style.padding = '8px 12px';
+          folderTab.style.borderRadius = '6px';
+          folderTab.style.border = '1px solid rgba(255,255,255,0.1)';
+          folderTab.style.background = idx === currentFolderIdx ? 'rgba(0, 230, 214, 0.2)' : 'rgba(44,46,48,0.7)';
+          folderTab.style.color = '#e3e3e3';
+          folderTab.style.fontSize = '14px';
+          folderTab.style.cursor = 'pointer';
+          folderTab.style.transition = 'all 0.2s ease';
+          folderTab.style.flex = '0 0 auto';
+          folderTab.style.whiteSpace = 'nowrap';
+        
+          folderTab.onclick = function() {
             currentFolderIdx = idx;
-            updateMobileFolders();
+            updateMobileFolderTabs();
             updateMobileSearches();
             renderFolders();
             renderSavedSearches();
           };
-          folderList.appendChild(folderItem);
+          folderTabs.appendChild(folderTab);
         });
       }
       
@@ -5096,17 +5106,17 @@
           console.error('No saved folders found');
           return;
         }
-        
+      
         const folder = savedFolders[currentFolderIdx];
         const mobileList = document.getElementById('mobile-searches-list');
         if (!mobileList) {
           console.error('Mobile searches list element not found');
           return;
         }
-        
+      
         // Clear the list first
         mobileList.innerHTML = '';
-        
+      
         if (!folder || !folder.searches || folder.searches.length === 0) {
           const emptyMsg = document.createElement('li');
           emptyMsg.textContent = 'No saved searches in this folder';
@@ -5116,20 +5126,20 @@
           mobileList.appendChild(emptyMsg);
           return;
         }
-        
+      
         // Sort searches alphabetically
         const sortedSearches = [...folder.searches].sort((a, b) => 
           (a.value || "").localeCompare(b.value || "", undefined, {sensitivity: 'base'})
         );
-        
+      
         // Create a document fragment to batch DOM operations
         const fragment = document.createDocumentFragment();
-        
+      
         sortedSearches.forEach((term, idx) => {
           const li = document.createElement('li');
           li.style.marginBottom = '8px';
           li.style.padding = '0';
-          
+        
           const termBtn = document.createElement('button');
           termBtn.type = 'button';
           termBtn.style.width = '100%';
@@ -5148,7 +5158,7 @@
           termBtn.style.display = 'flex';
           termBtn.style.alignItems = 'center';
           termBtn.style.justifyContent = 'space-between';
-          
+        
           // Term text
           const termText = document.createElement('span');
           termText.textContent = term.value;
@@ -5156,7 +5166,7 @@
           termText.style.textOverflow = 'ellipsis';
           termText.style.whiteSpace = 'nowrap';
           termText.style.flex = '1';
-          
+        
           // Remove button
           const removeBtn = document.createElement('button');
           removeBtn.type = 'button';
@@ -5169,20 +5179,20 @@
           removeBtn.style.fontSize = '16px';
           removeBtn.style.flexShrink = '0';
           removeBtn.style.marginLeft = '10px';
-          
+        
           // Find the index of this term in the current folder
           const termIndex = folder.searches.findIndex(t => t.value === term.value);
-          
+        
           removeBtn.onclick = function(e) {
             e.stopPropagation();
             removeSavedSearch(termIndex);
             updateMobileSearches();
             renderSavedSearches();
           };
-          
+        
           termBtn.appendChild(termText);
           termBtn.appendChild(removeBtn);
-          
+        
           // Use a closure to capture the current term value
           (function(termValue) {
             termBtn.onclick = function(e) {
@@ -5192,28 +5202,28 @@
               }
               document.getElementById('query').value = termValue;
               document.getElementById('query').focus();
-              
+            
               // Mark as clicked
               clickedSearches[termValue] = { 
                 clicked: true, 
                 category: determineSearchCategory(termValue) 
               };
               localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
-              
+            
               // Update UI
               updateMobileSearches();
               renderSavedSearches();
-              
+            
               // Close mobile sidebar
               if (mobileSidebar) mobileSidebar.classList.remove('active');
               if (mobileSidebarOverlay) mobileSidebarOverlay.classList.remove('active');
             };
           })(term.value);
-          
+        
           li.appendChild(termBtn);
           fragment.appendChild(li);
         });
-        
+      
         // Append all at once
         mobileList.appendChild(fragment);
       }
@@ -5225,7 +5235,7 @@
           mobileSidebar.classList.add('active');
           mobileSidebarOverlay.classList.add('active');
           // Update folders and searches when opening
-          updateMobileFolders();
+          updateMobileFolderTabs();
           updateMobileSearches();
         });
         
@@ -5245,18 +5255,20 @@
           if (value) {
             addSavedSearch(value);
             mobileAddInput.value = '';
-            updateMobileFoldersAndSearches();
+            updateMobileFolderTabs();
+            updateMobileSearches();
             renderSavedSearches();
           }
         });
-        
+          
         mobileAddInput.addEventListener('keydown', function(e) {
           if (e.key === 'Enter') {
             const value = this.value.trim();
             if (value) {
               addSavedSearch(value);
               this.value = '';
-              updateMobileFoldersAndSearches();
+              updateMobileFolderTabs();
+              updateMobileSearches();
               renderSavedSearches();
             }
           }
@@ -5294,7 +5306,8 @@
           if (mobileSidebarOverlay) mobileSidebarOverlay.classList.remove('active');
           
           // Update UI
-          updateMobileFoldersAndSearches();
+          updateMobileFolderTabs();
+          updateMobileSearches();
           renderSavedSearches();
         });
       }
@@ -5305,14 +5318,15 @@
         mobileResetBtn.addEventListener('click', function() {
           clickedSearches = {};
           localStorage.removeItem(CLICKED_SEARCHES_KEY);
-          updateMobileFoldersAndSearches();
+          updateMobileFolderTabs();
+          updateMobileSearches();
           renderSavedSearches();
           alert('All highlights have been reset');
         });
       }
       
       // Initialize mobile folders and searches
-      updateMobileFolders();
+      updateMobileFolderTabs();
       updateMobileSearches();
       
       // On mobile, open tabs one at a time to avoid overwhelming the browser
