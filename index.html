@@ -1354,6 +1354,156 @@
       margin-top: 2px;
       font-weight: bold;
     }
+    /* Site List Modal */
+    .site-list-modal-bg {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(10,10,10,0.65);
+      z-index: 3000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2.5px);
+    }
+    .site-list-modal {
+      background: rgba(32,34,36, 0.98);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px #000a, 0 1.5px 0 #232323;
+      padding: 28px 22px 18px 22px;
+      max-width: 600px;
+      max-height: 85vh;
+      width: 96vw;
+      position: absolute;
+      border: 1.5px solid #232323;
+      backdrop-filter: blur(7px) saturate(1.2);
+      cursor: default;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .site-list-modal .drag-handle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      cursor: move;
+    }
+    .site-list-modal h3 {
+      margin-top: 0;
+      font-size: 1.17em;
+      color: #e3e3e3;
+      margin-bottom: 15px;
+      font-weight: bold;
+      letter-spacing: 0.01em;
+      text-shadow: 0 1px 8px #2224;
+    }
+    .site-list-content {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 15px;
+    }
+    .site-list-section {
+      margin-bottom: 20px;
+    }
+    .site-list-section-title {
+      font-size: 1.05em;
+      color: #e3e3e3;
+      margin-bottom: 10px;
+      font-weight: bold;
+      padding-bottom: 5px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .site-list-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .site-list-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: rgba(30,32,34,0.7);
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .site-list-item:hover {
+      background: rgba(40,42,44,0.8);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .site-list-item.disabled {
+      opacity: 0.5;
+    }
+    .site-list-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #666;
+      flex-shrink: 0;
+    }
+    .site-list-item-label {
+      flex: 1;
+      color: #e3e3e3;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .site-list-item-actions {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .site-list-item-edit-btn,
+    .site-list-item-remove-btn {
+      background: rgba(35,35,35,0.8);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e3e3e3;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.2s;
+    }
+    .site-list-item-edit-btn:hover {
+      background: rgba(60,60,60,0.9);
+    }
+    .site-list-item-remove-btn:hover {
+      background: rgba(200,60,60,0.9);
+    }
+    .site-list-item-custom-badge {
+      font-size: 11px;
+      color: #00e6d6;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+    .site-list-modal .modal-btn-row {
+      display: flex;
+      gap: 11px;
+      margin-top: 10px;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+    .site-list-modal .modal-btn {
+      background: #232323;
+      color: #e3e3e3;
+      border: none;
+      border-radius: 6px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 8px 22px;
+      transition: background .18s, box-shadow .18s, transform .13s;
+      box-shadow: 0 2px 8px #2224;
+      opacity: 0.93;
+      backdrop-filter: blur(1.5px);
+    }
+    .site-list-modal .modal-btn:hover {
+      background: #444;
+      box-shadow: 0 4px 16px #2226;
+      transform: translateY(-1px) scale(1.04);
+    }
     /* Add website buttons */
     .add-market-row {
       display: flex;
@@ -1758,6 +1908,7 @@
       /* Hide useless features on mobile */
       .add-market-row,
       #theme-editor-btn,
+      #site-list-btn,
       .randomize-section,
       .special-group {
         display: none !important;
@@ -2260,6 +2411,8 @@
       .container { margin-right: 0; }
       .custom-market-modal-bg { justify-content: center; align-items: center; }
       .custom-market-modal { margin: auto; }
+      .site-list-modal-bg { justify-content: center; align-items: center; }
+      .site-list-modal { margin: auto; max-width: 95vw; max-height: 90vh; }
     }
     @media (max-width: 1000px) {
       .sidebar {
@@ -2276,6 +2429,8 @@
       .container { max-width: 98vw; margin: 0.5em; }
       .custom-market-modal-bg { justify-content: center !important; align-items: center !important; }
       .custom-market-modal { margin: auto !important; }
+      .site-list-modal-bg { justify-content: center !important; align-items: center !important; }
+      .site-list-modal { margin: auto !important; max-width: 95vw; max-height: 90vh; }
     }
     @media (max-width: 700px) {
       .market-row, .markets { flex-direction: column; gap: 8px; }
@@ -2287,6 +2442,10 @@
       .sidebar { padding: 9px 3px 7px 6px; font-size: 0.97em; }
       .custom-market-modal-bg { justify-content: center !important; align-items: center !important; }
       .custom-market-modal { margin: auto !important; }
+      .site-list-modal-bg { justify-content: center !important; align-items: center !important; }
+      .site-list-modal { margin: auto !important; max-width: 95vw; max-height: 90vh; padding: 20px 15px 15px 15px; }
+      .site-list-item { padding: 8px 10px; }
+      .site-list-item-label { font-size: 13px; }
     }
     @media (min-width: 1200px) {
   .container {
@@ -2821,6 +2980,7 @@
           <button class="sidebar-randomize-btn" id="sidebar-randomize-btn" type="button" style="background: #232323; color: #e3e3e3; border: none; border-radius: 5px; font-size: 13px; font-weight: bold; padding: 7px 13px; cursor: pointer; box-shadow: 0 1px 4px #2224; opacity: 0.93; backdrop-filter: blur(2px);">Randomize</button>
         </div>
         <button type="button" id="theme-editor-btn" style="background: #232323; color: #e3e3e3; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 7px 18px 8px 18px; cursor: pointer; letter-spacing: .01em; box-shadow: 0 2px 8px #2224; transition: background .18s, box-shadow .18s, transform .13s; margin-left: 0; margin-bottom: 2px; backdrop-filter: blur(2px); opacity: 0.93;">Theme Editor</button>
+        <button type="button" id="site-list-btn" style="background: #232323; color: #e3e3e3; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 7px 18px 8px 18px; cursor: pointer; letter-spacing: .01em; box-shadow: 0 2px 8px #2224; transition: background .18s, box-shadow .18s, transform .13s; margin-left: 0; margin-bottom: 2px; backdrop-filter: blur(2px); opacity: 0.93;">Site List</button>
       </div>
       <div class="add-market-row">
         <button type="button" class="add-market-btn" data-section="asia">+ Add Website to Asia</button>
@@ -2898,6 +3058,31 @@
       <div class="modal-btn-row">
         <button class="modal-btn" id="custom-market-modal-save-btn">Save</button>
         <button class="modal-cancel-btn" id="custom-market-modal-cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Site List Modal -->
+  <div id="site-list-modal-bg" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;">
+    <div class="site-list-modal">
+      <div class="drag-handle"></div>
+      <h3>Site List Manager</h3>
+      <div class="site-list-content">
+        <div class="site-list-section">
+          <h4 class="site-list-section-title">Asia</h4>
+          <div id="site-list-asia" class="site-list-items"></div>
+        </div>
+        <div class="site-list-section">
+          <h4 class="site-list-section-title">International & Other Markets</h4>
+          <div id="site-list-international" class="site-list-items"></div>
+        </div>
+        <div class="site-list-section">
+          <h4 class="site-list-section-title">Designer & Global Select</h4>
+          <div id="site-list-special" class="site-list-items"></div>
+        </div>
+      </div>
+      <div class="modal-btn-row">
+        <button class="modal-btn" id="site-list-close-btn">Close</button>
       </div>
     </div>
   </div>
@@ -4613,51 +4798,86 @@
       }));
       return orig.concat(custom);
     }
+    // Helper function to create a single market button
+    function createSingleMarketButton(market, sectionName) {
+      const btn = document.createElement('button');
+      btn.type = "button";
+      btn.className = "market-btn";
+      btn.setAttribute("data-market", market.key);
+      btn.setAttribute("data-section", sectionName);
+      
+      // Add toggle checkbox
+      const toggle = document.createElement('input');
+      toggle.type = "checkbox";
+      toggle.className = "market-toggle";
+      toggle.checked = true;
+      toggle.addEventListener('change', function(e) {
+        e.stopPropagation();
+        const isChecked = toggle.checked;
+        saveMarketToggleState(market.key, isChecked);
+        
+        if (!isChecked) {
+          // Remove the button from DOM when unchecked
+          btn.remove();
+          // Update site list modal if open
+          const siteListContainer = document.getElementById(`site-list-${sectionName}`);
+          if (siteListContainer) {
+            const siteListCheckbox = siteListContainer.querySelector(`input[type="checkbox"][data-market-key="${market.key}"]`);
+            if (siteListCheckbox) {
+              siteListCheckbox.checked = false;
+              const siteListItem = siteListCheckbox.closest('.site-list-item');
+              if (siteListItem) siteListItem.classList.add('disabled');
+            }
+          }
+        } else {
+          // If checked, button should already be visible
+          // Update site list modal if open
+          const siteListContainer = document.getElementById(`site-list-${sectionName}`);
+          if (siteListContainer) {
+            const siteListCheckbox = siteListContainer.querySelector(`input[type="checkbox"][data-market-key="${market.key}"]`);
+            if (siteListCheckbox) {
+              siteListCheckbox.checked = true;
+              const siteListItem = siteListCheckbox.closest('.site-list-item');
+              if (siteListItem) siteListItem.classList.remove('disabled');
+            }
+          }
+        }
+      }, { passive: true });
+      
+      // Set initial state
+      const isEnabled = loadMarketToggleState(market.key);
+      toggle.checked = isEnabled;
+      
+      btn.appendChild(toggle);
+      const label = document.createElement('span');
+      label.textContent = market.label + (market.custom ? " ★" : "");
+      btn.appendChild(label);
+
+      // Custom market remove button
+      if (market.custom) {
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'market-remove-btn';
+        removeBtn.title = 'Remove Website';
+        removeBtn.innerHTML = '🗑';
+        removeBtn.onclick = function(e) {
+          e.stopPropagation();
+          removeCustomMarket(sectionName, market.id);
+        };
+        btn.appendChild(removeBtn);
+      }
+      
+      return btn;
+    }
+
     function createMarketButtons(markets, sectionId, sectionName) {
       const container = document.getElementById(sectionId);
       container.innerHTML = '';
       markets.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
-        const btn = document.createElement('button');
-        btn.type = "button";
-        btn.className = "market-btn";
-        btn.setAttribute("data-market", market.key);
-        btn.setAttribute("data-section", sectionName);
-        
-        // Add toggle checkbox
-        const toggle = document.createElement('input');
-        toggle.type = "checkbox";
-        toggle.className = "market-toggle";
-        toggle.checked = true;
-        toggle.addEventListener('change', function(e) {
-          e.stopPropagation();
-          const isChecked = toggle.checked;
-          btn.classList.toggle('disabled', !isChecked);
-          // Save state without blocking UI
-          setTimeout(() => saveMarketToggleState(market.key, isChecked), 0);
-        }, { passive: true });
-        
-        // Set initial state
+        // Only create buttons for enabled markets
         const isEnabled = loadMarketToggleState(market.key);
-        toggle.checked = isEnabled;
-        if (!isEnabled) btn.classList.add('disabled');
-        
-        btn.appendChild(toggle);
-        const label = document.createElement('span');
-        label.textContent = market.label + (market.custom ? " ★" : "");
-        btn.appendChild(label);
-        container.appendChild(btn);
-
-        // Custom market remove button
-        if (market.custom) {
-          const removeBtn = document.createElement('button');
-          removeBtn.className = 'market-remove-btn';
-          removeBtn.title = 'Remove Website';
-          removeBtn.innerHTML = '🗑';
-          removeBtn.onclick = function(e) {
-            e.stopPropagation();
-            removeCustomMarket(sectionName, market.id);
-          };
-          btn.appendChild(removeBtn);
+        if (isEnabled) {
+          const btn = createSingleMarketButton(market, sectionName);
+          container.appendChild(btn);
         }
       });
     }
@@ -5978,6 +6198,159 @@
       hideCustomMarketModal();
     };
 
+    // --- Site List Modal Logic ---
+    function showSiteListModal() {
+      const bg = document.getElementById('site-list-modal-bg');
+      bg.style.display = 'flex';
+      // Center modal
+      const modal = document.querySelector('.site-list-modal');
+      modal.style.left = '50%';
+      modal.style.top = '50%';
+      modal.style.transform = 'translate(-50%, -50%)';
+      renderSiteList();
+    }
+    function hideSiteListModal() {
+      document.getElementById('site-list-modal-bg').style.display = 'none';
+    }
+    function renderSiteList() {
+      const sections = ['asia', 'international', 'special'];
+      sections.forEach(section => {
+        const container = document.getElementById(`site-list-${section}`);
+        container.innerHTML = '';
+        const markets = getMarkets(section);
+        markets.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
+          const item = document.createElement('div');
+          item.className = 'site-list-item';
+          const isEnabled = loadMarketToggleState(market.key);
+          if (!isEnabled) item.classList.add('disabled');
+          
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = isEnabled;
+          checkbox.setAttribute('data-market-key', market.key);
+          checkbox.addEventListener('change', function() {
+            const enabled = checkbox.checked;
+            item.classList.toggle('disabled', !enabled);
+            saveMarketToggleState(market.key, enabled);
+            
+            // Find the container for this section
+            const sectionId = `${section}-markets`;
+            const container = document.getElementById(sectionId);
+            if (!container) return;
+            
+            // Find existing button
+            const marketBtn = container.querySelector(`.market-btn[data-market="${market.key}"]`);
+            
+            if (enabled) {
+              // Add button if it doesn't exist
+              if (!marketBtn) {
+                const btn = createSingleMarketButton(market, section);
+                // Find correct position to maintain alphabetical order
+                const markets = getMarkets(section);
+                const sortedMarkets = markets.slice().sort((a, b) => a.label.localeCompare(b.label));
+                const currentIndex = sortedMarkets.findIndex(m => m.key === market.key);
+                
+                // Find the button that should come after this one
+                let insertBefore = null;
+                if (currentIndex < sortedMarkets.length - 1) {
+                  const nextMarket = sortedMarkets[currentIndex + 1];
+                  const nextBtn = container.querySelector(`.market-btn[data-market="${nextMarket.key}"]`);
+                  if (nextBtn) insertBefore = nextBtn;
+                }
+                
+                if (insertBefore) {
+                  container.insertBefore(btn, insertBefore);
+                } else {
+                  container.appendChild(btn);
+                }
+              }
+            } else {
+              // Remove button from DOM
+              if (marketBtn) {
+                marketBtn.remove();
+              }
+            }
+          });
+          
+          const label = document.createElement('label');
+          label.className = 'site-list-item-label';
+          label.textContent = market.label.replace(' ★', '');
+          if (market.custom) {
+            const badge = document.createElement('span');
+            badge.className = 'site-list-item-custom-badge';
+            badge.textContent = '★ Custom';
+            label.appendChild(badge);
+          }
+          label.onclick = () => checkbox.click();
+          
+          const actions = document.createElement('div');
+          actions.className = 'site-list-item-actions';
+          
+          if (market.custom) {
+            const editBtn = document.createElement('button');
+            editBtn.className = 'site-list-item-edit-btn';
+            editBtn.textContent = 'Edit';
+            editBtn.title = 'Edit Custom Website';
+            editBtn.onclick = function(e) {
+              e.stopPropagation();
+              hideSiteListModal();
+              const customMarket = customMarkets[section].find(m => m.id === market.id);
+              if (customMarket) {
+                showCustomMarketModal(section);
+                document.getElementById('custom-market-title-input').value = customMarket.title;
+                document.getElementById('custom-market-url-input').value = customMarket.url;
+                // Override save to update instead of create
+                const originalSave = document.getElementById('custom-market-modal-save-btn').onclick;
+                document.getElementById('custom-market-modal-save-btn').onclick = function() {
+                  const title = document.getElementById('custom-market-title-input').value.trim();
+                  const url = document.getElementById('custom-market-url-input').value.trim();
+                  if (!title || !url || !url.includes('example')) {
+                    alert('Both a title and search layout URL are required. URL must contain "example".');
+                    return;
+                  }
+                  customMarket.title = title;
+                  customMarket.url = url;
+                  foldersObj.customMarkets = customMarkets;
+                  saveFoldersObj(foldersObj);
+                  refreshAllMarketButtons();
+                  hideCustomMarketModal();
+                  document.getElementById('custom-market-modal-save-btn').onclick = originalSave;
+                  showSiteListModal();
+                };
+              }
+            };
+            actions.appendChild(editBtn);
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'site-list-item-remove-btn';
+            removeBtn.textContent = 'Remove';
+            removeBtn.title = 'Remove Custom Website';
+            removeBtn.onclick = function(e) {
+              e.stopPropagation();
+              if (confirm(`Remove "${market.label.replace(' ★', '')}" from your custom sites?`)) {
+                removeCustomMarket(section, market.id);
+                renderSiteList();
+              }
+            };
+            actions.appendChild(removeBtn);
+          }
+          
+          item.appendChild(checkbox);
+          item.appendChild(label);
+          if (actions.children.length > 0) {
+            item.appendChild(actions);
+          }
+          container.appendChild(item);
+        });
+      });
+    }
+    
+    document.getElementById('site-list-btn').onclick = showSiteListModal;
+    document.getElementById('site-list-close-btn').onclick = hideSiteListModal;
+    document.getElementById('site-list-modal-bg').onclick = function(e) {
+      if (e.target === this) hideSiteListModal();
+    };
+
     // Container minimize/restore and dragging functionality
     const container = document.querySelector('.container');
     const dragHandle = document.getElementById('container-handle');
@@ -6092,6 +6465,37 @@
       }
     });
 
+    // Make site list modal draggable
+    const siteListModal = document.querySelector('.site-list-modal');
+    const siteListModalHandle = siteListModal.querySelector('.drag-handle');
+    let isSiteListModalDragging = false;
+    let siteListModalOffsetX, siteListModalOffsetY;
+
+    siteListModalHandle.addEventListener('mousedown', function(e) {
+      isSiteListModalDragging = true;
+      const rect = siteListModal.getBoundingClientRect();
+      siteListModalOffsetX = e.clientX - rect.left;
+      siteListModalOffsetY = e.clientY - rect.top;
+      siteListModal.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!isSiteListModalDragging) return;
+      const x = e.clientX - siteListModalOffsetX;
+      const y = e.clientY - siteListModalOffsetY;
+      siteListModal.style.left = x + 'px';
+      siteListModal.style.top = y + 'px';
+      siteListModal.style.transform = 'none';
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (isSiteListModalDragging) {
+        isSiteListModalDragging = false;
+        siteListModal.style.cursor = '';
+      }
+    });
+
     // Center modal on show
     function showCustomMarketModal(section) {
       const bg = document.getElementById('custom-market-modal-bg');
@@ -6119,17 +6523,27 @@
     // Toggle all marketplaces
     document.getElementById('toggle-all-checkbox').addEventListener('change', function(e) {
       const isChecked = e.target.checked;
-      const marketButtons = document.querySelectorAll('.market-btn');
       
-      marketButtons.forEach(btn => {
-        const toggle = btn.querySelector('.market-toggle');
-        if (toggle) {
-          toggle.checked = isChecked;
-          btn.classList.toggle('disabled', !isChecked);
-          const marketKey = btn.getAttribute('data-market');
-          saveMarketToggleState(marketKey, isChecked);
-        }
+      // Get all markets from all sections
+      const allMarkets = [
+        ...getMarkets('asia'),
+        ...getMarkets('international'),
+        ...getMarkets('special')
+      ];
+      
+      // Update state for all markets
+      allMarkets.forEach(market => {
+        saveMarketToggleState(market.key, isChecked);
       });
+      
+      // Refresh all buttons to reflect the new state
+      refreshAllMarketButtons();
+      
+      // Update site list modal if open
+      const siteListModal = document.getElementById('site-list-modal-bg');
+      if (siteListModal && siteListModal.style.display !== 'none') {
+        renderSiteList();
+      }
     });
 
     // Mobile detection and functionality - Enhanced
