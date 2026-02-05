@@ -984,6 +984,30 @@
       font-size: 14px;
       flex-shrink: 0;
       text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.2s;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+    }
+    
+    .chat-message-avatar:hover {
+      transform: scale(1.1);
+    }
+    
+    .chat-message-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .chat-message-username {
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    
+    .chat-message-username:hover {
+      color: #00e6d6 !important;
     }
     
     .chat-message-content {
@@ -1068,6 +1092,133 @@
       transform: none;
     }
     
+    /* Profile Modal Styles */
+    .profile-modal-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100000;
+    }
+    
+    .profile-modal-bg.show {
+      display: flex !important;
+    }
+    
+    .profile-modal {
+      background: rgba(20, 20, 20, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 32px;
+      width: min(400px, 90vw);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      text-align: center;
+    }
+    
+    .profile-modal-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, #00e6d6 0%, #00b8a8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 48px;
+      text-transform: uppercase;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      border: 3px solid rgba(0, 230, 214, 0.3);
+    }
+    
+    .profile-modal-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .profile-modal-username {
+      color: #e3e3e3;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    
+    .profile-modal-info {
+      color: #b0b0b0;
+      font-size: 14px;
+      margin: 8px 0;
+    }
+    
+    .profile-modal-info-label {
+      color: #888;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 20px;
+    }
+    
+    .profile-modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 28px;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+    
+    .profile-modal-close:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Profile Picture Selection */
+    .profile-picture-selector {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+    
+    .profile-picture-btn {
+      background: rgba(0, 230, 214, 0.2);
+      color: #00e6d6;
+      border: 1px solid #00e6d6;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-left: 10px;
+    }
+    
+    .profile-picture-btn:hover {
+      background: rgba(0, 230, 214, 0.3);
+      transform: translateY(-1px);
+    }
+    
+    .profile-picture-input {
+      display: none;
+    }
+    
     /* Mobile chat styles */
     @media (max-width: 768px) {
       .chat-panel {
@@ -1081,6 +1232,16 @@
       .chat-toggle-btn {
         width: 56px;
         height: 56px;
+      }
+      
+      .profile-modal {
+        padding: 24px;
+      }
+      
+      .profile-modal-avatar {
+        width: 100px;
+        height: 100px;
+        font-size: 40px;
       }
     }
     
@@ -2485,7 +2646,24 @@
     </div>
     <div class="header-right">
       <span id="user-display" style="display: none; color: #00e6d6; font-size: 14px; margin-right: 15px;"></span>
+      <button id="profile-picture-btn" class="profile-picture-btn" style="display: none;">📷 Profile</button>
       <button id="unlock-btn" class="unlock-btn" style="display: none;">Unlock Site</button>
+    </div>
+  </div>
+  
+  <!-- Profile Picture Input (hidden) -->
+  <input type="file" id="profile-picture-input" class="profile-picture-input" accept="image/*" />
+  
+  <!-- Profile Modal -->
+  <div id="profile-modal-bg" class="profile-modal-bg">
+    <div class="profile-modal">
+      <button class="profile-modal-close" id="profile-modal-close">×</button>
+      <div class="profile-modal-avatar" id="profile-modal-avatar"></div>
+      <div class="profile-modal-username" id="profile-modal-username"></div>
+      <div class="profile-modal-info-label">User ID</div>
+      <div class="profile-modal-info" id="profile-modal-userid"></div>
+      <div class="profile-modal-info-label">Join Date</div>
+      <div class="profile-modal-info" id="profile-modal-joindate"></div>
     </div>
   </div>
 
@@ -3791,13 +3969,13 @@
           // Get user info from unlocked_users table
           const { data: userData } = await supabase
             .from('unlocked_users')
-            .select('username, email')
+            .select('username, email, profile_picture_url')
             .eq('auth_user_id', user.id)
             .maybeSingle();
           
           currentUserId = user.id;
           currentUsername = userData?.username || user.user_metadata?.username || user.email?.split('@')[0] || 'User';
-          currentUserAvatar = currentUsername.charAt(0).toUpperCase();
+          currentUserAvatar = userData?.profile_picture_url || currentUsername.charAt(0).toUpperCase();
           
           // Show chat widget
           if (chatWidget) {
@@ -3891,23 +4069,139 @@
         const messageDiv = document.createElement('div');
         messageDiv.className = 'chat-message';
         
-        const avatar = msg.avatar || (msg.username ? msg.username.charAt(0).toUpperCase() : '?');
+        const avatarUrl = msg.avatar && (msg.avatar.startsWith('http') || msg.avatar.startsWith('data:')) ? msg.avatar : null;
+        const avatarInitial = msg.username ? msg.username.charAt(0).toUpperCase() : '?';
         const username = msg.username || 'Anonymous';
         const message = msg.message || '';
         const time = msg.created_at ? formatTime(new Date(msg.created_at)) : '';
+        const userId = msg.user_id || '';
+        
+        // Create avatar element
+        let avatarHtml = '';
+        if (avatarUrl && (avatarUrl.startsWith('http') || avatarUrl.startsWith('data:'))) {
+          avatarHtml = `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(username)}" />`;
+        } else {
+          avatarHtml = avatarInitial;
+        }
         
         messageDiv.innerHTML = `
-          <div class="chat-message-avatar">${avatar}</div>
+          <div class="chat-message-avatar" data-user-id="${escapeHtml(userId)}" data-username="${escapeHtml(username)}" data-avatar="${escapeHtml(avatarUrl || '')}">${avatarHtml}</div>
           <div class="chat-message-content">
             <div class="chat-message-header">
-              <span class="chat-message-username">${escapeHtml(username)}</span>
+              <span class="chat-message-username" data-user-id="${escapeHtml(userId)}" data-username="${escapeHtml(username)}" data-avatar="${escapeHtml(avatarUrl || '')}">${escapeHtml(username)}</span>
               <span class="chat-message-time">${time}</span>
             </div>
             <div class="chat-message-text">${escapeHtml(message)}</div>
           </div>
         `;
         
+        // Add click handlers for profile viewing
+        const avatarEl = messageDiv.querySelector('.chat-message-avatar');
+        const usernameEl = messageDiv.querySelector('.chat-message-username');
+        
+        if (avatarEl && userId) {
+          avatarEl.addEventListener('click', () => showProfile(userId, username, avatarUrl));
+        }
+        if (usernameEl && userId) {
+          usernameEl.addEventListener('click', () => showProfile(userId, username, avatarUrl));
+        }
+        
         chatMessages.appendChild(messageDiv);
+      }
+      
+      // Show user profile
+      async function showProfile(userId, username, avatarUrl) {
+        if (!supabase || !userId) return;
+        
+        const profileModalBg = document.getElementById('profile-modal-bg');
+        const profileModalAvatar = document.getElementById('profile-modal-avatar');
+        const profileModalUsername = document.getElementById('profile-modal-username');
+        const profileModalUserid = document.getElementById('profile-modal-userid');
+        const profileModalJoindate = document.getElementById('profile-modal-joindate');
+        
+        if (!profileModalBg) return;
+        
+        // Set username and avatar immediately
+        if (profileModalUsername) {
+          profileModalUsername.textContent = username || 'Unknown User';
+        }
+        
+        if (profileModalAvatar) {
+          if (avatarUrl && (avatarUrl.startsWith('http') || avatarUrl.startsWith('data:'))) {
+            profileModalAvatar.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(username)}" />`;
+            profileModalAvatar.style.background = 'transparent';
+          } else {
+            const initial = username ? username.charAt(0).toUpperCase() : '?';
+            profileModalAvatar.innerHTML = '';
+            profileModalAvatar.textContent = initial;
+            profileModalAvatar.style.background = 'linear-gradient(135deg, #00e6d6 0%, #00b8a8 100%)';
+          }
+        }
+        
+        // Fetch user details from database
+        try {
+          const { data: userData, error } = await supabase
+            .from('unlocked_users')
+            .select('auth_user_id, email, created_at')
+            .eq('auth_user_id', userId)
+            .maybeSingle();
+          
+          if (userData) {
+            // Set user ID
+            if (profileModalUserid) {
+              profileModalUserid.textContent = userId.substring(0, 8) + '...';
+            }
+            
+            // Set join date
+            if (profileModalJoindate && userData.created_at) {
+              const joinDate = new Date(userData.created_at);
+              profileModalJoindate.textContent = joinDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              });
+            } else if (profileModalJoindate) {
+              profileModalJoindate.textContent = 'Unknown';
+            }
+          } else {
+            // Fallback if user not found in unlocked_users
+            if (profileModalUserid) {
+              profileModalUserid.textContent = userId.substring(0, 8) + '...';
+            }
+            if (profileModalJoindate) {
+              profileModalJoindate.textContent = 'Unknown';
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+          if (profileModalUserid) {
+            profileModalUserid.textContent = userId.substring(0, 8) + '...';
+          }
+          if (profileModalJoindate) {
+            profileModalJoindate.textContent = 'Unknown';
+          }
+        }
+        
+        // Show modal
+        profileModalBg.classList.add('show');
+      }
+      
+      // Get current user's profile picture URL
+      async function getUserProfilePicture() {
+        if (!supabase || !currentUserId) return null;
+        
+        try {
+          const { data: userData } = await supabase
+            .from('unlocked_users')
+            .select('profile_picture_url')
+            .eq('auth_user_id', currentUserId)
+            .maybeSingle();
+          
+          return userData?.profile_picture_url || null;
+        } catch (error) {
+          console.error('Error fetching profile picture:', error);
+          return null;
+        }
       }
       
       // Send a message
@@ -3923,11 +4217,14 @@
         }
         
         try {
+          // Get user's profile picture URL
+          const profilePictureUrl = await getUserProfilePicture();
+          
           const { error } = await supabase
             .from('chat_messages')
             .insert({
               username: currentUsername,
-              avatar: currentUserAvatar,
+              avatar: profilePictureUrl || currentUserAvatar,
               message: message,
               user_id: currentUserId
             });
@@ -4067,8 +4364,108 @@
         setTimeout(checkAndInitChat, 1000);
       }
       
-      // Expose initChat for manual initialization
+      // Profile picture upload functionality
+      const profilePictureBtn = document.getElementById('profile-picture-btn');
+      const profilePictureInput = document.getElementById('profile-picture-input');
+      const profileModalClose = document.getElementById('profile-modal-close');
+      const profileModalBg = document.getElementById('profile-modal-bg');
+      
+      // Show profile picture button when user is logged in
+      function updateProfileButtonVisibility() {
+        const currentUser = localStorage.getItem('mmcs_current_user');
+        if (profilePictureBtn) {
+          if (currentUser && !document.body.classList.contains('site-locked')) {
+            profilePictureBtn.style.display = 'inline-block';
+          } else {
+            profilePictureBtn.style.display = 'none';
+          }
+        }
+      }
+      
+      // Handle profile picture selection
+      if (profilePictureBtn && profilePictureInput) {
+        profilePictureBtn.addEventListener('click', () => {
+          profilePictureInput.click();
+        });
+        
+        profilePictureInput.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if (!file || !file.type.startsWith('image/')) {
+            alert('Please select a valid image file.');
+            return;
+          }
+          
+          // Check file size (max 2MB)
+          if (file.size > 2 * 1024 * 1024) {
+            alert('Image size must be less than 2MB.');
+            return;
+          }
+          
+          // Convert to base64 or upload to Supabase Storage
+          // For simplicity, we'll use base64 and store in database
+          const reader = new FileReader();
+          reader.onload = async (event) => {
+            const base64Image = event.target.result;
+            
+            try {
+              // Update user's profile picture in database
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) {
+                alert('You must be logged in to update your profile picture.');
+                return;
+              }
+              
+              // Update unlocked_users table with profile picture URL
+              const { error } = await supabase
+                .from('unlocked_users')
+                .update({ profile_picture_url: base64Image })
+                .eq('auth_user_id', user.id);
+              
+              if (error) {
+                console.error('Error updating profile picture:', error);
+                alert('Failed to update profile picture. Please try again.');
+              } else {
+                alert('Profile picture updated successfully!');
+                // Refresh chat to show new avatar
+                if (isChatInitialized) {
+                  await loadMessages();
+                }
+              }
+            } catch (error) {
+              console.error('Error saving profile picture:', error);
+              alert('Failed to save profile picture. Please try again.');
+            }
+          };
+          
+          reader.readAsDataURL(file);
+        });
+      }
+      
+      // Close profile modal
+      if (profileModalClose) {
+        profileModalClose.addEventListener('click', () => {
+          if (profileModalBg) {
+            profileModalBg.classList.remove('show');
+          }
+        });
+      }
+      
+      // Close modal when clicking outside
+      if (profileModalBg) {
+        profileModalBg.addEventListener('click', (e) => {
+          if (e.target === profileModalBg) {
+            profileModalBg.classList.remove('show');
+          }
+        });
+      }
+      
+      // Update profile button visibility periodically
+      setInterval(updateProfileButtonVisibility, 1000);
+      updateProfileButtonVisibility();
+      
+      // Expose functions
       window.initChat = initChat;
+      window.showProfile = showProfile;
       } catch (error) {
         console.error('Error initializing chat system:', error);
         // Don't break the page if chat fails
