@@ -1258,6 +1258,236 @@
       display: none;
     }
     
+    /* Users List Modal Styles */
+    .users-list-modal-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(10,10,10,0.65);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2.5px);
+    }
+    
+    .users-list-modal-bg.show {
+      display: flex !important;
+    }
+    
+    .users-list-modal {
+      background: rgba(32,34,36, 0.98);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px #000a, 0 1.5px 0 #232323;
+      padding: 28px 22px 18px 22px;
+      max-width: 600px;
+      max-height: 85vh;
+      width: 96vw;
+      position: relative;
+      border: 1.5px solid #232323;
+      backdrop-filter: blur(7px) saturate(1.2);
+      cursor: default;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .users-list-modal-title {
+      color: #e3e3e3;
+      font-size: 1.3em;
+      font-weight: bold;
+      margin: 0 0 18px 0;
+      text-align: center;
+      text-shadow: 0 1px 4px #2224;
+    }
+    
+    .users-list-modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(35,35,35,0.8);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e3e3e3;
+      font-size: 20px;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s;
+      padding: 0;
+      line-height: 1;
+    }
+    
+    .users-list-modal-close:hover {
+      background: rgba(60,60,60,0.9);
+      color: #fff;
+      border-color: rgba(255,255,255,0.2);
+    }
+    
+    .users-list-content {
+      overflow-y: auto;
+      flex: 1;
+      min-height: 200px;
+      max-height: calc(85vh - 120px);
+      padding-right: 4px;
+    }
+    
+    .users-list-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .users-list-content::-webkit-scrollbar-track {
+      background: rgba(30,32,34,0.5);
+    }
+    
+    .users-list-content::-webkit-scrollbar-thumb {
+      background: rgba(120,120,120,0.4);
+      border-radius: 3px;
+    }
+    
+    .users-list-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(140,140,140,0.5);
+    }
+    
+    .users-list-loading {
+      text-align: center;
+      color: #b0b0b0;
+      padding: 40px;
+      font-size: 14px;
+    }
+    
+    .user-list-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      background: rgba(44,46,48,0.55);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid rgba(255,255,255,0.05);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    
+    .user-list-item:hover {
+      background: rgba(54,56,58,0.75);
+      border-color: rgba(255,255,255,0.15);
+      transform: translateX(4px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    
+    .user-list-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00e6d6 0%, #00b8a8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 22px;
+      text-transform: uppercase;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      border: 2px solid rgba(255,255,255,0.2);
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    
+    .user-list-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .user-list-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .user-list-name {
+      color: #e3e3e3;
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .user-list-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+    }
+    
+    .user-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    
+    .user-status-dot.online {
+      background: #00e6d6;
+      box-shadow: 0 0 6px rgba(0, 230, 214, 0.6);
+      animation: pulse 2s infinite;
+    }
+    
+    .user-status-dot.offline {
+      background: #666;
+    }
+    
+    .user-status-text {
+      color: #b0b0b0;
+      font-size: 12px;
+    }
+    
+    .user-status-text.online {
+      color: #00e6d6;
+      font-weight: 500;
+    }
+    
+    .users-list-empty {
+      text-align: center;
+      color: #888;
+      padding: 40px;
+      font-size: 14px;
+    }
+    
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .users-list-modal {
+        max-width: 95vw;
+        max-height: 90vh;
+        padding: 20px 15px 15px 15px;
+      }
+      
+      .users-list-modal-title {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+      }
+      
+      .user-list-item {
+        padding: 10px 12px;
+      }
+      
+      .user-list-avatar {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+      }
+    }
+    
     /* Mobile chat styles */
     @media (max-width: 768px) {
       .chat-panel {
@@ -2623,6 +2853,16 @@
     gap: 6px;
     font-size: 13px;
     color: #b0b0b0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+  
+  .online-users-count:hover {
+    background: rgba(255, 255, 255, 0.1);
   }
 
   .online-users-count .online-dot {
@@ -2939,10 +3179,10 @@
          onclick="navigator.clipboard.writeText('bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); alert('Bitcoin address copied! Address: bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); return false;">
         ₿ Donate via Bitcoin
       </a>
-      <span id="online-users-count" class="online-users-count" style="margin-left: 15px;">
+      <button id="online-users-count" class="online-users-count" style="margin-left: 15px; background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.2s;">
         <span class="online-dot"></span>
         <span id="online-users-number">Loading...</span> online
-      </span>
+      </button>
     </div>
     <div class="header-right">
       <!-- Minimization buttons (desktop only) -->
@@ -2970,6 +3210,17 @@
       <div class="profile-modal-info" id="profile-modal-userid"></div>
       <div class="profile-modal-info-label">Join Date</div>
       <div class="profile-modal-info" id="profile-modal-joindate"></div>
+    </div>
+  </div>
+
+  <!-- Users List Modal -->
+  <div id="users-list-modal-bg" class="users-list-modal-bg">
+    <div class="users-list-modal">
+      <button class="users-list-modal-close" id="users-list-modal-close">×</button>
+      <h3 class="users-list-modal-title">All Users</h3>
+      <div class="users-list-content" id="users-list-content">
+        <div class="users-list-loading">Loading users...</div>
+      </div>
     </div>
   </div>
 
@@ -4857,6 +5108,334 @@
       
       // Update every 30 seconds
       setInterval(updateOnlineUsersCount, 30000);
+    })();
+    
+    // Users List Modal Functionality
+    (function() {
+      const usersListModalBg = document.getElementById('users-list-modal-bg');
+      const usersListContent = document.getElementById('users-list-content');
+      const usersListClose = document.getElementById('users-list-modal-close');
+      const onlineUsersBtn = document.getElementById('online-users-count');
+      const SUPABASE_URL = 'https://wbpfuuiznsmysbskywdx.supabase.co';
+      const SUPABASE_ANON_KEY = 'sb_publishable_rIy_-DWT87Gj9ao1WvN3gA_WA6eME-x';
+      const TABLE_NAME = 'unlocked_users';
+      const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+      
+      function showUsersListModal() {
+        if (usersListModalBg) {
+          usersListModalBg.classList.add('show');
+          loadUsersList();
+        }
+      }
+      
+      function hideUsersListModal() {
+        if (usersListModalBg) {
+          usersListModalBg.classList.remove('show');
+        }
+      }
+      
+      async function loadUsersList() {
+        if (!usersListContent || !supabase) {
+          if (usersListContent) {
+            usersListContent.innerHTML = '<div class="users-list-empty">Unable to load users</div>';
+          }
+          return;
+        }
+        
+        usersListContent.innerHTML = '<div class="users-list-loading">Loading users...</div>';
+        
+        try {
+          // Fetch all verified users
+          const { data: users, error } = await supabase
+            .from(TABLE_NAME)
+            .select('*')
+            .eq('verified', true)
+            .order('username', { ascending: true });
+          
+          if (error) {
+            console.error('Error fetching users:', error);
+            usersListContent.innerHTML = '<div class="users-list-empty">Error loading users</div>';
+            return;
+          }
+          
+          if (!users || users.length === 0) {
+            usersListContent.innerHTML = '<div class="users-list-empty">No users found</div>';
+            return;
+          }
+          
+          // Determine online status (active in last 5 minutes)
+          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+          
+          // Render users
+          usersListContent.innerHTML = '';
+          
+          users.forEach(user => {
+            const isOnline = user.last_active && new Date(user.last_active) >= new Date(fiveMinutesAgo);
+            const userItem = createUserListItem(user, isOnline);
+            usersListContent.appendChild(userItem);
+          });
+          
+        } catch (err) {
+          console.error('Error loading users list:', err);
+          usersListContent.innerHTML = '<div class="users-list-empty">Error loading users</div>';
+        }
+      }
+      
+      function createUserListItem(user, isOnline) {
+        const item = document.createElement('div');
+        item.className = 'user-list-item';
+        
+        // Avatar
+        const avatar = document.createElement('div');
+        avatar.className = 'user-list-avatar';
+        
+        if (user.profile_picture_url) {
+          const img = document.createElement('img');
+          img.src = user.profile_picture_url;
+          img.alt = user.username || 'User';
+          avatar.appendChild(img);
+        } else {
+          const initial = (user.username || user.email || 'U').charAt(0).toUpperCase();
+          avatar.textContent = initial;
+        }
+        
+        // Info
+        const info = document.createElement('div');
+        info.className = 'user-list-info';
+        
+        const name = document.createElement('div');
+        name.className = 'user-list-name';
+        name.textContent = user.username || user.email || 'Unknown User';
+        
+        const status = document.createElement('div');
+        status.className = 'user-list-status';
+        
+        const statusDot = document.createElement('div');
+        statusDot.className = `user-status-dot ${isOnline ? 'online' : 'offline'}`;
+        
+        const statusText = document.createElement('span');
+        statusText.className = `user-status-text ${isOnline ? 'online' : ''}`;
+        statusText.textContent = isOnline ? 'Online' : 'Offline';
+        
+        status.appendChild(statusDot);
+        status.appendChild(statusText);
+        
+        info.appendChild(name);
+        info.appendChild(status);
+        
+        item.appendChild(avatar);
+        item.appendChild(info);
+        
+        // Click handler to show profile
+        item.addEventListener('click', () => {
+          if (window.showProfile) {
+            window.showProfile(
+              user.user_id || user.id,
+              user.username || user.email || 'Unknown User',
+              user.profile_picture_url || null
+            );
+            hideUsersListModal();
+          }
+        });
+        
+        return item;
+      }
+      
+      // Event listeners
+      if (onlineUsersBtn) {
+        onlineUsersBtn.addEventListener('click', showUsersListModal);
+      }
+      
+      if (usersListClose) {
+        usersListClose.addEventListener('click', hideUsersListModal);
+      }
+      
+      if (usersListModalBg) {
+        usersListModalBg.addEventListener('click', function(e) {
+          if (e.target === usersListModalBg) {
+            hideUsersListModal();
+          }
+        });
+      }
+      
+      // Refresh users list when modal is opened
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.attributeName === 'class') {
+            if (usersListModalBg.classList.contains('show')) {
+              loadUsersList();
+            }
+          }
+        });
+      });
+      
+      if (usersListModalBg) {
+        observer.observe(usersListModalBg, { attributes: true });
+      }
+    })();
+    
+    // Users List Modal Functionality
+    (function() {
+      const usersListModalBg = document.getElementById('users-list-modal-bg');
+      const usersListContent = document.getElementById('users-list-content');
+      const usersListClose = document.getElementById('users-list-modal-close');
+      const onlineUsersBtn = document.getElementById('online-users-count');
+      const SUPABASE_URL = 'https://wbpfuuiznsmysbskywdx.supabase.co';
+      const SUPABASE_ANON_KEY = 'sb_publishable_rIy_-DWT87Gj9ao1WvN3gA_WA6eME-x';
+      const TABLE_NAME = 'unlocked_users';
+      const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+      
+      function showUsersListModal() {
+        if (usersListModalBg) {
+          usersListModalBg.classList.add('show');
+          loadUsersList();
+        }
+      }
+      
+      function hideUsersListModal() {
+        if (usersListModalBg) {
+          usersListModalBg.classList.remove('show');
+        }
+      }
+      
+      async function loadUsersList() {
+        if (!usersListContent || !supabase) {
+          if (usersListContent) {
+            usersListContent.innerHTML = '<div class="users-list-empty">Unable to load users</div>';
+          }
+          return;
+        }
+        
+        usersListContent.innerHTML = '<div class="users-list-loading">Loading users...</div>';
+        
+        try {
+          // Fetch all verified users
+          const { data: users, error } = await supabase
+            .from(TABLE_NAME)
+            .select('*')
+            .eq('verified', true)
+            .order('username', { ascending: true });
+          
+          if (error) {
+            console.error('Error fetching users:', error);
+            usersListContent.innerHTML = '<div class="users-list-empty">Error loading users</div>';
+            return;
+          }
+          
+          if (!users || users.length === 0) {
+            usersListContent.innerHTML = '<div class="users-list-empty">No users found</div>';
+            return;
+          }
+          
+          // Determine online status (active in last 5 minutes)
+          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+          
+          // Render users
+          usersListContent.innerHTML = '';
+          
+          users.forEach(user => {
+            const isOnline = user.last_active && new Date(user.last_active) >= new Date(fiveMinutesAgo);
+            const userItem = createUserListItem(user, isOnline);
+            usersListContent.appendChild(userItem);
+          });
+          
+        } catch (err) {
+          console.error('Error loading users list:', err);
+          usersListContent.innerHTML = '<div class="users-list-empty">Error loading users</div>';
+        }
+      }
+      
+      function createUserListItem(user, isOnline) {
+        const item = document.createElement('div');
+        item.className = 'user-list-item';
+        
+        // Avatar
+        const avatar = document.createElement('div');
+        avatar.className = 'user-list-avatar';
+        
+        if (user.profile_picture_url) {
+          const img = document.createElement('img');
+          img.src = user.profile_picture_url;
+          img.alt = user.username || 'User';
+          avatar.appendChild(img);
+        } else {
+          const initial = (user.username || user.email || 'U').charAt(0).toUpperCase();
+          avatar.textContent = initial;
+        }
+        
+        // Info
+        const info = document.createElement('div');
+        info.className = 'user-list-info';
+        
+        const name = document.createElement('div');
+        name.className = 'user-list-name';
+        name.textContent = user.username || user.email || 'Unknown User';
+        
+        const status = document.createElement('div');
+        status.className = 'user-list-status';
+        
+        const statusDot = document.createElement('div');
+        statusDot.className = `user-status-dot ${isOnline ? 'online' : 'offline'}`;
+        
+        const statusText = document.createElement('span');
+        statusText.className = `user-status-text ${isOnline ? 'online' : ''}`;
+        statusText.textContent = isOnline ? 'Online' : 'Offline';
+        
+        status.appendChild(statusDot);
+        status.appendChild(statusText);
+        
+        info.appendChild(name);
+        info.appendChild(status);
+        
+        item.appendChild(avatar);
+        item.appendChild(info);
+        
+        // Click handler to show profile
+        item.addEventListener('click', () => {
+          if (window.showProfile) {
+            window.showProfile(
+              user.user_id || user.id,
+              user.username || user.email || 'Unknown User',
+              user.profile_picture_url || null
+            );
+            hideUsersListModal();
+          }
+        });
+        
+        return item;
+      }
+      
+      // Event listeners
+      if (onlineUsersBtn) {
+        onlineUsersBtn.addEventListener('click', showUsersListModal);
+      }
+      
+      if (usersListClose) {
+        usersListClose.addEventListener('click', hideUsersListModal);
+      }
+      
+      if (usersListModalBg) {
+        usersListModalBg.addEventListener('click', function(e) {
+          if (e.target === usersListModalBg) {
+            hideUsersListModal();
+          }
+        });
+      }
+      
+      // Refresh users list when modal is opened
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.attributeName === 'class') {
+            if (usersListModalBg.classList.contains('show')) {
+              loadUsersList();
+            }
+          }
+        });
+      });
+      
+      if (usersListModalBg) {
+        observer.observe(usersListModalBg, { attributes: true });
+      }
     })();
 
     // Custom Market Storage
