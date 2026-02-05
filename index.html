@@ -62,7 +62,7 @@
       top: 50%;
       transform: translate(-50%, -50%);
       background: linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(15,15,15,0.98) 100%);
-      padding: 20px 20px 20px 20px;
+      padding: 25px 25px 25px 25px;
       border-radius: 20px;
       box-shadow: 
         0 20px 60px rgba(0,0,0,0.6),
@@ -77,6 +77,11 @@
       flex-direction: column;
       /* Ensure scrolling works on iOS */
       -webkit-overflow-scrolling: touch;
+      will-change: transform, left, top; /* Optimize for smooth dragging */
+    }
+    
+    .container.dragging {
+      transition: none; /* Disable transitions while dragging for smoother movement */
     }
     
     /* Add safe area padding for iOS */
@@ -183,6 +188,7 @@
       user-select: none;
       z-index: 1001; /* Higher than top-header (1000) to ensure handles aren't blocked */
       pointer-events: auto;
+      will-change: transform; /* Optimize for smooth dragging */
     }
     .drag-handle::after {
       content: '';
@@ -206,9 +212,9 @@
       color: #e3e3e3;
       text-shadow: 0 2px 12px #2224;
     }
-    h1 { margin-bottom: 10px; font-size: 1.7em; }
-    h2 { font-size: 1.15em; margin-top: 20px; margin-bottom: 10px; display: inline-block; }
-    .section-header-row { display: flex; align-items: center; gap: 8px; margin-top: 20px; margin-bottom: 10px; }
+    h1 { margin-bottom: 12px; font-size: 1.8em; }
+    h2 { font-size: 1.2em; margin-top: 24px; margin-bottom: 12px; display: inline-block; }
+    .section-header-row { display: flex; align-items: center; gap: 10px; margin-top: 24px; margin-bottom: 12px; }
     .section-openall-btn {
       background: #232323;
       color: #e3e3e3;
@@ -232,8 +238,8 @@
       box-shadow: 0 4px 16px #2226;
       transform: translateY(-2px) scale(1.04);
     }
-    .tip { font-size: 13px; color: #b0b0b0; margin-bottom: 15px; }
-    .market-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
+    .tip { font-size: 13.5px; color: #b0b0b0; margin-bottom: 18px; line-height: 1.5; }
+    .market-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
     input[type="text"] {
       font-size: 18px;
       padding: 12px 14px;
@@ -253,9 +259,10 @@
     .markets { 
       display: flex; 
       flex-wrap: wrap; 
-      gap: 10px; 
+      gap: 12px; 
       justify-content: flex-start;
       padding-right: 5px;
+      margin-bottom: 8px;
     }
     .markets::-webkit-scrollbar {
       width: 6px;
@@ -385,6 +392,11 @@
       backdrop-filter: blur(7px);
       overflow-y: auto;
       transition: transform 0.3s ease, left 0.3s ease, top 0.3s ease;
+      will-change: transform, left, top; /* Optimize for smooth dragging */
+    }
+    
+    .sidebar.dragging {
+      transition: none; /* Disable transitions while dragging for smoother movement */
     }
 
     .sidebar.detached {
@@ -452,6 +464,24 @@
       width: 8px;
       height: 100%;
       cursor: ew-resize;
+    }
+    
+    /* Prevent side handles from going under top header */
+    @media (min-width: 1200px) {
+      .sidebar .resize-handle-left,
+      .sidebar .resize-handle-right {
+        top: 50px; /* Start below top header (approximately 50px tall) */
+        height: calc(100% - 50px); /* Adjust height to account for top header */
+      }
+      .wishlist-section .resize-handle-left {
+        top: 50px; /* Start below top header */
+        height: calc(100% - 50px); /* Adjust height to account for top header */
+      }
+      .container .resize-handle-left,
+      .container .resize-handle-right {
+        top: 50px; /* Start below top header */
+        height: calc(100% - 50px); /* Adjust height to account for top header */
+      }
     }
     .resize-handle-bottom {
       left: 0;
@@ -1269,6 +1299,12 @@
       border: 1.5px solid #232323;
       backdrop-filter: blur(7px) saturate(1.2);
       cursor: default;
+      transition: transform 0.3s ease, left 0.3s ease, top 0.3s ease;
+      will-change: transform, left, top; /* Optimize for smooth dragging */
+    }
+    
+    .custom-market-modal.dragging {
+      transition: none; /* Disable transitions while dragging for smoother movement */
     }
     .custom-market-modal .drag-handle {
       position: absolute;
@@ -1382,6 +1418,12 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
+      transition: transform 0.3s ease, left 0.3s ease, top 0.3s ease;
+      will-change: transform, left, top; /* Optimize for smooth dragging */
+    }
+    
+    .site-list-modal.dragging {
+      transition: none; /* Disable transitions while dragging for smoother movement */
     }
     .site-list-modal .drag-handle {
       position: absolute;
@@ -1554,6 +1596,11 @@
       flex-direction: column;
       gap: 13px;
       backdrop-filter: blur(7px);
+      will-change: transform, left, top; /* Optimize for smooth dragging */
+    }
+    
+    .wishlist-section.dragging {
+      transition: none; /* Disable transitions while dragging for smoother movement */
     }
     .resize-handle {
       position: absolute;
@@ -2457,35 +2504,44 @@
     }
     @media (min-width: 1200px) {
   .sidebar {
-    width: 300px; /* Wider sidebar for more saved searches visibility */
-    height: calc(100vh / 0.8) !important; /* Increase height so after 0.8 scale it still reaches bottom */
-    max-height: calc(100vh / 0.8) !important; /* Override max-height to allow full height */
-    min-height: calc(100vh / 0.8) !important; /* Ensure minimum height */
-    transform: scale(0.8); /* Zoom out by 20% */
-    transform-origin: top left; /* Scale from top-left corner */
+    width: 320px; /* Slightly wider sidebar for better readability */
+    height: calc(100vh - 60px) !important; /* Account for top header */
+    max-height: calc(100vh - 60px) !important;
+    min-height: calc(100vh - 60px) !important;
+    /* Remove scale - use full size for better readability */
   }
   
   .container {
-    margin-left: 320px;  /* Space from sidebar */
-    margin-right: 405px; /* Keeps it visually centered */
-    transform: translate(-50%, -50%) scale(0.8); /* Zoom out by 20% while maintaining centering */
-    transform-origin: center center; /* Scale from center */
+    margin-left: 340px;  /* Space from sidebar */
+    margin-right: 380px; /* Space for wishlist */
+    max-width: 1000px; /* Wider container for better use of space */
+    transform: translate(-50%, -50%) scale(0.9); /* Scale down slightly, same as when dragging */
+    transform-origin: center center;
+    padding: 35px 35px 30px 35px; /* More comfortable padding */
   }
   
   .wishlist-section {
-    height: calc(100vh / 0.8) !important; /* Increase height so after 0.8 scale it still reaches bottom */
-    max-height: calc(100vh / 0.8) !important; /* Override max-height to allow full height */
-    min-height: calc(100vh / 0.8) !important; /* Ensure minimum height */
-    transform: scale(0.8); /* Zoom out by 20% */
-    transform-origin: top right; /* Scale from top-right corner */
+    width: 360px; /* Slightly wider */
+    height: calc(100vh - 60px) !important; /* Account for top header */
+    max-height: calc(100vh - 60px) !important;
+    min-height: calc(100vh - 60px) !important;
+    /* Remove scale - use full size */
   }
   
-  @media (min-width: 1920px) {
+    @media (min-width: 1920px) {
     .container {
-      max-width: 1200px; /* Wider container for 1920x1080 screens */
-      max-height: 95vh; /* Use more vertical space */
-      margin-right: 300px; /* Adjust right margin for better centering */
-      padding: 30px 30px 25px 30px; /* Slightly more padding for better spacing */
+      max-width: 1100px; /* Even wider for large screens */
+      max-height: 92vh; /* Use more vertical space */
+      padding: 40px 40px 35px 40px; /* More generous padding */
+      transform: translate(-50%, -50%) scale(0.9); /* Maintain same scale */
+    }
+    
+    .sidebar {
+      width: 340px; /* Even wider sidebar on large screens */
+    }
+    
+    .wishlist-section {
+      width: 380px; /* Even wider wishlist on large screens */
     }
   }
 
@@ -2997,28 +3053,32 @@
         <input type="text" id="query" placeholder="Search for clothing, brands, etc." required />
         <button id="clear-search" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#888;cursor:pointer;display:none;">✕</button>
       </div>
-      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px;">
-        <button type="button" id="open-all-btn">Open All</button>
-        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+      <!-- Primary Actions Row -->
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+        <button type="button" id="open-all-btn" style="flex-shrink: 0;">Open All</button>
+        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; flex-shrink: 0;">
           <input type="checkbox" id="toggle-all-checkbox" checked style="width: 16px; height: 16px; accent-color: #666;">
           <span style="font-size: 14px; color: #e3e3e3;">Toggle All</span>
         </label>
-        <div class="randomize-section" style="display: flex; align-items: center; gap: 8px;">
-          <div style="position: relative; flex: 1;">
-            <select id="randomize-category-select" class="randomize-select">
+        <div class="randomize-section" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+          <div style="position: relative;">
+            <select id="randomize-category-select" class="randomize-select" style="min-width: 140px;">
               <option value="all">All Categories</option>
               <option value="asia">Asia</option>
               <option value="international">International</option>
               <option value="special">Designer</option>
             </select>
-            <div id="randomize-color-indicator" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; border-radius: 50%;"></div>
+            <div id="randomize-color-indicator" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; border-radius: 50%; pointer-events: none;"></div>
           </div>
-          <button class="sidebar-randomize-btn" id="sidebar-randomize-btn" type="button" style="background: #232323; color: #e3e3e3; border: none; border-radius: 5px; font-size: 13px; font-weight: bold; padding: 7px 13px; cursor: pointer; box-shadow: 0 1px 4px #2224; opacity: 0.93; backdrop-filter: blur(2px);">Randomize</button>
+          <button class="sidebar-randomize-btn" id="sidebar-randomize-btn" type="button" style="background: #232323; color: #e3e3e3; border: none; border-radius: 5px; font-size: 13px; font-weight: bold; padding: 7px 13px; cursor: pointer; box-shadow: 0 1px 4px #2224; opacity: 0.93; backdrop-filter: blur(2px); white-space: nowrap;">Randomize</button>
         </div>
-        <button type="button" id="theme-editor-btn" style="background: #232323; color: #e3e3e3; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 7px 18px 8px 18px; cursor: pointer; letter-spacing: .01em; box-shadow: 0 2px 8px #2224; transition: background .18s, box-shadow .18s, transform .13s; margin-left: 0; margin-bottom: 2px; backdrop-filter: blur(2px); opacity: 0.93;">Theme Editor</button>
-        <button type="button" id="site-list-btn" style="background: #232323; color: #e3e3e3; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 7px 18px 8px 18px; cursor: pointer; letter-spacing: .01em; box-shadow: 0 2px 8px #2224; transition: background .18s, box-shadow .18s, transform .13s; margin-left: 0; margin-bottom: 2px; backdrop-filter: blur(2px); opacity: 0.93;">Site List</button>
       </div>
-      <div class="add-market-row">
+      <!-- Settings Row -->
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
+        <button type="button" id="theme-editor-btn" style="background: #232323; color: #e3e3e3; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 7px 18px 8px 18px; cursor: pointer; letter-spacing: .01em; box-shadow: 0 2px 8px #2224; transition: background .18s, box-shadow .18s, transform .13s; backdrop-filter: blur(2px); opacity: 0.93;">Theme Editor</button>
+        <button type="button" id="site-list-btn" style="background: #232323; color: #e3e3e3; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 7px 18px 8px 18px; cursor: pointer; letter-spacing: .01em; box-shadow: 0 2px 8px #2224; transition: background .18s, box-shadow .18s, transform .13s; backdrop-filter: blur(2px); opacity: 0.93;">Site List</button>
+      </div>
+      <div class="add-market-row" style="margin-top: 8px; margin-bottom: 20px;">
         <button type="button" class="add-market-btn" data-section="asia">+ Add Website to Asia</button>
         <button type="button" class="add-market-btn" data-section="international">+ Add Website to International</button>
         <button type="button" class="add-market-btn" data-section="special">+ Add Website to Designer</button>
@@ -6446,39 +6506,98 @@
       if (e.detail > 1) return;
       
       isDragging = true;
+      container.classList.add('dragging'); // Disable transitions for smooth dragging
+      
+      // Get the current rendered position BEFORE any changes
       const rect = container.getBoundingClientRect();
-      // Calculate offset from mouse to container's current position
+      
+      // Calculate offset from where the user clicked to the container's rendered top-left corner
+      // This offset will remain constant during dragging, keeping the clicked point under the cursor
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
-      // Store initial position before we change transform
+      
+      // Store the current rendered position
       initialLeft = rect.left;
       initialTop = rect.top;
+      
+      // Get computed style to check if we need to convert from percentage to pixels
+      const computedStyle = window.getComputedStyle(container);
+      const computedLeft = computedStyle.left;
+      const scale = window.innerWidth >= 1200 ? 0.9 : 1;
+      
+      // If container is using percentage-based centering, convert to pixel-based
+      // We need to maintain the same rendered position while switching to pixel positioning
+      if (computedLeft === '50%' || computedLeft.includes('%')) {
+        // When centered with translate(-50%, -50%) and scale, the rendered position
+        // is offset from the CSS position. We need to calculate the CSS position that
+        // maintains the current rendered position.
+        // With transform-origin: center, scale(0.9) scales from center, so:
+        // CSS left = rendered left - (width difference / 2)
+        // where width difference = rect.width / scale - rect.width
+        const cssWidth = rect.width / scale;
+        const cssHeight = rect.height / scale;
+        const cssLeft = rect.left - (cssWidth - rect.width) / 2;
+        const cssTop = rect.top - (cssHeight - rect.height) / 2;
+        
+        container.style.left = cssLeft + 'px';
+        container.style.top = cssTop + 'px';
+        container.style.transform = `scale(${scale})`;
+        
+        // Verify the position is correct and recalculate offset if needed
+        // (should be the same, but recalculate to be safe)
+        const newRect = container.getBoundingClientRect();
+        offsetX = e.clientX - newRect.left;
+        offsetY = e.clientY - newRect.top;
+      } else {
+        // Already using pixel positioning, just ensure scale is maintained
+        container.style.transform = `scale(${scale})`;
+      }
+      
       container.style.cursor = 'grabbing';
       e.preventDefault();
     });
 
+    let rafId = null;
     document.addEventListener('mousemove', function(e) {
       if (!isDragging) return;
       
-      requestAnimationFrame(() => {
+      // Cancel previous animation frame if pending
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      
+      rafId = requestAnimationFrame(() => {
         // Calculate new position using the offset
         const x = e.clientX - offsetX;
         const y = e.clientY - offsetY;
         
+        // Use left/top for positioning, preserve scale transform on desktop (same as default)
         container.style.left = x + 'px';
         container.style.top = y + 'px';
-        container.style.transform = 'none';
+        const scale = window.innerWidth >= 1200 ? 0.9 : 1;
+        container.style.transform = `scale(${scale})`;
+        
+        // Don't modify width/height during dragging - let CSS handle it
+        // This prevents the shrinking issue
         
         // Store current position for restore
         container.dataset.lastLeft = x + 'px';
         container.dataset.lastTop = y + 'px';
+        rafId = null;
       });
     });
 
     document.addEventListener('mouseup', function() {
       if (isDragging) {
         isDragging = false;
+        container.classList.remove('dragging'); // Re-enable transitions
         container.style.cursor = '';
+        // No dimensions to clear - we're not storing them anymore
+        // Cancel any pending animation frame
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
       }
     });
 
@@ -6491,6 +6610,7 @@
 
     modalHandle.addEventListener('mousedown', function(e) {
       isModalDragging = true;
+      modal.classList.add('dragging'); // Disable transitions for smooth dragging
       // Get modal position relative to viewport
       const rect = modal.getBoundingClientRect();
       // Calculate offset from mouse to modal's top-left corner
@@ -6500,22 +6620,35 @@
       e.preventDefault();
     });
 
+    let modalRafId = null;
     document.addEventListener('mousemove', function(e) {
       if (!isModalDragging) return;
       
-      // Calculate new position keeping the same mouse offset
-      const x = e.clientX - modalOffsetX;
-      const y = e.clientY - modalOffsetY;
+      if (modalRafId !== null) {
+        cancelAnimationFrame(modalRafId);
+      }
       
-      modal.style.left = x + 'px';
-      modal.style.top = y + 'px';
-      modal.style.transform = 'none'; // Remove centering transform
+      modalRafId = requestAnimationFrame(() => {
+        // Calculate new position keeping the same mouse offset
+        const x = e.clientX - modalOffsetX;
+        const y = e.clientY - modalOffsetY;
+        
+        modal.style.left = x + 'px';
+        modal.style.top = y + 'px';
+        modal.style.transform = 'none'; // Remove centering transform
+        modalRafId = null;
+      });
     });
 
     document.addEventListener('mouseup', function() {
       if (isModalDragging) {
         isModalDragging = false;
+        modal.classList.remove('dragging'); // Re-enable transitions
         modal.style.cursor = '';
+        if (modalRafId !== null) {
+          cancelAnimationFrame(modalRafId);
+          modalRafId = null;
+        }
       }
     });
 
@@ -6527,6 +6660,7 @@
 
     siteListModalHandle.addEventListener('mousedown', function(e) {
       isSiteListModalDragging = true;
+      siteListModal.classList.add('dragging'); // Disable transitions for smooth dragging
       const rect = siteListModal.getBoundingClientRect();
       siteListModalOffsetX = e.clientX - rect.left;
       siteListModalOffsetY = e.clientY - rect.top;
@@ -6534,19 +6668,33 @@
       e.preventDefault();
     });
 
+    let siteListModalRafId = null;
     document.addEventListener('mousemove', function(e) {
       if (!isSiteListModalDragging) return;
-      const x = e.clientX - siteListModalOffsetX;
-      const y = e.clientY - siteListModalOffsetY;
-      siteListModal.style.left = x + 'px';
-      siteListModal.style.top = y + 'px';
-      siteListModal.style.transform = 'none';
+      
+      if (siteListModalRafId !== null) {
+        cancelAnimationFrame(siteListModalRafId);
+      }
+      
+      siteListModalRafId = requestAnimationFrame(() => {
+        const x = e.clientX - siteListModalOffsetX;
+        const y = e.clientY - siteListModalOffsetY;
+        siteListModal.style.left = x + 'px';
+        siteListModal.style.top = y + 'px';
+        siteListModal.style.transform = 'none';
+        siteListModalRafId = null;
+      });
     });
 
     document.addEventListener('mouseup', function() {
       if (isSiteListModalDragging) {
         isSiteListModalDragging = false;
+        siteListModal.classList.remove('dragging'); // Re-enable transitions
         siteListModal.style.cursor = '';
+        if (siteListModalRafId !== null) {
+          cancelAnimationFrame(siteListModalRafId);
+          siteListModalRafId = null;
+        }
       }
     });
 
@@ -7169,11 +7317,25 @@
   window.addEventListener('mousemove', function(e) {
     if (!resizing) return;
     
+    // Get top header height to prevent handles from going under it
+    const topHeader = document.querySelector('.top-header');
+    const topHeaderHeight = topHeader ? topHeader.offsetHeight : 50;
     
     if (resizing.type === 'sidebar') {
       const dx = e.clientX - startX;
       let newW = Math.max(200, Math.min(600, startW + dx));
-      document.querySelector('.sidebar').style.width = newW + 'px';
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.style.width = newW + 'px';
+      
+      // Prevent side handles from going under top header
+      const handleLeft = sidebar.querySelector('.resize-handle-left');
+      const handleRight = sidebar.querySelector('.resize-handle-right');
+      if (handleLeft && e.clientY < topHeaderHeight) {
+        return; // Don't resize if mouse is under top header
+      }
+      if (handleRight && e.clientY < topHeaderHeight) {
+        return; // Don't resize if mouse is under top header
+      }
       
       // Adjust container margin when sidebar resizes
       if (window.innerWidth >= 1200) {
@@ -7183,7 +7345,14 @@
     if (resizing.type === 'wishlist') {
       const dx = startX - e.clientX;
       let newW = Math.max(200, Math.min(600, startW + dx));
-      document.querySelector('.wishlist-section').style.width = newW + 'px';
+      const wishlist = document.querySelector('.wishlist-section');
+      wishlist.style.width = newW + 'px';
+      
+      // Prevent side handles from going under top header
+      const handleLeft = wishlist.querySelector('.resize-handle-left');
+      if (handleLeft && e.clientY < topHeaderHeight) {
+        return; // Don't resize if mouse is under top header
+      }
     }
     if (resizing.type === 'container') {
       const dx = e.clientX - startX;
@@ -7193,6 +7362,13 @@
       const container = document.querySelector('.container');
       container.style.width = newW + 'px';
       container.style.height = newH + 'px';
+      
+      // Prevent side handles from going under top header
+      const handleLeft = container.querySelector('.resize-handle-left');
+      const handleRight = container.querySelector('.resize-handle-right');
+      if ((handleLeft || handleRight) && e.clientY < topHeaderHeight) {
+        return; // Don't resize if mouse is under top header
+      }
     }
   });
 
@@ -7521,7 +7697,10 @@
           }
           sidebar.classList.remove('reattach-preview');
         }
-        isDragging = false;
+        if (isDragging) {
+          isDragging = false;
+          sidebar.classList.remove('dragging'); // Re-enable transitions
+        }
       });
 
       function detachSidebar() {
@@ -7532,20 +7711,30 @@
         sidebar.style.left = originalPosition.left + 'px';
         sidebar.style.top = originalPosition.top + 'px';
         sidebar.style.width = sidebar.offsetWidth + 'px';
+        // Preserve desktop transform if on desktop
+        if (window.innerWidth >= 1200) {
+          sidebar.style.transform = 'scale(0.8)';
+        }
       }
 
       function reattachSidebar() {
         isDetached = false;
         sidebar.classList.remove('detached');
+        sidebar.classList.remove('dragging'); // Remove dragging class to re-enable transitions
         sidebar.style.position = 'fixed';
         sidebar.style.left = '0';
         sidebar.style.top = '0';
-        sidebar.style.width = '300px';
-        sidebar.style.height = '100vh';
+        sidebar.style.width = '';
+        sidebar.style.height = '';
         sidebar.style.minHeight = '';
         sidebar.style.maxHeight = '';
         sidebar.style.resize = '';
-        sidebar.style.transform = '';
+        // Restore desktop transform if on desktop
+        if (window.innerWidth >= 1200) {
+          sidebar.style.transform = 'scale(0.8)';
+        } else {
+          sidebar.style.transform = '';
+        }
         sidebar.style.cursor = '';
         
         // Force reflow to ensure smooth transition
@@ -7557,6 +7746,7 @@
         if (!isDetached) return;
         e.preventDefault();
         isDragging = true;
+        sidebar.classList.add('dragging'); // Disable transitions for smooth dragging
         const rect = sidebar.getBoundingClientRect();
         dragOffsetX = e.clientX - rect.left;
         dragOffsetY = e.clientY - rect.top;
@@ -7564,12 +7754,18 @@
 
       document.addEventListener('mousemove', function(e) {
         if (!isDragging || !isDetached) return;
-        sidebar.style.left = (e.clientX - dragOffsetX) + 'px';
-        sidebar.style.top = (e.clientY - dragOffsetY) + 'px';
+        
+        requestAnimationFrame(() => {
+          sidebar.style.left = (e.clientX - dragOffsetX) + 'px';
+          sidebar.style.top = (e.clientY - dragOffsetY) + 'px';
+        });
       });
 
       document.addEventListener('mouseup', function() {
-        isDragging = false;
+        if (isDragging) {
+          isDragging = false;
+          sidebar.classList.remove('dragging'); // Re-enable transitions
+        }
       });
 
       // Panel controls functionality
