@@ -62,15 +62,15 @@
       top: 50%;
       transform: translate(-50%, -50%);
       background: linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(15,15,15,0.98) 100%);
-      padding: 35px 25px 25px 25px;
-      border-radius: 24px;
+      padding: 20px 20px 20px 20px;
+      border-radius: 20px;
       box-shadow: 
         0 20px 60px rgba(0,0,0,0.6),
         0 0 0 1px rgba(255,255,255,0.08),
         inset 0 1px 0 rgba(255,255,255,0.1);
       backdrop-filter: blur(20px) saturate(180%);
       border: 1px solid rgba(255,255,255,0.15);
-      z-index: 10;
+      z-index: 1001; /* Higher than top-header (1000) so drag handles aren't blocked */
       transition: all 0.4s cubic-bezier(0.2, 0.9, 0.1, 1.1);
       overflow-y: auto;
       display: flex;
@@ -181,6 +181,8 @@
       align-items: center;
       -webkit-user-select: none;
       user-select: none;
+      z-index: 1001; /* Higher than top-header (1000) to ensure handles aren't blocked */
+      pointer-events: auto;
     }
     .drag-handle::after {
       content: '';
@@ -204,9 +206,9 @@
       color: #e3e3e3;
       text-shadow: 0 2px 12px #2224;
     }
-    h1 { margin-bottom: 12px; font-size: 1.8em; }
-    h2 { font-size: 1.19em; margin-top: 30px; margin-bottom: 14px; display: inline-block; }
-    .section-header-row { display: flex; align-items: center; gap: 8px; margin-top: 30px; margin-bottom: 14px; }
+    h1 { margin-bottom: 10px; font-size: 1.7em; }
+    h2 { font-size: 1.15em; margin-top: 20px; margin-bottom: 10px; display: inline-block; }
+    .section-header-row { display: flex; align-items: center; gap: 8px; margin-top: 20px; margin-bottom: 10px; }
     .section-openall-btn {
       background: #232323;
       color: #e3e3e3;
@@ -230,8 +232,8 @@
       box-shadow: 0 4px 16px #2226;
       transform: translateY(-2px) scale(1.04);
     }
-    .tip { font-size: 14px; color: #b0b0b0; margin-bottom: 20px; }
-    .market-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+    .tip { font-size: 13px; color: #b0b0b0; margin-bottom: 15px; }
+    .market-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
     input[type="text"] {
       font-size: 18px;
       padding: 12px 14px;
@@ -251,7 +253,7 @@
     .markets { 
       display: flex; 
       flex-wrap: wrap; 
-      gap: 12px; 
+      gap: 10px; 
       justify-content: flex-start;
       padding-right: 5px;
     }
@@ -366,7 +368,7 @@
       position: fixed;
       left: 0;
       top: 0;
-      width: 250px;
+      width: 300px;
       min-width: 200px;
       max-width: 600px;
       height: 100vh;
@@ -375,11 +377,11 @@
       background: rgba(15,15,15,0.98);
       border-right: 1px solid rgba(255,255,255,0.1);
       box-shadow: 2px 0 16px rgba(0,0,0,0.3);
-      z-index: 100;
-      padding: 22px 12px 18px 18px;
+      z-index: 1001; /* Higher than top-header (1000) so drag handles aren't blocked */
+      padding: 15px 10px 15px 15px;
       display: flex;
       flex-direction: column;
-      gap: 13px;
+      gap: 10px;
       backdrop-filter: blur(7px);
       overflow-y: auto;
       transition: transform 0.3s ease, left 0.3s ease, top 0.3s ease;
@@ -549,10 +551,10 @@
       overflow-y: visible;
     }
     .saved-folder-item {
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       font-weight: bold;
       color: #e3e3e3;
-      font-size: 1.03em;
+      font-size: 1em;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -575,8 +577,8 @@
     .sidebar-folder-remove-btn { color: #ff3b5c; } /* keep trashcan accent */
     .sidebar-folder-edit-btn:hover, .sidebar-folder-remove-btn:hover { color: #ff3b5c; background: #2224; }
     .saved-searches-list {
-      margin-left: 10px;
-      min-height: 100px;
+      margin-left: 8px;
+      min-height: 80px;
       max-height: none;
       overflow-y: visible;
       resize: none;
@@ -584,7 +586,7 @@
       scrollbar-color: #888 #232323;
       background: rgba(44,46,48,0.15);
       border-radius: 6px;
-      padding: 4px;
+      padding: 3px;
     }
     .sidebar-folder-active {
       background: #2224;
@@ -745,17 +747,17 @@
       background: none;
       border: none;
       color: #e3e3e3;
-      font-size: 1em;
+      font-size: 0.95em;
       font-weight: 500;
       cursor: pointer;
-      padding: 6px 8px;
+      padding: 4px 6px;
       border-radius: 3px;
       transition: background .13s, color .13s;
       flex: 1;
       text-align: left;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     .search-term-checkbox {
       width: 16px;
@@ -1546,7 +1548,7 @@
       background: rgba(15,15,15,0.98);
       border-left: 1px solid rgba(255,255,255,0.1);
       box-shadow: -2px 0 16px rgba(0,0,0,0.3);
-      z-index: 101;
+      z-index: 1001; /* Higher than top-header (1000) so drag handles aren't blocked */
       padding: 24px 15px 18px 18px;
       display: flex;
       flex-direction: column;
@@ -2454,9 +2456,37 @@
       .site-list-item-label { font-size: 13px; }
     }
     @media (min-width: 1200px) {
+  .sidebar {
+    width: 300px; /* Wider sidebar for more saved searches visibility */
+    height: calc(100vh / 0.8) !important; /* Increase height so after 0.8 scale it still reaches bottom */
+    max-height: calc(100vh / 0.8) !important; /* Override max-height to allow full height */
+    min-height: calc(100vh / 0.8) !important; /* Ensure minimum height */
+    transform: scale(0.8); /* Zoom out by 20% */
+    transform-origin: top left; /* Scale from top-left corner */
+  }
+  
   .container {
-    margin-left: 320px;  /* Increased from 255px for more space from sidebar */
+    margin-left: 320px;  /* Space from sidebar */
     margin-right: 405px; /* Keeps it visually centered */
+    transform: translate(-50%, -50%) scale(0.8); /* Zoom out by 20% while maintaining centering */
+    transform-origin: center center; /* Scale from center */
+  }
+  
+  .wishlist-section {
+    height: calc(100vh / 0.8) !important; /* Increase height so after 0.8 scale it still reaches bottom */
+    max-height: calc(100vh / 0.8) !important; /* Override max-height to allow full height */
+    min-height: calc(100vh / 0.8) !important; /* Ensure minimum height */
+    transform: scale(0.8); /* Zoom out by 20% */
+    transform-origin: top right; /* Scale from top-right corner */
+  }
+  
+  @media (min-width: 1920px) {
+    .container {
+      max-width: 1200px; /* Wider container for 1920x1080 screens */
+      max-height: 95vh; /* Use more vertical space */
+      margin-right: 300px; /* Adjust right margin for better centering */
+      padding: 30px 30px 25px 30px; /* Slightly more padding for better spacing */
+    }
   }
 
   /* Top Header Styles */
@@ -7507,13 +7537,16 @@
       function reattachSidebar() {
         isDetached = false;
         sidebar.classList.remove('detached');
+        sidebar.style.position = 'fixed';
         sidebar.style.left = '0';
         sidebar.style.top = '0';
-        sidebar.style.width = '250px';
-        sidebar.style.height = '';
+        sidebar.style.width = '300px';
+        sidebar.style.height = '100vh';
         sidebar.style.minHeight = '';
         sidebar.style.maxHeight = '';
         sidebar.style.resize = '';
+        sidebar.style.transform = '';
+        sidebar.style.cursor = '';
         
         // Force reflow to ensure smooth transition
         void sidebar.offsetWidth;
