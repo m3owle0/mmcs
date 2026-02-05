@@ -4752,7 +4752,11 @@
         { key: "rakuma", label: "Rakuten Rakuma" },
         { key: "rakuten-jp", label: "Rakuten Japan" },
         { key: "xianyu", label: "Xianyu (闲鱼)" },
-        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" }
+        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" },
+        { key: "2ndstreet-jp", label: "2nd Street JP" },
+        { key: "carousell-sg", label: "Carousell SG" },
+        { key: "fruits-family", label: "Fruits Family" },
+        { key: "kindal", label: "Kindal" }
       ],
       international: [
         { key: "depop", label: "Depop" },
@@ -4763,7 +4767,12 @@
         { key: "mercari-us", label: "Mercari US" },
         { key: "poshmark", label: "Poshmark" },
         { key: "shopgoodwill", label: "ShopGoodwill" },
-        { key: "vinted", label: "Vinted" }
+        { key: "vinted", label: "Vinted" },
+        { key: "automated-searches", label: "Automated Searches" },
+        { key: "avito", label: "Avito" },
+        { key: "ebay-global", label: "Ebay Global" },
+        { key: "google-images-past-month", label: "Google Images (Past month)" },
+        { key: "instagram", label: "Instagram" }
       ],
       special: [
         { key: "secondstreet", label: "2nd STREET" },
@@ -5705,7 +5714,16 @@
       "vinted":          q => `https://www.vinted.com/catalog?search_text=${encodeURIComponent(q)}&time=${getVintedTime()}&order=newest_first&page=1`,
       "secondstreet":    q => `https://ec.2ndstreetusa.com/pages/search-results-page?q=${encodeURIComponent(q)}&tab=products&sort_by=created&page=1`,
       "therealreal":     q => `https://www.therealreal.com/products?keywords=${encodeURIComponent(q)}`,
-      "vestiaire":       q => `https://us.vestiairecollective.com/search/?q=${encodeURIComponent(q)}&sortBy=3`
+      "vestiaire":       q => `https://us.vestiairecollective.com/search/?q=${encodeURIComponent(q)}&sortBy=3`,
+      "2ndstreet-jp":    q => `https://www.2ndstreet.jp/search?keyword=${encodeURIComponent(q)}&selected_category=&minPrice=&maxPrice=&sortBy=arrival&category=`,
+      "carousell-sg":    q => `https://www.carousell.sg/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&sort_by=3&t-search_query_source=direct_search`,
+      "fruits-family":   q => `https://fruitsfamily.com/search/${encodeURIComponent(q)}`,
+      "kindal":          q => `https://shop.kind.co.jp/search?q=${encodeURIComponent(q)}&sort=number-extra-sort1-descending`,
+      "automated-searches": q => `https://automatedsearches.com/search?search_siteid=0&search_new=1&search_query=${encodeURIComponent(q)}&search_number=0&search_hic=0&search_category=11450&search_category0=11450&search_category1=11450&search_hmo=0&search_condition_used=1&search_condition_parts=1&sear`,
+      "avito":           q => `https://www.avito.ru/all/odezhda_obuv_aksessuary?q=${encodeURIComponent(q)}`,
+      "ebay-global":     q => `https://globalesearch.com/?searchTerm=${encodeURIComponent(q)}&sortBy=newlyListed&searchInDescription=false&se=0&se=3&se=77&se=100&se=15&se=123&se=23&se=2&se=210&se=71&se=201&se=205&se=101&se=146&se=212&se=216&se=186&se=16&se=193`,
+      "google-images-past-month": q => `https://www.google.com/search?q=${encodeURIComponent(q)}&client=firefox-b-1-d&udm=2&tbs=qdr%3Am&sclient=img`,
+      "instagram":       q => `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(q)}`
     };
     // Custom market URLs: key is "custom-section-id"
     function getCustomMarketUrl(section, id, q) {
