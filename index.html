@@ -190,6 +190,13 @@
       pointer-events: auto;
       will-change: transform; /* Optimize for smooth dragging */
     }
+    
+    /* Hide drag handles on desktop - minimization buttons are in header */
+    @media (min-width: 1200px) {
+      .drag-handle {
+        display: none !important;
+      }
+    }
     .drag-handle::after {
       content: '';
       width: 60px;
@@ -2561,6 +2568,48 @@
     z-index: 1000;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
+  
+  /* Minimization buttons in header (desktop only) */
+  .header-minimize-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-right: 15px;
+  }
+  
+  .header-minimize-btn {
+    background: rgba(32, 34, 36, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e3e3e3;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 14px;
+    padding: 0;
+  }
+  
+  .header-minimize-btn:hover {
+    background: rgba(60, 60, 60, 0.9);
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .header-minimize-btn.active {
+    background: rgba(0, 230, 214, 0.2);
+    border-color: rgba(0, 230, 214, 0.4);
+    color: #00e6d6;
+  }
+  
+  @media (min-width: 1200px) {
+    .header-minimize-buttons {
+      display: flex !important;
+    }
+  }
 
   .header-left, .header-right {
     display: flex;
@@ -2896,6 +2945,12 @@
       </span>
     </div>
     <div class="header-right">
+      <!-- Minimization buttons (desktop only) -->
+      <div class="header-minimize-buttons" style="display: none;">
+        <button class="header-minimize-btn" id="minimize-container-btn" title="Minimize Main Container" data-panel="container">📦</button>
+        <button class="header-minimize-btn" id="minimize-sidebar-btn" title="Minimize Saved Searches" data-panel="sidebar">📋</button>
+        <button class="header-minimize-btn" id="minimize-wishlist-btn" title="Minimize Wishlist" data-panel="wishlist">⭐</button>
+      </div>
       <span id="user-display" style="display: none; color: #00e6d6; font-size: 14px; margin-right: 15px;"></span>
       <button id="profile-picture-btn" class="profile-picture-btn" style="display: none;">📷 Profile</button>
       <button id="unlock-btn" class="unlock-btn" style="display: none;">Unlock Site</button>
@@ -3034,9 +3089,6 @@
     <div class="wishlist-tip">
       Add links to items you're considering buying.<br>
       Titles are fetched automatically, and you can click to edit.
-    </div>
-    <div class="panel-controls">
-      <button class="panel-close" data-panel="wishlist" title="Close Panel">×</button>
     </div>
     <div class="resize-handle resize-handle-left" data-resize="wishlist"></div>
     <div class="resize-handle resize-handle-bottom" data-resize="wishlist"></div>
@@ -6465,141 +6517,39 @@
       if (e.target === this) hideSiteListModal();
     };
 
-    // Container minimize/restore and dragging functionality
+    // Container minimize/restore functionality (no dragging)
     const container = document.querySelector('.container');
-    const dragHandle = document.getElementById('container-handle');
-    let isMinimized = false;
+    let isContainerMinimized = false;
     
-    // Double click to minimize/restore
-    dragHandle.addEventListener('dblclick', function() {
-      isMinimized = !isMinimized;
+    function toggleContainerMinimize() {
+      isContainerMinimized = !isContainerMinimized;
       
-      if (isMinimized) {
-        // Store current position before minimizing
-        container.dataset.lastLeft = container.style.left;
-        container.dataset.lastTop = container.style.top;
-        
-        // Apply minimized state - force specific dimensions
-        container.classList.add('minimized');
-        container.style.width = '300px';
-        container.style.height = '40px';
-        container.style.left = container.dataset.lastLeft || '50%';
-        container.style.top = container.dataset.lastTop || '50%';
+      if (isContainerMinimized) {
+        // Fully hide the container
+        container.style.display = 'none';
       } else {
-        // Restore to previous position but use original max dimensions
-        container.classList.remove('minimized');
-        container.style.left = container.dataset.lastLeft || '50%';
-        container.style.top = container.dataset.lastTop || '50%';
-        container.style.width = '';
-        container.style.height = '';
+        // Show the container
+        container.style.display = '';
       }
       
-      // Force reflow to ensure smooth transition
-      void container.offsetWidth;
-    });
-    let isDragging = false;
-    let offsetX, offsetY;
-    let initialLeft, initialTop;
-
-    dragHandle.addEventListener('mousedown', function(e) {
-      // Don't drag if this is a double click
-      if (e.detail > 1) return;
-      
-      isDragging = true;
-      container.classList.add('dragging'); // Disable transitions for smooth dragging
-      
-      // Get the current rendered position BEFORE any changes
-      const rect = container.getBoundingClientRect();
-      
-      // Calculate offset from where the user clicked to the container's rendered top-left corner
-      // This offset will remain constant during dragging, keeping the clicked point under the cursor
-      offsetX = e.clientX - rect.left;
-      offsetY = e.clientY - rect.top;
-      
-      // Store the current rendered position
-      initialLeft = rect.left;
-      initialTop = rect.top;
-      
-      // Get computed style to check if we need to convert from percentage to pixels
-      const computedStyle = window.getComputedStyle(container);
-      const computedLeft = computedStyle.left;
-      const scale = window.innerWidth >= 1200 ? 0.9 : 1;
-      
-      // If container is using percentage-based centering, convert to pixel-based
-      // We need to maintain the same rendered position while switching to pixel positioning
-      if (computedLeft === '50%' || computedLeft.includes('%')) {
-        // When centered with translate(-50%, -50%) and scale, the rendered position
-        // is offset from the CSS position. We need to calculate the CSS position that
-        // maintains the current rendered position.
-        // With transform-origin: center, scale(0.9) scales from center, so:
-        // CSS left = rendered left - (width difference / 2)
-        // where width difference = rect.width / scale - rect.width
-        const cssWidth = rect.width / scale;
-        const cssHeight = rect.height / scale;
-        const cssLeft = rect.left - (cssWidth - rect.width) / 2;
-        const cssTop = rect.top - (cssHeight - rect.height) / 2;
-        
-        container.style.left = cssLeft + 'px';
-        container.style.top = cssTop + 'px';
-        container.style.transform = `scale(${scale})`;
-        
-        // Verify the position is correct and recalculate offset if needed
-        // (should be the same, but recalculate to be safe)
-        const newRect = container.getBoundingClientRect();
-        offsetX = e.clientX - newRect.left;
-        offsetY = e.clientY - newRect.top;
-      } else {
-        // Already using pixel positioning, just ensure scale is maintained
-        container.style.transform = `scale(${scale})`;
+      // Update button state
+      const btn = document.getElementById('minimize-container-btn');
+      if (btn) btn.classList.toggle('active', isContainerMinimized);
+    }
+    
+    // Minimize button handler (desktop only)
+    const minimizeContainerBtn = document.getElementById('minimize-container-btn');
+    if (minimizeContainerBtn) {
+      minimizeContainerBtn.addEventListener('click', toggleContainerMinimize);
+    }
+    
+    // Update button state on page load
+    if (window.innerWidth >= 1200) {
+      const containerBtn = document.getElementById('minimize-container-btn');
+      if (containerBtn) {
+        containerBtn.classList.toggle('active', container.style.display === 'none');
       }
-      
-      container.style.cursor = 'grabbing';
-      e.preventDefault();
-    });
-
-    let rafId = null;
-    document.addEventListener('mousemove', function(e) {
-      if (!isDragging) return;
-      
-      // Cancel previous animation frame if pending
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-      }
-      
-      rafId = requestAnimationFrame(() => {
-        // Calculate new position using the offset
-        const x = e.clientX - offsetX;
-        const y = e.clientY - offsetY;
-        
-        // Use left/top for positioning, preserve scale transform on desktop (same as default)
-        container.style.left = x + 'px';
-        container.style.top = y + 'px';
-        const scale = window.innerWidth >= 1200 ? 0.9 : 1;
-        container.style.transform = `scale(${scale})`;
-        
-        // Don't modify width/height during dragging - let CSS handle it
-        // This prevents the shrinking issue
-        
-        // Store current position for restore
-        container.dataset.lastLeft = x + 'px';
-        container.dataset.lastTop = y + 'px';
-        rafId = null;
-      });
-    });
-
-    document.addEventListener('mouseup', function() {
-      if (isDragging) {
-        isDragging = false;
-        container.classList.remove('dragging'); // Re-enable transitions
-        container.style.cursor = '';
-        // No dimensions to clear - we're not storing them anymore
-        // Cancel any pending animation frame
-        if (rafId !== null) {
-          cancelAnimationFrame(rafId);
-          rafId = null;
-        }
-      }
-    });
+    }
 
     // Make custom market modal draggable
     const modal = document.querySelector('.custom-market-modal');
@@ -7657,155 +7607,79 @@
       }
     });
 
-    // Sidebar detach/reattach functionality
+    // Sidebar minimize/restore functionality (no dragging)
     (function() {
       const sidebar = document.getElementById('sidebar');
-      const dragHandle = sidebar.querySelector('.drag-handle');
-      let isDetached = false;
-      let isDragging = false;
-      let dragOffsetX = 0;
-      let dragOffsetY = 0;
-      const originalPosition = { left: 0, top: 0 };
-
-      // Double click to detach/reattach
-      dragHandle.addEventListener('dblclick', function() {
-        if (isDetached) {
-          reattachSidebar();
-        } else {
-          detachSidebar();
-        }
-      });
-
-      // Also allow dragging near left edge to reattach
-      document.addEventListener('mousemove', function(e) {
-        if (!isDragging || !isDetached) return;
+      let isMinimized = false;
+      
+      function toggleSidebarMinimize() {
+        isMinimized = !isMinimized;
         
-        // If dragged near left edge, show reattachment preview
-        if (e.clientX < 50) {
-          sidebar.classList.add('reattach-preview');
+        if (isMinimized) {
+          // Fully hide the sidebar
+          sidebar.style.display = 'none';
         } else {
-          sidebar.classList.remove('reattach-preview');
+          // Show the sidebar
+          sidebar.style.display = '';
         }
-      });
-
-      document.addEventListener('mouseup', function() {
-        if (isDragging && isDetached) {
-          // If released near left edge, reattach
-          const rect = sidebar.getBoundingClientRect();
-          if (rect.left < 100) {
-            reattachSidebar();
-          }
-          sidebar.classList.remove('reattach-preview');
-        }
-        if (isDragging) {
-          isDragging = false;
-          sidebar.classList.remove('dragging'); // Re-enable transitions
-        }
-      });
-
-      function detachSidebar() {
-        isDetached = true;
-        originalPosition.left = sidebar.offsetLeft;
-        originalPosition.top = sidebar.offsetTop;
-        sidebar.classList.add('detached');
-        sidebar.style.left = originalPosition.left + 'px';
-        sidebar.style.top = originalPosition.top + 'px';
-        sidebar.style.width = sidebar.offsetWidth + 'px';
-        // Preserve desktop transform if on desktop
-        if (window.innerWidth >= 1200) {
-          sidebar.style.transform = 'scale(0.8)';
+        
+        // Update button state
+        const btn = document.getElementById('minimize-sidebar-btn');
+        if (btn) btn.classList.toggle('active', isMinimized);
+      }
+      
+      // Minimize button handler (desktop only)
+      const minimizeSidebarBtn = document.getElementById('minimize-sidebar-btn');
+      if (minimizeSidebarBtn) {
+        minimizeSidebarBtn.addEventListener('click', toggleSidebarMinimize);
+      }
+      
+      // Update button state on page load
+      if (window.innerWidth >= 1200) {
+        if (minimizeSidebarBtn) {
+          minimizeSidebarBtn.classList.toggle('active', sidebar.style.display === 'none');
         }
       }
 
-      function reattachSidebar() {
-        isDetached = false;
-        sidebar.classList.remove('detached');
-        sidebar.classList.remove('dragging'); // Remove dragging class to re-enable transitions
-        sidebar.style.position = 'fixed';
-        sidebar.style.left = '0';
-        sidebar.style.top = '0';
-        sidebar.style.width = '';
-        sidebar.style.height = '';
-        sidebar.style.minHeight = '';
-        sidebar.style.maxHeight = '';
-        sidebar.style.resize = '';
-        // Restore desktop transform if on desktop
-        if (window.innerWidth >= 1200) {
-          sidebar.style.transform = 'scale(0.8)';
+      // Wishlist minimize/restore functionality
+      const wishlistSection = document.getElementById('wishlist-section');
+      let isWishlistMinimized = false;
+      
+      function toggleWishlistMinimize() {
+        isWishlistMinimized = !isWishlistMinimized;
+        
+        if (isWishlistMinimized) {
+          // Fully hide the wishlist
+          wishlistSection.style.display = 'none';
         } else {
-          sidebar.style.transform = '';
+          // Show the wishlist
+          wishlistSection.style.display = '';
         }
-        sidebar.style.cursor = '';
         
-        // Force reflow to ensure smooth transition
-        void sidebar.offsetWidth;
+        // Update button state
+        const btn = document.getElementById('minimize-wishlist-btn');
+        if (btn) btn.classList.toggle('active', isWishlistMinimized);
       }
-
-      // Dragging when detached
-      dragHandle.addEventListener('mousedown', function(e) {
-        if (!isDetached) return;
-        e.preventDefault();
-        isDragging = true;
-        sidebar.classList.add('dragging'); // Disable transitions for smooth dragging
-        const rect = sidebar.getBoundingClientRect();
-        dragOffsetX = e.clientX - rect.left;
-        dragOffsetY = e.clientY - rect.top;
-      });
-
-      document.addEventListener('mousemove', function(e) {
-        if (!isDragging || !isDetached) return;
-        
-        requestAnimationFrame(() => {
-          sidebar.style.left = (e.clientX - dragOffsetX) + 'px';
-          sidebar.style.top = (e.clientY - dragOffsetY) + 'px';
-        });
-      });
-
-      document.addEventListener('mouseup', function() {
-        if (isDragging) {
-          isDragging = false;
-          sidebar.classList.remove('dragging'); // Re-enable transitions
+      
+      // Minimize button handler (desktop only)
+      const minimizeWishlistBtn = document.getElementById('minimize-wishlist-btn');
+      if (minimizeWishlistBtn) {
+        minimizeWishlistBtn.addEventListener('click', toggleWishlistMinimize);
+      }
+      
+      // Update button state on page load
+      if (window.innerWidth >= 1200) {
+        if (minimizeWishlistBtn) {
+          minimizeWishlistBtn.classList.toggle('active', wishlistSection.style.display === 'none');
         }
-      });
-
-      // Panel controls functionality
+      }
+      
+      // Panel controls functionality (for close button)
       const minimizedPanels = document.getElementById('minimized-panels');
       const PANEL_SIZES_KEY = 'panelSizes';
       
-      // Create minimized button for wishlist
-      function createWishlistButton() {
-        const btn = document.createElement('button');
-        btn.className = 'minimized-panel-btn';
-        btn.title = 'Show Wishlist';
-        btn.textContent = 'W';
-        btn.style.position = 'fixed';
-        btn.style.right = '10px';
-        btn.style.top = '10px';
-        btn.onclick = function() {
-          document.getElementById('wishlist-section').style.display = '';
-          btn.remove();
-        };
-        document.body.appendChild(btn);
-      }
-
-      // Close panel handler
-      document.addEventListener('click', function(e) {
-        const closeBtn = e.target.closest('.panel-close');
-        if (!closeBtn) return;
-        
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const panelId = closeBtn.dataset.panel;
-        const panel = document.getElementById(panelId === 'wishlist' ? 'wishlist-section' : panelId);
-        if (!panel) return;
-        
-        panel.style.display = 'none';
-        
-        if (panelId === 'wishlist') {
-          createWishlistButton();
-        }
-      });
+      // Close panel handler removed - wishlist close button removed
+      // Panels are now controlled via header minimization buttons only
     })();
   </script>
 </body>
