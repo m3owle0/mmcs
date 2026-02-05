@@ -1870,10 +1870,18 @@
       flex-direction: column;
       backdrop-filter: blur(7px);
       transition: transform 0.3s ease;
+      transform: translateX(100%);
+    }
+    
+    .chat-panel:not(.hidden) {
+      transform: translateX(0);
+      display: flex;
     }
     
     .chat-panel.hidden {
       transform: translateX(100%);
+      display: none;
+    }
     }
     
     .chat-header {
@@ -2069,12 +2077,12 @@
         transform: translateY(100%);
       }
       
-      .chat-panel.hidden {
-        transform: translateY(100%);
-      }
-      
       .chat-panel:not(.hidden) {
         transform: translateY(0);
+      }
+      
+      .chat-panel.hidden {
+        transform: translateY(100%);
       }
       
       .chat-toggle-btn {
@@ -6001,7 +6009,7 @@
   </div>
 
   <!-- Chat Toggle Button -->
-  <button class="chat-toggle-btn" id="chat-toggle-btn" title="Open Chat">💬</button>
+  <button class="chat-toggle-btn" id="chat-toggle-btn" title="Open Chat" onclick="window.toggleChat && window.toggleChat()">💬</button>
 
   <!-- Particle Background Effect -->
   <canvas id="particle-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
@@ -6301,7 +6309,10 @@
       function setupEventListeners() {
         // Chat toggle
         if (chatToggleBtn) {
-          chatToggleBtn.addEventListener('click', toggleChat);
+          // Remove any existing event listeners first
+          chatToggleBtn.replaceWith(chatToggleBtn.cloneNode(true));
+          const newToggleBtn = document.getElementById('chat-toggle-btn');
+          newToggleBtn.addEventListener('click', toggleChat);
         }
         
         // Chat send
@@ -6353,7 +6364,9 @@
         // Close chat panel
         const chatCloseBtn = document.querySelector('[data-panel="chat"]');
         if (chatCloseBtn) {
-          chatCloseBtn.addEventListener('click', function() {
+          chatCloseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             setChatVisibility(false);
           });
         }
@@ -6362,7 +6375,16 @@
       // Toggle chat visibility
       function toggleChat() {
         const isHidden = chatPanel.classList.contains('hidden');
-        setChatVisibility(!isHidden);
+        if (isHidden) {
+          chatPanel.classList.remove('hidden');
+          localStorage.setItem(CHAT_VISIBILITY_KEY, 'visible');
+          if (chatInput) {
+            setTimeout(() => chatInput.focus(), 50);
+          }
+        } else {
+          chatPanel.classList.add('hidden');
+          localStorage.setItem(CHAT_VISIBILITY_KEY, 'hidden');
+        }
       }
       
       // Set chat visibility
@@ -6370,7 +6392,9 @@
         if (visible) {
           chatPanel.classList.remove('hidden');
           localStorage.setItem(CHAT_VISIBILITY_KEY, 'visible');
-          if (chatInput) chatInput.focus();
+          if (chatInput) {
+            setTimeout(() => chatInput.focus(), 50);
+          }
         } else {
           chatPanel.classList.add('hidden');
           localStorage.setItem(CHAT_VISIBILITY_KEY, 'hidden');
@@ -6589,10 +6613,19 @@
       
       // Initialize when DOM is ready
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initChatAndProfile);
+        document.addEventListener('DOMContentLoaded', function() {
+          setTimeout(initChatAndProfile, 100);
+        });
       } else {
-        setTimeout(initChatAndProfile, 1000);
+        setTimeout(initChatAndProfile, 100);
       }
+      
+      // Make sure chat panel starts hidden
+      window.addEventListener('load', function() {
+        if (chatPanel && !localStorage.getItem(CHAT_VISIBILITY_KEY)) {
+          chatPanel.classList.add('hidden');
+        }
+      });
       
       // Update online users periodically
       setInterval(updateOnlineUsers, 30000);
