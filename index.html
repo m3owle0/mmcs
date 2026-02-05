@@ -1206,6 +1206,103 @@
       margin-top: 20px;
     }
     
+    .profile-modal-description-container {
+      margin: 20px 0;
+      text-align: left;
+    }
+    
+    .profile-modal-description {
+      color: #b0b0b0;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 12px;
+      background: rgba(30, 32, 34, 0.5);
+      border-radius: 8px;
+      min-height: 40px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    
+    .profile-modal-description.empty {
+      color: #666;
+      font-style: italic;
+    }
+    
+    .profile-modal-description-edit {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      background: rgba(30, 32, 34, 0.8);
+      border: 1.5px solid #2a2d2f;
+      border-radius: 8px;
+      color: #e3e3e3;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      box-sizing: border-box;
+    }
+    
+    .profile-modal-description-edit:focus {
+      border-color: rgba(0, 230, 214, 0.55);
+      background: rgba(40, 42, 44, 0.98);
+    }
+    
+    .profile-modal-description-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      justify-content: flex-end;
+    }
+    
+    .profile-description-save-btn,
+    .profile-description-cancel-btn {
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    
+    .profile-description-save-btn {
+      background: #00e6d6;
+      color: #0a0a0a;
+    }
+    
+    .profile-description-save-btn:hover {
+      background: #00d4c4;
+      transform: translateY(-1px);
+    }
+    
+    .profile-description-cancel-btn {
+      background: rgba(60, 60, 60, 0.8);
+      color: #e3e3e3;
+    }
+    
+    .profile-description-cancel-btn:hover {
+      background: rgba(80, 80, 80, 0.9);
+    }
+    
+    .profile-description-edit-btn {
+      margin-top: 8px;
+      padding: 6px 16px;
+      background: rgba(0, 230, 214, 0.2);
+      color: #00e6d6;
+      border: 1px solid rgba(0, 230, 214, 0.3);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .profile-description-edit-btn:hover {
+      background: rgba(0, 230, 214, 0.3);
+      border-color: rgba(0, 230, 214, 0.5);
+    }
+    
     .profile-modal-close {
       position: absolute;
       top: 15px;
@@ -3206,6 +3303,15 @@
       <button class="profile-modal-close" id="profile-modal-close">×</button>
       <div class="profile-modal-avatar" id="profile-modal-avatar"></div>
       <div class="profile-modal-username" id="profile-modal-username"></div>
+      <div class="profile-modal-description-container" id="profile-modal-description-container">
+        <div class="profile-modal-description" id="profile-modal-description"></div>
+        <textarea class="profile-modal-description-edit" id="profile-modal-description-edit" placeholder="Add a description..." maxlength="500" style="display: none;"></textarea>
+        <div class="profile-modal-description-actions" id="profile-modal-description-actions" style="display: none;">
+          <button class="profile-description-save-btn" id="profile-description-save-btn">Save</button>
+          <button class="profile-description-cancel-btn" id="profile-description-cancel-btn">Cancel</button>
+        </div>
+        <button class="profile-description-edit-btn" id="profile-description-edit-btn" style="display: none;">Edit Description</button>
+      </div>
       <div class="profile-modal-info-label">User ID</div>
       <div class="profile-modal-info" id="profile-modal-userid"></div>
       <div class="profile-modal-info-label">Join Date</div>
@@ -4702,8 +4808,17 @@
         const profileModalUsername = document.getElementById('profile-modal-username');
         const profileModalUserid = document.getElementById('profile-modal-userid');
         const profileModalJoindate = document.getElementById('profile-modal-joindate');
+        const profileModalDescription = document.getElementById('profile-modal-description');
+        const profileModalDescriptionEdit = document.getElementById('profile-modal-description-edit');
+        const profileDescriptionActions = document.getElementById('profile-modal-description-actions');
+        const profileDescriptionEditBtn = document.getElementById('profile-description-edit-btn');
         
         if (!profileModalBg) return;
+        
+        // Hide edit controls initially
+        if (profileModalDescriptionEdit) profileModalDescriptionEdit.style.display = 'none';
+        if (profileDescriptionActions) profileDescriptionActions.style.display = 'none';
+        if (profileDescriptionEditBtn) profileDescriptionEditBtn.style.display = 'none';
         
         // Set username and avatar immediately
         if (profileModalUsername) {
@@ -4722,11 +4837,23 @@
           }
         }
         
+        // Check if this is the current user's profile
+        // Get current user ID from session
+        let isOwnProfile = false;
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session && session.user) {
+            isOwnProfile = session.user.id === userId;
+          }
+        } catch (e) {
+          console.error('Error checking own profile:', e);
+        }
+        
         // Fetch user details from database
         try {
           const { data: userData, error } = await supabase
             .from('unlocked_users')
-            .select('auth_user_id, email, created_at')
+            .select('auth_user_id, email, created_at, description, profile_picture_url')
             .eq('auth_user_id', userId)
             .maybeSingle();
           
@@ -4747,6 +4874,23 @@
             } else if (profileModalJoindate) {
               profileModalJoindate.textContent = 'Unknown';
             }
+            
+            // Set description
+            if (profileModalDescription) {
+              const description = userData.description || '';
+              if (description.trim()) {
+                profileModalDescription.textContent = description;
+                profileModalDescription.classList.remove('empty');
+              } else {
+                profileModalDescription.textContent = isOwnProfile ? 'No description yet. Click "Edit Description" to add one.' : 'No description.';
+                profileModalDescription.classList.add('empty');
+              }
+            }
+            
+            // Show edit button if it's own profile
+            if (isOwnProfile && profileDescriptionEditBtn) {
+              profileDescriptionEditBtn.style.display = 'block';
+            }
           } else {
             // Fallback if user not found in unlocked_users
             if (profileModalUserid) {
@@ -4754,6 +4898,13 @@
             }
             if (profileModalJoindate) {
               profileModalJoindate.textContent = 'Unknown';
+            }
+            if (profileModalDescription) {
+              profileModalDescription.textContent = isOwnProfile ? 'No description yet. Click "Edit Description" to add one.' : 'No description.';
+              profileModalDescription.classList.add('empty');
+            }
+            if (isOwnProfile && profileDescriptionEditBtn) {
+              profileDescriptionEditBtn.style.display = 'block';
             }
           }
         } catch (error) {
@@ -4764,10 +4915,96 @@
           if (profileModalJoindate) {
             profileModalJoindate.textContent = 'Unknown';
           }
+          if (profileModalDescription) {
+            profileModalDescription.textContent = isOwnProfile ? 'No description yet. Click "Edit Description" to add one.' : 'No description.';
+            profileModalDescription.classList.add('empty');
+          }
+        }
+        
+        // Set up edit functionality for own profile
+        if (isOwnProfile) {
+          setupProfileDescriptionEdit(userId);
         }
         
         // Show modal
         profileModalBg.classList.add('show');
+      }
+      
+      // Setup profile description editing
+      function setupProfileDescriptionEdit(userId) {
+        const profileModalDescription = document.getElementById('profile-modal-description');
+        const profileModalDescriptionEdit = document.getElementById('profile-modal-description-edit');
+        const profileDescriptionActions = document.getElementById('profile-modal-description-actions');
+        const profileDescriptionEditBtn = document.getElementById('profile-description-edit-btn');
+        const profileDescriptionSaveBtn = document.getElementById('profile-description-save-btn');
+        const profileDescriptionCancelBtn = document.getElementById('profile-description-cancel-btn');
+        
+        if (!profileModalDescription || !profileModalDescriptionEdit || !profileDescriptionEditBtn) return;
+        
+        // Remove existing listeners to avoid duplicates
+        const newEditBtn = profileDescriptionEditBtn.cloneNode(true);
+        profileDescriptionEditBtn.parentNode.replaceChild(newEditBtn, profileDescriptionEditBtn);
+        
+        newEditBtn.addEventListener('click', () => {
+          const currentDescription = profileModalDescription.textContent;
+          const isEmpty = profileModalDescription.classList.contains('empty');
+          
+          profileModalDescription.style.display = 'none';
+          profileModalDescriptionEdit.style.display = 'block';
+          profileDescriptionActions.style.display = 'flex';
+          newEditBtn.style.display = 'none';
+          
+          profileModalDescriptionEdit.value = isEmpty ? '' : currentDescription;
+          profileModalDescriptionEdit.focus();
+        });
+        
+        if (profileDescriptionSaveBtn) {
+          const newSaveBtn = profileDescriptionSaveBtn.cloneNode(true);
+          profileDescriptionSaveBtn.parentNode.replaceChild(newSaveBtn, profileDescriptionSaveBtn);
+          
+          newSaveBtn.addEventListener('click', async () => {
+            const newDescription = profileModalDescriptionEdit.value.trim();
+            
+            try {
+              const { error } = await supabase
+                .from('unlocked_users')
+                .update({ description: newDescription })
+                .eq('auth_user_id', userId);
+              
+              if (error) throw error;
+              
+              // Update display
+              if (newDescription) {
+                profileModalDescription.textContent = newDescription;
+                profileModalDescription.classList.remove('empty');
+              } else {
+                profileModalDescription.textContent = 'No description yet. Click "Edit Description" to add one.';
+                profileModalDescription.classList.add('empty');
+              }
+              
+              // Hide edit mode
+              profileModalDescription.style.display = 'block';
+              profileModalDescriptionEdit.style.display = 'none';
+              profileDescriptionActions.style.display = 'none';
+              newEditBtn.style.display = 'block';
+            } catch (error) {
+              console.error('Error saving description:', error);
+              alert('Failed to save description. Please try again.');
+            }
+          });
+        }
+        
+        if (profileDescriptionCancelBtn) {
+          const newCancelBtn = profileDescriptionCancelBtn.cloneNode(true);
+          profileDescriptionCancelBtn.parentNode.replaceChild(newCancelBtn, profileDescriptionCancelBtn);
+          
+          newCancelBtn.addEventListener('click', () => {
+            profileModalDescription.style.display = 'block';
+            profileModalDescriptionEdit.style.display = 'none';
+            profileDescriptionActions.style.display = 'none';
+            newEditBtn.style.display = 'block';
+          });
+        }
       }
       
       // Get current user's profile picture URL
@@ -5145,10 +5382,11 @@
         usersListContent.innerHTML = '<div class="users-list-loading">Loading users...</div>';
         
         try {
-          // Fetch all verified users
+          // Fetch all verified users with descriptions
+          // Note: auth_user_id is the correct column name (not user_id or id)
           const { data: users, error } = await supabase
             .from(TABLE_NAME)
-            .select('*')
+            .select('auth_user_id, username, email, profile_picture_url, last_active, description, created_at')
             .eq('verified', true)
             .order('username', { ascending: true });
           
@@ -5177,7 +5415,7 @@
           
         } catch (err) {
           console.error('Error loading users list:', err);
-          usersListContent.innerHTML = '<div class="users-list-empty">Error loading users</div>';
+          usersListContent.innerHTML = `<div class="users-list-empty">Error loading users: ${err.message || 'Unknown error'}<br><small>Check browser console (F12) for details</small></div>`;
         }
       }
       
@@ -5193,6 +5431,11 @@
           const img = document.createElement('img');
           img.src = user.profile_picture_url;
           img.alt = user.username || 'User';
+          img.onerror = function() {
+            // Fallback to initial if image fails to load
+            this.style.display = 'none';
+            avatar.textContent = (user.username || user.email || 'U').charAt(0).toUpperCase();
+          };
           avatar.appendChild(img);
         } else {
           const initial = (user.username || user.email || 'U').charAt(0).toUpperCase();
@@ -5226,15 +5469,23 @@
         item.appendChild(avatar);
         item.appendChild(info);
         
-        // Click handler to show profile
-        item.addEventListener('click', () => {
+        // Click handler to show profile (like in chat - clickable)
+        item.style.cursor = 'pointer';
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
           if (window.showProfile) {
-            window.showProfile(
-              user.user_id || user.id,
-              user.username || user.email || 'Unknown User',
-              user.profile_picture_url || null
-            );
-            hideUsersListModal();
+            // Use auth_user_id (the correct column name in unlocked_users table)
+            const userId = user.auth_user_id;
+            if (userId) {
+              window.showProfile(
+                userId,
+                user.username || user.email || 'Unknown User',
+                user.profile_picture_url || null
+              );
+              hideUsersListModal();
+            } else {
+              console.error('No auth_user_id found for user:', user);
+            }
           }
         });
         
@@ -5309,10 +5560,11 @@
         usersListContent.innerHTML = '<div class="users-list-loading">Loading users...</div>';
         
         try {
-          // Fetch all verified users
+          // Fetch all verified users with descriptions
+          // Note: auth_user_id is the correct column name (not user_id or id)
           const { data: users, error } = await supabase
             .from(TABLE_NAME)
-            .select('*')
+            .select('auth_user_id, username, email, profile_picture_url, last_active, description, created_at')
             .eq('verified', true)
             .order('username', { ascending: true });
           
@@ -5341,7 +5593,7 @@
           
         } catch (err) {
           console.error('Error loading users list:', err);
-          usersListContent.innerHTML = '<div class="users-list-empty">Error loading users</div>';
+          usersListContent.innerHTML = `<div class="users-list-empty">Error loading users: ${err.message || 'Unknown error'}<br><small>Check browser console (F12) for details</small></div>`;
         }
       }
       
@@ -5357,6 +5609,11 @@
           const img = document.createElement('img');
           img.src = user.profile_picture_url;
           img.alt = user.username || 'User';
+          img.onerror = function() {
+            // Fallback to initial if image fails to load
+            this.style.display = 'none';
+            avatar.textContent = (user.username || user.email || 'U').charAt(0).toUpperCase();
+          };
           avatar.appendChild(img);
         } else {
           const initial = (user.username || user.email || 'U').charAt(0).toUpperCase();
@@ -5390,15 +5647,23 @@
         item.appendChild(avatar);
         item.appendChild(info);
         
-        // Click handler to show profile
-        item.addEventListener('click', () => {
+        // Click handler to show profile (like in chat - clickable)
+        item.style.cursor = 'pointer';
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
           if (window.showProfile) {
-            window.showProfile(
-              user.user_id || user.id,
-              user.username || user.email || 'Unknown User',
-              user.profile_picture_url || null
-            );
-            hideUsersListModal();
+            // Use auth_user_id (the correct column name in unlocked_users table)
+            const userId = user.auth_user_id;
+            if (userId) {
+              window.showProfile(
+                userId,
+                user.username || user.email || 'Unknown User',
+                user.profile_picture_url || null
+              );
+              hideUsersListModal();
+            } else {
+              console.error('No auth_user_id found for user:', user);
+            }
           }
         });
         
