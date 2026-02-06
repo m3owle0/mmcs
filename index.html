@@ -5309,14 +5309,14 @@
         
         try {
           // Count users who were active in the last 5 minutes
+          // Use the same logic as the users list for consistency
           const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
           
-          const { data, error, count } = await supabase
+          // Get all verified users and count online ones client-side (more accurate)
+          const { data: users, error } = await supabase
             .from(TABLE_NAME)
-            .select('*', { count: 'exact', head: false })
-            .eq('verified', true)
-            .not('last_active', 'is', null)
-            .gte('last_active', fiveMinutesAgo);
+            .select('last_active')
+            .eq('verified', true);
           
           if (error) {
             console.error('Error fetching online users:', error);
@@ -5324,7 +5324,15 @@
             return;
           }
           
-          const onlineCount = count || (data ? data.length : 0);
+          // Count users who were active in the last 5 minutes (same logic as users list)
+          let onlineCount = 0;
+          if (users && users.length > 0) {
+            onlineCount = users.filter(user => {
+              if (!user.last_active) return false;
+              return new Date(user.last_active) >= new Date(fiveMinutesAgo);
+            }).length;
+          }
+          
           if (onlineUsersCountEl) {
             onlineUsersCountEl.textContent = onlineCount.toString();
           }
