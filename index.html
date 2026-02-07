@@ -31,16 +31,7 @@
       background-attachment: fixed;
       color: var(--theme-text);
       min-height: 100vh;
-      overflow: auto;
-    }
-    
-    /* On mobile, ensure body is scrollable */
-    @media (max-width: 768px) {
-      html, body {
-        overflow-y: auto !important;
-        height: auto !important;
-        min-height: 100vh !important;
-      }
+      overflow: hidden;
     }
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
@@ -1395,9 +1386,20 @@
       color: #e3e3e3;
       font-size: 1.3em;
       font-weight: bold;
-      margin: 0 0 18px 0;
+      margin: 0 0 8px 0;
       text-align: center;
       text-shadow: 0 1px 4px #2224;
+    }
+    
+    .users-list-total {
+      color: #b0b0b0;
+      font-size: 0.9em;
+      text-align: center;
+      margin: 0 0 18px 0;
+      padding: 8px;
+      background: rgba(35, 35, 35, 0.4);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
     
     .users-list-modal-close {
@@ -3324,6 +3326,7 @@
     <div class="users-list-modal">
       <button class="users-list-modal-close" id="users-list-modal-close">×</button>
       <h3 class="users-list-modal-title">All Users</h3>
+      <div class="users-list-total" id="users-list-total">Total: 0 users</div>
       <div class="users-list-content" id="users-list-content">
         <div class="users-list-loading">Loading users...</div>
       </div>
@@ -5380,14 +5383,17 @@
       }
       
       async function loadUsersList() {
+        const usersListTotal = document.getElementById('users-list-total');
         if (!usersListContent || !supabase) {
           if (usersListContent) {
             usersListContent.innerHTML = '<div class="users-list-empty">Unable to load users</div>';
           }
+          if (usersListTotal) usersListTotal.textContent = 'Total: 0 users';
           return;
         }
         
         usersListContent.innerHTML = '<div class="users-list-loading">Loading users...</div>';
+        if (usersListTotal) usersListTotal.textContent = 'Total: Loading...';
         
         try {
           // Fetch all verified users with descriptions
@@ -5401,12 +5407,20 @@
           if (error) {
             console.error('Error fetching users:', error);
             usersListContent.innerHTML = '<div class="users-list-empty">Error loading users</div>';
+            if (usersListTotal) usersListTotal.textContent = 'Total: Error';
             return;
           }
           
           if (!users || users.length === 0) {
             usersListContent.innerHTML = '<div class="users-list-empty">No users found</div>';
+            if (usersListTotal) usersListTotal.textContent = 'Total: 0 users';
             return;
+          }
+          
+          // Update total count
+          const totalCount = users.length;
+          if (usersListTotal) {
+            usersListTotal.textContent = `Total: ${totalCount} ${totalCount === 1 ? 'user' : 'users'}`;
           }
           
           // Determine online status (active in last 5 minutes)
@@ -5424,6 +5438,7 @@
         } catch (err) {
           console.error('Error loading users list:', err);
           usersListContent.innerHTML = `<div class="users-list-empty">Error loading users: ${err.message || 'Unknown error'}<br><small>Check browser console (F12) for details</small></div>`;
+          if (usersListTotal) usersListTotal.textContent = 'Total: Error';
         }
       }
       
@@ -5558,14 +5573,17 @@
       }
       
       async function loadUsersList() {
+        const usersListTotal = document.getElementById('users-list-total');
         if (!usersListContent || !supabase) {
           if (usersListContent) {
             usersListContent.innerHTML = '<div class="users-list-empty">Unable to load users</div>';
           }
+          if (usersListTotal) usersListTotal.textContent = 'Total: 0 users';
           return;
         }
         
         usersListContent.innerHTML = '<div class="users-list-loading">Loading users...</div>';
+        if (usersListTotal) usersListTotal.textContent = 'Total: Loading...';
         
         try {
           // Fetch all verified users with descriptions
@@ -5579,12 +5597,20 @@
           if (error) {
             console.error('Error fetching users:', error);
             usersListContent.innerHTML = '<div class="users-list-empty">Error loading users</div>';
+            if (usersListTotal) usersListTotal.textContent = 'Total: Error';
             return;
           }
           
           if (!users || users.length === 0) {
             usersListContent.innerHTML = '<div class="users-list-empty">No users found</div>';
+            if (usersListTotal) usersListTotal.textContent = 'Total: 0 users';
             return;
+          }
+          
+          // Update total count
+          const totalCount = users.length;
+          if (usersListTotal) {
+            usersListTotal.textContent = `Total: ${totalCount} ${totalCount === 1 ? 'user' : 'users'}`;
           }
           
           // Determine online status (active in last 5 minutes)
@@ -5602,6 +5628,7 @@
         } catch (err) {
           console.error('Error loading users list:', err);
           usersListContent.innerHTML = `<div class="users-list-empty">Error loading users: ${err.message || 'Unknown error'}<br><small>Check browser console (F12) for details</small></div>`;
+          if (usersListTotal) usersListTotal.textContent = 'Total: Error';
         }
       }
       
