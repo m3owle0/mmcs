@@ -5407,6 +5407,13 @@
           if (currentUser) {
             startSessionHeartbeat();
           }
+          
+          // Initialize other features
+          setTimeout(() => {
+            if (window.initChat) {
+              window.initChat();
+            }
+          }, 1000);
         });
       } else {
         // Page already loaded, restore session immediately
@@ -5418,6 +5425,13 @@
           if (currentUser) {
             startSessionHeartbeat();
           }
+          
+          // Initialize other features
+          setTimeout(() => {
+            if (window.initChat) {
+              window.initChat();
+            }
+          }, 1000);
         }, 100);
       }
       
@@ -6236,7 +6250,7 @@
         });
       }
       
-      // Discord Notifications Button Handlers
+      // Discord Notifications Button Handlers - Fixed
       const discordNotificationsBtn = document.getElementById('discord-notifications-btn');
       const headerDiscordBtn = document.getElementById('header-discord-notifications-btn');
       const mainDiscordBtn = document.getElementById('main-discord-notifications-btn');
@@ -6244,41 +6258,43 @@
       function handleDiscordNotificationsClick() {
         const currentUser = localStorage.getItem('mmcs_current_user');
         if (!currentUser) {
-          // If not logged in, show upgrade modal highlighting Pro tier
-          if (window.showUpgradeModal) {
-            window.showUpgradeModal();
-            // Highlight Pro tier after modal opens
-            setTimeout(() => {
-              const proTier = document.querySelector('.subscription-tier[data-tier="pro"]');
-              if (proTier) {
-                proTier.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                proTier.style.border = '2px solid #00e6d6';
-                proTier.style.boxShadow = '0 0 20px rgba(0, 230, 214, 0.5)';
-              }
-            }, 100);
-          } else if (window.initUnlockSystem) {
+          // If not logged in, show login modal
+          if (window.initUnlockSystem) {
             window.initUnlockSystem();
           } else {
-            alert('Discord notifications require a $10/month subscription. Please sign up and subscribe to enable Discord notifications!');
+            alert('Please log in to access Discord notifications.');
           }
           return;
         }
+        
         // Check if user has notifications subscription
-        hasNotificationsSubscription().then(hasSubscription => {
-          if (hasSubscription) {
-            // User has subscription, show Discord notifications modal
-            if (window.showDiscordNotificationsModal) {
-              window.showDiscordNotificationsModal();
+        if (window.hasNotificationsSubscription) {
+          window.hasNotificationsSubscription().then(hasSubscription => {
+            if (hasSubscription) {
+              // User has subscription, show Discord notifications modal
+              if (window.showDiscordNotificationsModal) {
+                window.showDiscordNotificationsModal();
+              }
+            } else {
+              // User doesn't have subscription, show upgrade modal
+              if (window.showUpgradeModal) {
+                window.showUpgradeModal();
+              } else {
+                alert('Discord notifications require a $10/month subscription. Please subscribe to enable Discord notifications!');
+              }
             }
-          } else {
-            // User doesn't have subscription, show upgrade modal
+          }).catch(err => {
+            console.error('Error checking subscription:', err);
             if (window.showUpgradeModal) {
               window.showUpgradeModal();
-            } else {
-              alert('Discord notifications require a $10/month subscription. Please subscribe to enable Discord notifications!');
             }
+          });
+        } else {
+          // Fallback if function not available
+          if (window.showUpgradeModal) {
+            window.showUpgradeModal();
           }
-        });
+        }
       }
       
       if (discordNotificationsBtn) {
@@ -6298,7 +6314,7 @@
       }
     })();
     
-    // Discord Notifications Management
+    // Discord Notifications Management - Fixed
     (function() {
       const SUPABASE_URL = 'https://wbpfuuiznsmysbskywdx.supabase.co';
       const SUPABASE_ANON_KEY = 'sb_publishable_rIy_-DWT87Gj9ao1WvN3gA_WA6eME-x';
@@ -6306,8 +6322,9 @@
       
       let userNotifications = [];
       
-      // Expose function globally
+      // Expose functions globally
       window.showDiscordNotificationsModal = showDiscordNotificationsModal;
+      window.hasNotificationsSubscription = hasNotificationsSubscription;
       
       async function showDiscordNotificationsModal() {
         const modal = document.getElementById('discord-notifications-modal-bg');
@@ -6318,7 +6335,7 @@
         populateMarketsSelect();
       }
       
-      async function checkDiscordSubscription() {
+      async function hasNotificationsSubscription() {
         if (!supabase) return false;
         
         try {
@@ -6328,11 +6345,31 @@
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) return false;
           
-          // Check if user has active notifications subscription
-          const hasSubscription = await hasNotificationsSubscription();
-          return hasSubscription;
+          const { data: userData } = await supabase
+            .from('unlocked_users')
+            .select('notifications_subscription_active, notifications_subscription_expires_at')
+            .eq('auth_user_id', user.id)
+            .maybeSingle();
+          
+          if (!userData) return false;
+          
+          // Check if subscription is active
+          const isActive = userData.notifications_subscription_active === true || 
+                          userData.notifications_subscription_active === 'true' ||
+                          userData.notifications_subscription_active === 1;
+          
+          if (!isActive) return false;
+          
+          // Check if not expired
+          if (userData.notifications_subscription_expires_at) {
+            const expiresAt = new Date(userData.notifications_subscription_expires_at);
+            if (expiresAt < new Date()) {
+              return false; // Expired
+            }
+          }
+          return true;
         } catch (err) {
-          console.error('Error checking Discord subscription:', err);
+          console.error('Error checking notifications subscription:', err);
           return false;
         }
       }
@@ -6353,10 +6390,10 @@
           if (!user) return;
           
           // Check subscription status first
-          const hasSubscription = await checkDiscordSubscription();
+          const hasSubscription = await hasNotificationsSubscription();
           const statusInfo = document.getElementById('discord-subscription-info');
           
-          // Get button elements once
+          // Get button elements
           const subscribeBtn = document.getElementById('discord-subscribe-btn');
           const testBtn = document.getElementById('discord-notifications-test-btn');
           const saveBtn = document.getElementById('discord-notifications-save-btn');
@@ -6383,7 +6420,7 @@
           if (testBtn) testBtn.style.display = 'inline-block';
           if (saveBtn) saveBtn.style.display = 'inline-block';
           
-          // Load subscription expiry info
+          // Load user data
           const { data: userData, error } = await supabase
             .from('unlocked_users')
             .select('discord_webhook_url, discord_notifications, notifications_subscription_expires_at')
@@ -6404,7 +6441,7 @@
             statusInfo.innerHTML = '<span style="color: #00e6d6;">✅ Subscription active</span>';
           }
           
-          // Enable inputs (already declared above)
+          // Enable inputs
           if (webhookInput) webhookInput.disabled = false;
           if (addBtn) addBtn.disabled = false;
           
@@ -6450,7 +6487,6 @@
         
         list.innerHTML = '';
         sortedNotifications.forEach((notif, index) => {
-          // Find original index for deletion
           const originalIndex = userNotifications.findIndex(n => n.id === notif.id);
           const item = document.createElement('div');
           item.style.cssText = 'background: rgba(44,46,48,0.55); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
@@ -6465,7 +6501,6 @@
           const markets = document.createElement('div');
           markets.style.cssText = 'color: #b0b0b0; font-size: 12px;';
           if (notif.markets && notif.markets.length > 0) {
-            // Get market labels for display
             const marketLabelMap = {
               'mercari-jp': 'Mercari Japan',
               'paypay-fleamarket': 'Yahoo PayPay Flea',
@@ -6475,7 +6510,7 @@
             };
             const marketLabels = notif.markets
               .map(key => marketLabelMap[key] || key)
-              .sort(); // Sort market labels A-Z too
+              .sort();
             markets.textContent = `Markets: ${marketLabels.join(', ')}`;
           } else {
             markets.textContent = 'All 5 supported markets';
@@ -6506,7 +6541,6 @@
         
         select.innerHTML = '';
         
-        // Only show markets that actually work with the notifier (Sendico-supported)
         const supportedMarketKeys = [
           'mercari-jp',
           'paypay-fleamarket',
@@ -6515,17 +6549,13 @@
           'yahoo-auctions'
         ];
         
-        // Get all available markets
         const allMarkets = [
           ...getMarkets('asia'),
           ...getMarkets('international'),
           ...getMarkets('special')
         ];
         
-        // Filter to only supported markets
         const supportedMarkets = allMarkets.filter(m => supportedMarketKeys.includes(m.key));
-        
-        // Sort alphabetically
         supportedMarkets.sort((a, b) => a.label.localeCompare(b.label));
         
         supportedMarkets.forEach(market => {
@@ -6535,7 +6565,6 @@
           select.appendChild(option);
         });
         
-        // Add a note if no markets found (shouldn't happen, but just in case)
         if (supportedMarkets.length === 0) {
           const option = document.createElement('option');
           option.disabled = true;
@@ -6563,13 +6592,11 @@
           const webhookInput = document.getElementById('discord-webhook-input');
           const webhookUrl = webhookInput ? webhookInput.value.trim() : '';
           
-          // Validate webhook URL if provided
           if (webhookUrl && !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
             alert('Please enter a valid Discord webhook URL.');
             return;
           }
           
-          // Save to database
           const { error } = await supabase
             .from('unlocked_users')
             .update({
@@ -6670,11 +6697,10 @@
         userNotifications.push({
           id: Date.now().toString(36) + Math.random().toString(36).substr(2),
           searchTerm: searchTerm,
-          markets: selectedMarkets.length > 0 ? selectedMarkets : null, // null means all markets
+          markets: selectedMarkets.length > 0 ? selectedMarkets : null,
           createdAt: new Date().toISOString()
         });
         
-        // Clear form
         termInput.value = '';
         marketsSelect.selectedIndex = -1; // Deselect all
         
@@ -6731,12 +6757,8 @@
       const subscribeBtn = document.getElementById('discord-subscribe-btn');
       if (subscribeBtn) {
         subscribeBtn.addEventListener('click', function() {
-          // Discord notifications subscription ($10)
           const notificationsStripeLink = 'https://buy.stripe.com/3cIbJ1e8Ng6Y1IQfoJcwg01';
-          // Open in new tab
           window.open(notificationsStripeLink, '_blank');
-          
-          // Show message
           alert('Opening Stripe checkout for Discord Notifications ($10/month)...\n\n⚠️ IMPORTANT: After completing your purchase, please contact us on Instagram (@m3owle0) with your email address to activate your subscription.\n\nWe will activate it within 24 hours of receiving your message.');
         });
       }
