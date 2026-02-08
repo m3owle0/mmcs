@@ -55,7 +55,8 @@ serve(async (req) => {
     // Initialize Supabase admin client (bypasses RLS)
     // Get Supabase URL from environment (set automatically by Supabase)
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || Deno.env.get('SUPABASE_PROJECT_URL') || 'https://wbpfuuiznsmysbskywdx.supabase.co'
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    // Use SERVICE_ROLE_KEY (not SUPABASE_SERVICE_ROLE_KEY - Supabase CLI blocks SUPABASE_ prefix)
+    const supabaseServiceKey = Deno.env.get('SERVICE_ROLE_KEY')
     
     if (!supabaseUrl || !supabaseServiceKey) {
       return new Response(JSON.stringify({ error: 'Supabase credentials not configured' }), {
