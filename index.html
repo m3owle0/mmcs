@@ -5099,108 +5099,350 @@
       // Initialize unlock system
       let isInitializing = false; // Prevent multiple simultaneous calls
       
-      // Set up handlers immediately when DOM is ready - don't wait for async init
-      function setupLoginHandlersImmediately() {
+      // REVAMPED: Standalone login/signup handlers that work immediately - no async dependencies
+      function createStandaloneLoginHandler() {
+        return async function(e) {
+          console.log('=== STANDALONE LOGIN HANDLER FIRED ===');
+          
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+          }
+          
+          // Get elements directly - don't rely on closures
+          const loginUsernameInput = document.getElementById('login-username-input');
+          const loginPasswordInput = document.getElementById('login-password-input');
+          const loginSubmitBtn = document.getElementById('login-submit-btn');
+          const loginError = document.getElementById('login-error');
+          const loginErrorText = document.getElementById('login-error-text');
+          const loginSuccess = document.getElementById('login-success');
+          const unlockModalBg = document.getElementById('unlock-modal-bg');
+          
+          if (!loginUsernameInput || !loginPasswordInput) {
+            console.error('Login inputs not found!');
+            return false;
+          }
+          
+          const usernameOrEmail = loginUsernameInput.value.trim();
+          const password = loginPasswordInput.value;
+          
+          console.log('Login attempt:', { usernameOrEmail: usernameOrEmail ? '***' : 'EMPTY', password: password ? '***' : 'EMPTY' });
+          
+          // Validation
+          if (!usernameOrEmail || !password) {
+            if (loginError && loginErrorText) {
+              loginErrorText.textContent = 'Please enter both email and password.';
+              loginError.style.display = 'block';
+            }
+            return false;
+          }
+          
+          // Disable button
+          if (loginSubmitBtn) {
+            loginSubmitBtn.disabled = true;
+            loginSubmitBtn.textContent = 'Logging in...';
+          }
+          
+          // Hide previous errors
+          if (loginError) loginError.style.display = 'none';
+          if (loginSuccess) loginSuccess.style.display = 'none';
+          
+          try {
+            // Call loginUser directly - it's defined globally
+            if (typeof loginUser !== 'function') {
+              throw new Error('loginUser function not available');
+            }
+            
+            console.log('Calling loginUser...');
+            const result = await loginUser(usernameOrEmail, password);
+            console.log('Login result:', result);
+            
+            if (result && result.success) {
+              console.log('Login successful!');
+              
+              // Clear fields
+              if (loginPasswordInput) loginPasswordInput.value = '';
+              if (loginUsernameInput) loginUsernameInput.value = '';
+              
+              // Check unlock status
+              if (typeof isUnlocked === 'function') {
+                const unlocked = await isUnlocked();
+                console.log('Unlock status:', unlocked);
+                
+                if (unlocked) {
+                  // Unlock site
+                  document.body.classList.remove('site-locked');
+                  
+                  // Hide modal
+                  if (unlockModalBg) {
+                    unlockModalBg.classList.remove('show');
+                    unlockModalBg.style.display = 'none';
+                  }
+                  
+                  // Update UI
+                  const userDisplay = document.getElementById('user-display');
+                  if (userDisplay) {
+                    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+                    userDisplay.textContent = `Welcome, ${currentUser || usernameOrEmail}`;
+                    userDisplay.style.display = 'inline';
+                  }
+                  
+                  // Start session heartbeat
+                  if (typeof startSessionHeartbeat === 'function') {
+                    startSessionHeartbeat();
+                  }
+                  
+                  // Initialize chat if available
+                  if (window.initChat) {
+                    setTimeout(() => window.initChat(), 500);
+                  }
+                  
+                  // Reinitialize unlock system
+                  if (window.initUnlockSystem) {
+                    setTimeout(() => window.initUnlockSystem(), 100);
+                  }
+                } else {
+                  // User logged in but not in unlocked_users
+                  if (loginError && loginErrorText) {
+                    loginErrorText.textContent = 'Account not found. Please contact support.';
+                    loginError.style.display = 'block';
+                  }
+                }
+              }
+            } else {
+              // Login failed
+              if (loginError && loginErrorText) {
+                loginErrorText.textContent = (result && result.error) || 'Login failed. Please try again.';
+                loginError.style.display = 'block';
+              }
+              if (loginPasswordInput) loginPasswordInput.value = '';
+            }
+          } catch (error) {
+            console.error('Login error:', error);
+            if (loginError && loginErrorText) {
+              loginErrorText.textContent = 'An error occurred. Please try again.';
+              loginError.style.display = 'block';
+            }
+          } finally {
+            // Re-enable button
+            if (loginSubmitBtn) {
+              loginSubmitBtn.disabled = false;
+              loginSubmitBtn.textContent = 'Login';
+            }
+          }
+          
+          return false;
+        };
+      }
+      
+      function createStandaloneSignupHandler() {
+        return async function(e) {
+          console.log('=== STANDALONE SIGNUP HANDLER FIRED ===');
+          
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+          }
+          
+          // Get elements directly
+          const signupUsernameInput = document.getElementById('signup-username-input');
+          const signupEmailInput = document.getElementById('signup-email-input');
+          const signupPasswordInput = document.getElementById('signup-password-input');
+          const signupSubmitBtn = document.getElementById('signup-submit-btn');
+          const loginError = document.getElementById('login-error');
+          const loginErrorText = document.getElementById('login-error-text');
+          const loginSuccess = document.getElementById('login-success');
+          const loginSuccessText = document.getElementById('login-success-text');
+          const loginToggleBtn = document.getElementById('login-toggle-btn');
+          
+          if (!signupUsernameInput || !signupEmailInput || !signupPasswordInput) {
+            console.error('Signup inputs not found!');
+            return false;
+          }
+          
+          const username = signupUsernameInput.value.trim();
+          const email = signupEmailInput.value.trim();
+          const password = signupPasswordInput.value;
+          
+          console.log('Signup attempt:', { username: username ? '***' : 'EMPTY', email: email ? '***' : 'EMPTY', password: password ? '***' : 'EMPTY' });
+          
+          // Validation
+          if (!username || !email || !password) {
+            if (loginError && loginErrorText) {
+              loginErrorText.textContent = 'Please fill in all fields.';
+              loginError.style.display = 'block';
+            }
+            return false;
+          }
+          
+          // Disable button
+          if (signupSubmitBtn) {
+            signupSubmitBtn.disabled = true;
+            signupSubmitBtn.textContent = 'Creating account...';
+          }
+          
+          // Hide previous errors
+          if (loginError) loginError.style.display = 'none';
+          if (loginSuccess) loginSuccess.style.display = 'none';
+          
+          try {
+            // Call signUpUser directly
+            if (typeof signUpUser !== 'function') {
+              throw new Error('signUpUser function not available');
+            }
+            
+            console.log('Calling signUpUser...');
+            const result = await signUpUser(username, email, password);
+            console.log('Signup result:', result);
+            
+            if (result && result.success) {
+              if (result.needsEmailVerification) {
+                // Email confirmation required
+                if (loginSuccess && loginSuccessText) {
+                  loginSuccessText.textContent = result.message || `Account created! Please check your email (${email}) to verify your account before logging in.`;
+                  loginSuccess.style.display = 'block';
+                }
+                // Clear form
+                if (signupUsernameInput) signupUsernameInput.value = '';
+                if (signupEmailInput) signupEmailInput.value = '';
+                if (signupPasswordInput) signupPasswordInput.value = '';
+                // Switch to login form after 5 seconds
+                setTimeout(() => {
+                  if (loginToggleBtn) loginToggleBtn.click();
+                  if (loginSuccess) loginSuccess.style.display = 'none';
+                }, 5000);
+              } else {
+                // User logged in immediately
+                if (loginSuccess && loginSuccessText) {
+                  loginSuccessText.textContent = 'Account created! Welcome!';
+                  loginSuccess.style.display = 'block';
+                }
+                // Reinitialize unlock system
+                if (window.initUnlockSystem) {
+                  setTimeout(() => window.initUnlockSystem(), 500);
+                }
+              }
+            } else {
+              // Signup failed
+              if (loginError && loginErrorText) {
+                loginErrorText.textContent = (result && result.error) || 'Account creation failed. Please try again.';
+                loginError.style.display = 'block';
+              }
+            }
+          } catch (error) {
+            console.error('Signup error:', error);
+            if (loginError && loginErrorText) {
+              loginErrorText.textContent = 'An error occurred. Please try again.';
+              loginError.style.display = 'block';
+            }
+          } finally {
+            // Re-enable button
+            if (signupSubmitBtn) {
+              signupSubmitBtn.disabled = false;
+              signupSubmitBtn.textContent = 'Create Account';
+            }
+          }
+          
+          return false;
+        };
+      }
+      
+      // Set up handlers immediately - works standalone, no dependencies
+      function setupStandaloneHandlers() {
         const loginSubmitBtn = document.getElementById('login-submit-btn');
         const signupSubmitBtn = document.getElementById('signup-submit-btn');
         const loginForm = document.getElementById('login-form');
         const signupForm = document.getElementById('signup-form');
         
-        // Set up login button handler that waits for the real handler
-        if (loginSubmitBtn && !loginSubmitBtn.dataset.handlerSetup) {
-          loginSubmitBtn.dataset.handlerSetup = 'true';
+        // Create handlers
+        const loginHandler = createStandaloneLoginHandler();
+        const signupHandler = createStandaloneSignupHandler();
+        
+        // Store globally for reference
+        window.handleLoginSubmit = loginHandler;
+        window.handleSignupSubmit = signupHandler;
+        
+        // Set up login button
+        if (loginSubmitBtn) {
+          // Remove any existing handlers
+          const newBtn = loginSubmitBtn.cloneNode(true);
+          loginSubmitBtn.parentNode.replaceChild(newBtn, loginSubmitBtn);
+          const freshBtn = document.getElementById('login-submit-btn');
           
-          const loginHandler = function(e) {
-            console.log('Login button clicked - checking for handler...');
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Wait for handler to be ready (poll up to 2 seconds)
-            let attempts = 0;
-            const maxAttempts = 40; // 2 seconds at 50ms intervals
-            const checkHandler = () => {
-              if (window.handleLoginSubmit && typeof window.handleLoginSubmit === 'function') {
-                console.log('Handler ready, calling it');
-                window.handleLoginSubmit(e);
-              } else if (attempts < maxAttempts) {
-                attempts++;
-                setTimeout(checkHandler, 50);
-              } else {
-                console.error('Handler not ready after waiting');
-                alert('Please wait a moment and try again.');
-              }
-            };
-            checkHandler();
-            return false;
-          };
-          
-          loginSubmitBtn.onclick = loginHandler;
-          loginSubmitBtn.addEventListener('click', loginHandler, false);
-          loginSubmitBtn.addEventListener('touchend', loginHandler, false);
+          if (freshBtn) {
+            freshBtn.onclick = loginHandler;
+            freshBtn.addEventListener('click', loginHandler, false);
+            freshBtn.addEventListener('touchend', loginHandler, false);
+            freshBtn.addEventListener('touchstart', function(e) {
+              e.preventDefault();
+              loginHandler(e);
+            }, false);
+          }
         }
         
-        // Set up signup button handler that waits for the real handler
-        if (signupSubmitBtn && !signupSubmitBtn.dataset.handlerSetup) {
-          signupSubmitBtn.dataset.handlerSetup = 'true';
+        // Set up signup button
+        if (signupSubmitBtn) {
+          const newBtn = signupSubmitBtn.cloneNode(true);
+          signupSubmitBtn.parentNode.replaceChild(newBtn, signupSubmitBtn);
+          const freshBtn = document.getElementById('signup-submit-btn');
           
-          const signupHandler = function(e) {
-            console.log('Signup button clicked - checking for handler...');
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Wait for handler to be ready (poll up to 2 seconds)
-            let attempts = 0;
-            const maxAttempts = 40; // 2 seconds at 50ms intervals
-            const checkHandler = () => {
-              if (window.handleSignupSubmit && typeof window.handleSignupSubmit === 'function') {
-                console.log('Handler ready, calling it');
-                window.handleSignupSubmit(e);
-              } else if (attempts < maxAttempts) {
-                attempts++;
-                setTimeout(checkHandler, 50);
-              } else {
-                console.error('Handler not ready after waiting');
-                alert('Please wait a moment and try again.');
-              }
-            };
-            checkHandler();
-            return false;
-          };
-          
-          signupSubmitBtn.onclick = signupHandler;
-          signupSubmitBtn.addEventListener('click', signupHandler, false);
-          signupSubmitBtn.addEventListener('touchend', signupHandler, false);
+          if (freshBtn) {
+            freshBtn.onclick = signupHandler;
+            freshBtn.addEventListener('click', signupHandler, false);
+            freshBtn.addEventListener('touchend', signupHandler, false);
+            freshBtn.addEventListener('touchstart', function(e) {
+              e.preventDefault();
+              signupHandler(e);
+            }, false);
+          }
         }
         
-        // Set up form handlers
-        if (loginForm && !loginForm.dataset.handlerSetup) {
-          loginForm.dataset.handlerSetup = 'true';
-          loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (loginSubmitBtn) loginSubmitBtn.click();
-            return false;
+        // Set up form submissions
+        if (loginForm) {
+          loginForm.addEventListener('submit', loginHandler, false);
+        }
+        
+        if (signupForm) {
+          signupForm.addEventListener('submit', signupHandler, false);
+        }
+        
+        // Set up Enter key handlers
+        const loginPasswordInput = document.getElementById('login-password-input');
+        const signupPasswordInput = document.getElementById('signup-password-input');
+        
+        if (loginPasswordInput) {
+          loginPasswordInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              loginHandler(e);
+            }
           }, false);
         }
         
-        if (signupForm && !signupForm.dataset.handlerSetup) {
-          signupForm.dataset.handlerSetup = 'true';
-          signupForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (signupSubmitBtn) signupSubmitBtn.click();
-            return false;
+        if (signupPasswordInput) {
+          signupPasswordInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              signupHandler(e);
+            }
           }, false);
         }
+        
+        console.log('Standalone login handlers set up successfully');
       }
       
-      // Call immediately when DOM is ready
+      // Set up immediately when DOM is ready
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupLoginHandlersImmediately);
+        document.addEventListener('DOMContentLoaded', setupStandaloneHandlers);
       } else {
-        setupLoginHandlersImmediately();
+        setupStandaloneHandlers();
       }
-      // Also try after a short delay in case elements aren't ready yet
-      setTimeout(setupLoginHandlersImmediately, 100);
-      setTimeout(setupLoginHandlersImmediately, 500);
+      // Also try after delays to catch dynamically loaded content
+      setTimeout(setupStandaloneHandlers, 100);
+      setTimeout(setupStandaloneHandlers, 500);
+      setTimeout(setupStandaloneHandlers, 1000);
       
       async function initUnlockSystem(suppressModal = false) {
         // Prevent multiple simultaneous initialization calls
@@ -5517,412 +5759,20 @@
           };
         }
         
-        // Login handler - Use form submission for maximum mobile compatibility
-        const handleLoginSubmit = async (e) => {
-          console.log('=== handleLoginSubmit CALLED ===', e);
-          
-          try {
-            if (e) {
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-            }
-            
-            console.log('Login form submitted');
-            
-            const usernameOrEmail = loginUsernameInput ? loginUsernameInput.value.trim() : '';
-            const password = loginPasswordInput ? loginPasswordInput.value : '';
-            
-            console.log('Username/Email:', usernameOrEmail ? '***' : 'EMPTY');
-            console.log('Password:', password ? '***' : 'EMPTY');
-            
-            if (!usernameOrEmail || !password) {
-              console.log('Validation failed - missing fields');
-              if (loginError) {
-                loginErrorText.textContent = 'Please enter both username/email and password.';
-                loginError.style.display = 'block';
-              }
-              return false;
-            }
-            
-            console.log('Calling loginUser function...');
-            
-            if (loginSubmitBtn) {
-              loginSubmitBtn.disabled = true;
-              loginSubmitBtn.textContent = 'Logging in...';
-            }
-            if (loginError) loginError.style.display = 'none';
-            
-            console.log('About to call loginUser...');
-            if (typeof loginUser !== 'function') {
-              console.error('loginUser function not found!');
-              throw new Error('loginUser function is not defined');
-            }
-            const result = await loginUser(usernameOrEmail, password);
-            console.log('Login result:', result);
-            
-            if (loginSubmitBtn) {
-              loginSubmitBtn.disabled = false;
-              loginSubmitBtn.textContent = 'Login';
-            }
-            
-            if (result && result.success) {
-              console.log('Login successful!');
-              // Hide error message if showing
-              if (loginError) loginError.style.display = 'none';
-              
-              // Clear password field
-              if (loginPasswordInput) loginPasswordInput.value = '';
-              // Clear username field
-              if (loginUsernameInput) loginUsernameInput.value = '';
-              
-              // Immediately check unlock status
-              const unlocked = await isUnlocked();
-              console.log('Unlock status after login:', unlocked);
-              
-              if (unlocked) {
-                // User exists in unlocked_users - unlock immediately!
-                console.log('User found - unlocking site now');
-                
-                // Hide modal immediately
-                if (unlockModalBg) {
-                  unlockModalBg.classList.remove('show');
-                  unlockModalBg.style.display = 'none';
-                }
-                
-                // Hide success/error messages
-                if (loginSuccess) loginSuccess.style.display = 'none';
-                if (loginError) loginError.style.display = 'none';
-                
-                // Unlock the site
-                document.body.classList.remove('site-locked');
-                
-                // Remove interaction blockers
-                if (window._lockBlockers && Array.isArray(window._lockBlockers)) {
-                  window._lockBlockers.forEach(({ type, handler }) => {
-                    document.removeEventListener(type, handler, true);
-                  });
-                  window._lockBlockers = [];
-                }
-                
-                // Update UI
-                if (unlockBtn) unlockBtn.style.display = 'none';
-                if (userDisplay) {
-                  const currentUser = getCurrentUser();
-                  userDisplay.textContent = `Welcome, ${currentUser || result.user?.email || 'User'}`;
-                  userDisplay.style.display = 'inline';
-                }
-                
-                // Start session heartbeat
-                startSessionHeartbeat();
-                
-                // Initialize chat system
-                if (window.initChat) {
-                  setTimeout(() => window.initChat(), 500);
-                }
-                
-                console.log('Site unlocked successfully!');
-                return false;
-              } else {
-                // User logged in but not in unlocked_users table - keep modal open
-                console.warn('User logged in but not found in unlocked_users');
-                if (loginSuccess) {
-                  loginSuccess.style.display = 'none';
-                }
-              }
-            } else {
-              console.log('Login failed:', result);
-              if (loginError) {
-                loginErrorText.textContent = (result && result.error) || 'Login failed. Please try again.';
-                loginError.style.display = 'block';
-                console.error('Login failed:', result ? result.error : 'Unknown error');
-              }
-              // Clear password field on error
-              if (loginPasswordInput) loginPasswordInput.value = '';
-            }
-          } catch (error) {
-            console.error('Error in handleLoginSubmit:', error);
-            if (loginSubmitBtn) {
-              loginSubmitBtn.disabled = false;
-              loginSubmitBtn.textContent = 'Login';
-            }
-            if (loginError) {
-              loginErrorText.textContent = 'An error occurred. Please try again.';
-              loginError.style.display = 'block';
-            }
-          }
-          
-          return false;
-        };
-        
-        // Store globally for inline handler access - MUST be done immediately
-        window.handleLoginSubmit = handleLoginSubmit;
-        console.log('handleLoginSubmit stored globally:', typeof window.handleLoginSubmit);
-        
-        // Setup button handlers AFTER storing globally
-        if (loginSubmitBtn) {
-          // Clear any existing handlers by cloning
-          const newBtn = loginSubmitBtn.cloneNode(true);
-          loginSubmitBtn.parentNode.replaceChild(newBtn, loginSubmitBtn);
-          const freshLoginBtn = document.getElementById('login-submit-btn');
-          
-          if (freshLoginBtn) {
-            // Direct onclick - most reliable for mobile
-            freshLoginBtn.onclick = function(e) {
-              console.log('Login button onclick triggered');
-              e.preventDefault();
-              e.stopPropagation();
-              if (window.handleLoginSubmit) {
-                window.handleLoginSubmit(e);
-              } else {
-                console.error('handleLoginSubmit not available!');
-              }
-              return false;
-            };
-            
-            // Add event listeners as backup
-            freshLoginBtn.addEventListener('click', function(e) {
-              console.log('Login button clicked via addEventListener');
-              e.preventDefault();
-              e.stopPropagation();
-              if (window.handleLoginSubmit) {
-                window.handleLoginSubmit(e);
-              }
-            }, false);
-            
-            freshLoginBtn.addEventListener('touchend', function(e) {
-              console.log('Login button touchend');
-              e.preventDefault();
-              e.stopPropagation();
-              if (window.handleLoginSubmit) {
-                window.handleLoginSubmit(e);
-              }
-            }, false);
-            
-            // Visual feedback
-            freshLoginBtn.addEventListener('touchstart', function() {
-              this.style.opacity = '0.7';
-            }, { passive: true });
-            freshLoginBtn.addEventListener('touchend', function() {
-              this.style.opacity = '';
-            }, { passive: true });
+        // Handlers are set up by setupStandaloneHandlers() - ensure they exist
+        if (!window.handleLoginSubmit || !window.handleSignupSubmit) {
+          console.warn('Standalone handlers not yet set up, calling setupStandaloneHandlers...');
+          if (typeof setupStandaloneHandlers === 'function') {
+            setupStandaloneHandlers();
           }
         }
         
-        // Form submission handler (reuse existing loginForm variable)
-        if (loginForm) {
-          loginForm.addEventListener('submit', function(e) {
-            console.log('Login form submit event');
-            e.preventDefault();
-            if (window.handleLoginSubmit) {
-              window.handleLoginSubmit(e);
-            }
-            return false;
-          }, false);
-        }
-        
-        // Signup handler - Use form submission for maximum mobile compatibility
-        const handleSignupSubmit = async (e) => {
-          console.log('=== handleSignupSubmit CALLED ===', e);
-          
-          try {
-            if (e) {
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-            }
-            
-            console.log('Signup form submitted');
-            
-            const username = signupUsernameInput ? signupUsernameInput.value.trim() : '';
-            const email = signupEmailInput ? signupEmailInput.value.trim() : '';
-            const password = signupPasswordInput ? signupPasswordInput.value : '';
-            
-            console.log('Username:', username ? '***' : 'EMPTY');
-            console.log('Email:', email ? '***' : 'EMPTY');
-            console.log('Password:', password ? '***' : 'EMPTY');
-            
-            if (!username || !email || !password) {
-              console.log('Validation failed - missing fields');
-              if (loginError) {
-                loginErrorText.textContent = 'Please fill in all fields.';
-                loginError.style.display = 'block';
-              }
-              return false;
-            }
-            
-            if (signupSubmitBtn) {
-              signupSubmitBtn.disabled = true;
-              signupSubmitBtn.textContent = 'Creating account...';
-            }
-            if (loginError) loginError.style.display = 'none';
-            
-            console.log('About to call signUpUser...');
-            if (typeof signUpUser !== 'function') {
-              console.error('signUpUser function not found!');
-              throw new Error('signUpUser function is not defined');
-            }
-            const result = await signUpUser(username, email, password);
-            console.log('Signup result:', result);
-            
-            if (signupSubmitBtn) {
-              signupSubmitBtn.disabled = false;
-              signupSubmitBtn.textContent = 'Create Account';
-            }
-            
-            if (result && result.success) {
-              console.log('Signup successful!');
-              if (result.needsEmailVerification) {
-                // Email confirmation required
-                if (loginSuccess) {
-                  loginSuccessText.textContent = result.message || 'Account created! Please check your email (' + email + ') to verify your account before logging in.';
-                  loginSuccess.style.display = 'block';
-                }
-                // Clear form
-                if (signupUsernameInput) signupUsernameInput.value = '';
-                if (signupEmailInput) signupEmailInput.value = '';
-                if (signupPasswordInput) signupPasswordInput.value = '';
-                // Switch to login form after 3 seconds
-                setTimeout(() => {
-                  if (loginToggleBtn) loginToggleBtn.click();
-                  if (loginSuccess) loginSuccess.style.display = 'none';
-                }, 5000);
-              } else {
-                // User is logged in immediately (email confirmation disabled)
-                if (loginSuccess) {
-                  loginSuccessText.textContent = 'Account created! Welcome!';
-                  loginSuccess.style.display = 'block';
-                }
-                setTimeout(async () => {
-                  await initUnlockSystem();
-                }, 500);
-              }
-            } else {
-              console.log('Signup failed:', result);
-              if (loginError) {
-                // Show the actual error message from Supabase
-                const errorMsg = (result && result.error) || 'Account creation failed. Please try again.';
-                loginErrorText.textContent = errorMsg;
-                loginError.style.display = 'block';
-                console.error('Signup error:', result ? result.error : 'Unknown error');
-              }
-            }
-          } catch (error) {
-            console.error('Error in handleSignupSubmit:', error);
-            console.error('Error stack:', error.stack);
-            console.error('Error in handleSignupSubmit:', error);
-            if (signupSubmitBtn) {
-              signupSubmitBtn.disabled = false;
-              signupSubmitBtn.textContent = 'Create Account';
-            }
-            if (loginError) {
-              loginErrorText.textContent = 'An error occurred. Please try again.';
-              loginError.style.display = 'block';
-            }
-          }
-          
-          return false;
-        };
-        
-        // Store globally for inline handler access - MUST be done immediately
-        window.handleSignupSubmit = handleSignupSubmit;
-        console.log('handleSignupSubmit stored globally:', typeof window.handleSignupSubmit);
-        
-        // Setup button handlers AFTER storing globally
-        if (signupSubmitBtn) {
-          // Clear any existing handlers by cloning
-          const newBtn = signupSubmitBtn.cloneNode(true);
-          signupSubmitBtn.parentNode.replaceChild(newBtn, signupSubmitBtn);
-          const freshSignupBtn = document.getElementById('signup-submit-btn');
-          
-          if (freshSignupBtn) {
-            // Direct onclick - most reliable for mobile
-            freshSignupBtn.onclick = function(e) {
-              console.log('Signup button onclick triggered');
-              e.preventDefault();
-              e.stopPropagation();
-              if (window.handleSignupSubmit) {
-                window.handleSignupSubmit(e);
-              } else {
-                console.error('handleSignupSubmit not available!');
-              }
-              return false;
-            };
-            
-            // Add event listeners as backup
-            freshSignupBtn.addEventListener('click', function(e) {
-              console.log('Signup button clicked via addEventListener');
-              e.preventDefault();
-              e.stopPropagation();
-              if (window.handleSignupSubmit) {
-                window.handleSignupSubmit(e);
-              }
-            }, false);
-            
-            freshSignupBtn.addEventListener('touchend', function(e) {
-              console.log('Signup button touchend');
-              e.preventDefault();
-              e.stopPropagation();
-              if (window.handleSignupSubmit) {
-                window.handleSignupSubmit(e);
-              }
-            }, false);
-            
-            // Visual feedback
-            freshSignupBtn.addEventListener('touchstart', function() {
-              this.style.opacity = '0.7';
-            }, { passive: true });
-            freshSignupBtn.addEventListener('touchend', function() {
-              this.style.opacity = '';
-            }, { passive: true });
-          }
-        }
-        
-        // Form submission handler (reuse existing signupForm variable)
-        if (signupForm) {
-          signupForm.addEventListener('submit', function(e) {
-            console.log('Signup form submit event');
-            e.preventDefault();
-            if (window.handleSignupSubmit) {
-              window.handleSignupSubmit(e);
-            }
-            return false;
-          }, false);
-        }
-        
-        // Cancel button
+        // Cancel button handler
         if (loginCancelBtn) {
           loginCancelBtn.onclick = () => {
             if (unlockModalBg) {
               unlockModalBg.classList.remove('show');
               unlockModalBg.style.display = 'none';
-            }
-          };
-        }
-        
-        // Enter key handlers - trigger form submission
-        if (loginPasswordInput) {
-          loginPasswordInput.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              if (window.handleLoginSubmit) {
-                window.handleLoginSubmit(e);
-              } else if (loginSubmitBtn) {
-                loginSubmitBtn.click();
-              }
-            }
-          };
-        }
-        
-        if (signupPasswordInput) {
-          signupPasswordInput.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              if (window.handleSignupSubmit) {
-                window.handleSignupSubmit(e);
-              } else if (signupSubmitBtn) {
-                signupSubmitBtn.click();
-              }
             }
           };
         }
