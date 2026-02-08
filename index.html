@@ -305,6 +305,33 @@
       box-shadow: 0 1px 4px #0002;
     }
     .market-remove-btn:hover { color: #fff; background: #444; }
+    .market-favorite-btn {
+      position: absolute;
+      right: 6px;
+      top: 6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: transparent;
+      border: none;
+      color: #ffd700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 0.15s;
+      padding: 0;
+      line-height: 1;
+    }
+    .market-favorite-btn:hover { 
+      transform: scale(1.2);
+      filter: brightness(1.2);
+    }
+    .market-btn:has(.market-remove-btn) .market-favorite-btn {
+      right: 28px;
+    }
     .special-group {
       margin-top: 30px;
       margin-bottom: 18px;
@@ -1612,24 +1639,19 @@
           <span style="font-size: 14px; color: #e3e3e3;">Toggle All</span>
         </label>
         <div class="randomize-section" style="display: flex; align-items: center; gap: 8px;">
-          <div style="position: relative; flex: 1;">
-            <select id="randomize-category-select" class="randomize-select">
-              <option value="all">All Categories</option>
-              <option value="asia">Asia</option>
-              <option value="international">International</option>
-              <option value="special">Designer</option>
-            </select>
-            <div id="randomize-color-indicator" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; border-radius: 50%;"></div>
-          </div>
           <button class="sidebar-randomize-btn" id="sidebar-randomize-btn" type="button" style="background: #232323; color: #e3e3e3; border: none; border-radius: 5px; font-size: 13px; font-weight: bold; padding: 7px 13px; cursor: pointer; box-shadow: 0 1px 4px #2224; opacity: 0.93; backdrop-filter: blur(2px);">Randomize</button>
         </div>
-        <button type="button" id="theme-editor-btn" style="background: #232323; color: #e3e3e3; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 7px 18px 8px 18px; cursor: pointer; letter-spacing: .01em; box-shadow: 0 2px 8px #2224; transition: background .18s, box-shadow .18s, transform .13s; margin-left: 0; margin-bottom: 2px; backdrop-filter: blur(2px); opacity: 0.93;">Theme Editor</button>
       </div>
       <div class="add-market-row">
         <button type="button" class="add-market-btn" data-section="asia">+ Add Website to Asia</button>
         <button type="button" class="add-market-btn" data-section="international">+ Add Website to International</button>
         <button type="button" class="add-market-btn" data-section="special">+ Add Website to Designer</button>
       </div>
+      <div class="section-header-row" style="margin-top: 0;">
+        <h2>⭐ Favorites</h2>
+        <button type="button" class="section-openall-btn" data-section="favorites">Open All Favorites</button>
+      </div>
+      <div class="markets" id="favorites-markets"></div>
       <div class="section-header-row">
         <h2>Asia</h2>
         <button type="button" class="section-openall-btn" data-section="asia">Open All Asia</button>
@@ -3254,7 +3276,13 @@
         { key: "rakuma", label: "Rakuten Rakuma" },
         { key: "rakuten-jp", label: "Rakuten Japan" },
         { key: "xianyu", label: "Xianyu (闲鱼)" },
-        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" }
+        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" },
+        { key: "carousell-sg", label: "Carousell Singapore" },
+        { key: "carousell-hk", label: "Carousell Hong Kong" },
+        { key: "carousell-id", label: "Carousell Indonesia" },
+        { key: "carousell-my", label: "Carousell Malaysia" },
+        { key: "carousell-ph", label: "Carousell Philippines" },
+        { key: "carousell-tw", label: "Carousell Taiwan" }
       ],
       international: [
         { key: "depop", label: "Depop" },
@@ -3265,12 +3293,32 @@
         { key: "mercari-us", label: "Mercari US" },
         { key: "poshmark", label: "Poshmark" },
         { key: "shopgoodwill", label: "ShopGoodwill" },
-        { key: "vinted", label: "Vinted" }
+        { key: "vinted", label: "Vinted" },
+        { key: "avito", label: "Avito (Russia)" },
+        { key: "automatedsearches", label: "AutomatedSearches (eBay)" },
+        { key: "wallapop", label: "Wallapop (Spain)" },
+        { key: "leboncoin", label: "Leboncoin (France)" },
+        { key: "subito", label: "Subito (Italy)" },
+        { key: "ricardo", label: "Ricardo (Switzerland)" },
+        { key: "willhaben", label: "Willhaben (Austria)" },
+        { key: "tradera", label: "Tradera (Sweden)" },
+        { key: "tori", label: "Tori.fi (Finland)" },
+        { key: "finn", label: "Finn.no (Norway)" },
+        { key: "dba", label: "DBA (Denmark)" },
+        { key: "marktplaats", label: "Marktplaats (Netherlands)" },
+        { key: "kleinanzeigen", label: "Kleinanzeigen (Germany)" },
+        { key: "shpock", label: "Shpock (Europe)" }
       ],
       special: [
         { key: "secondstreet", label: "2nd STREET" },
         { key: "therealreal", label: "The RealReal" },
-        { key: "vestiaire", label: "Vestiaire Collective" }
+        { key: "vestiaire", label: "Vestiaire Collective" },
+        { key: "rebelle", label: "Rebelle" },
+        { key: "tradesy", label: "Tradesy" },
+        { key: "fashionphile", label: "Fashionphile" },
+        { key: "rebag", label: "Rebag" },
+        { key: "farfetch", label: "Farfetch Pre-Owned" },
+        { key: "yoox", label: "Yoox" }
       ]
     };
     // Market toggle state storage
@@ -3288,9 +3336,51 @@
       });
     }
 
+    // Favorites storage
+    const FAVORITES_KEY = 'favoriteMarkets';
+    let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+    function saveFavorites() {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+      renderFavorites();
+    }
+    function isFavorite(marketKey) {
+      return favorites.includes(marketKey);
+    }
+    function toggleFavorite(marketKey) {
+      const index = favorites.indexOf(marketKey);
+      if (index > -1) {
+        favorites.splice(index, 1);
+      } else {
+        favorites.push(marketKey);
+      }
+      saveFavorites();
+    }
+    function getFavoriteMarkets() {
+      const allMarkets = [
+        ...getMarkets('asia'),
+        ...getMarkets('international'),
+        ...getMarkets('special')
+      ];
+      return allMarkets.filter(m => favorites.includes(m.key));
+    }
+    function renderFavorites() {
+      const favoriteMarkets = getFavoriteMarkets();
+      if (favoriteMarkets.length === 0) {
+        const container = document.getElementById('favorites-markets');
+        if (container) {
+          container.innerHTML = '<p style="color: #888; font-size: 12px; padding: 10px; text-align: center;">No favorites yet. Click the ⭐ on any site to add it to favorites.</p>';
+        }
+      } else {
+        createMarketButtons(favoriteMarkets, "favorites-markets", "favorites");
+      }
+    }
+
     // Combined Market Data + Custom
     function getMarkets(section) {
-      const orig = marketDataInitial[section].slice();
+      if (section === 'favorites') {
+        return getFavoriteMarkets();
+      }
+      const orig = marketDataInitial[section] ? marketDataInitial[section].slice() : [];
       const custom = (customMarkets[section] || []).map(m => ({
         key: "custom-" + section + "-" + m.id,
         label: m.title,
@@ -3332,6 +3422,32 @@
         const label = document.createElement('span');
         label.textContent = market.label + (market.custom ? " ★" : "");
         btn.appendChild(label);
+        
+        // Add favorite star button
+        const favoriteBtn = document.createElement('button');
+        favoriteBtn.className = 'market-favorite-btn';
+        favoriteBtn.title = isFavorite(market.key) ? 'Remove from favorites' : 'Add to favorites';
+        favoriteBtn.innerHTML = isFavorite(market.key) ? '⭐' : '☆';
+        favoriteBtn.onclick = function(e) {
+          e.stopPropagation();
+          toggleFavorite(market.key);
+          favoriteBtn.innerHTML = isFavorite(market.key) ? '⭐' : '☆';
+          favoriteBtn.title = isFavorite(market.key) ? 'Remove from favorites' : 'Add to favorites';
+          // Update star in favorites section if it exists there
+          const favContainer = document.getElementById('favorites-markets');
+          if (favContainer) {
+            const favBtn = favContainer.querySelector(`[data-market="${market.key}"]`);
+            if (favBtn) {
+              const favStarBtn = favBtn.querySelector('.market-favorite-btn');
+              if (favStarBtn) {
+                favStarBtn.innerHTML = isFavorite(market.key) ? '⭐' : '☆';
+                favStarBtn.title = isFavorite(market.key) ? 'Remove from favorites' : 'Add to favorites';
+              }
+            }
+          }
+        };
+        btn.appendChild(favoriteBtn);
+        
         container.appendChild(btn);
 
         // Custom market remove button
@@ -3352,6 +3468,7 @@
       createMarketButtons(getMarkets('asia'), "asia-markets", "asia");
       createMarketButtons(getMarkets('international'), "international-markets", "international");
       createMarketButtons(getMarkets('special'), "special-markets", "special");
+      renderFavorites();
     }
     refreshAllMarketButtons();
 
@@ -4151,6 +4268,12 @@
       "rakuten-jp":      q => `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(q)}/?s=4&st=O`,
       "xianyu":          q => `https://2.taobao.com/search?word=${encodeURIComponent(q)}&spm=a2170.xianyu_tbpc_search.0.0`,
       "yahoo-auctions":  q => `https://auctions.yahoo.co.jp/search/search?p=${encodeURIComponent(q)}&s1=new&o1=d`,
+      "carousell-sg":    q => `https://www.carousell.sg/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-hk":    q => `https://www.carousell.com.hk/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-id":    q => `https://www.carousell.co.id/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-my":    q => `https://www.carousell.com.my/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-ph":    q => `https://www.carousell.com.ph/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-tw":    q => `https://www.carousell.com.tw/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
       "depop":           q => `https://www.depop.com/search/?q=${encodeURIComponent(q)}&sort=newlyListed`,
       "ebay":            q => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}&_sop=10`,
       "facebook":        q => `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(q)}`,
@@ -4160,9 +4283,29 @@
       "poshmark":        q => `https://poshmark.com/search?query=${encodeURIComponent(q)}&sort_by=added_desc`,
       "shopgoodwill":    q => `https://shopgoodwill.com/categories/listing?st=${encodeURIComponent(q)}&sg=Keyword&c=&s=&lp=0&hp=999999&sbn=&spo=false&snpo=false&socs=false&sd=false&sca=false&caed=${encodeURIComponent(getShopGoodwillDate())}&cadb=7&scs=false&sis=false&col=1&p=1&ps=40&desc=true&ss=0&UseBuyerPrefs=true&sus=false&cln=1&catIds=&pn=&wc=false&mci=false&hmt=false&layout=grid&ihp=`,
       "vinted":          q => `https://www.vinted.com/catalog?search_text=${encodeURIComponent(q)}&time=${getVintedTime()}&order=newest_first&page=1`,
+      "avito":           q => `https://www.avito.ru/moskva/odezhda_obuv_aksessuary?q=${encodeURIComponent(q)}&s=104`,
+      "automatedsearches": q => `https://automatedsearches.com/search?search_siteid=0&search_new=1&search_query=${encodeURIComponent(q)}&search_number=0&search_hic=0&search_category=11450&search_category0=11450&search_hmo=0&search_condition_new=1&search_condition_new_other=1&search_condition_new_defects=1&search_condition_used=1&search_condition_parts=1&search_condition_unspecified=1&search_postalcode=&search_maxdistance=&search_feedback_min=0&search_show_items=0&search_located_in=WW&search_available_to=US&search_itemtypefilter=AllFixedPriceItemTypes&search_min=&search_max=&search_offer_max=&sf=0&r=&search_name=Untitled&search_notes=&search_interval=15min&search_sort=0&search_sap=&search_salt=&search_sus=&ebay_error=&totalEntries=25285&pp=100`,
+      "wallapop":        q => `https://es.wallapop.com/app/search?keywords=${encodeURIComponent(q)}&orderBy=newest`,
+      "leboncoin":       q => `https://www.leboncoin.fr/recherche?text=${encodeURIComponent(q)}&sort=time&order=desc`,
+      "subito":          q => `https://www.subito.it/annunci-italia/vendita/usato/?q=${encodeURIComponent(q)}&ord=data`,
+      "ricardo":         q => `https://www.ricardo.ch/de/s/${encodeURIComponent(q)}?sort=newest`,
+      "willhaben":       q => `https://www.willhaben.at/iad/kaufen-und-verkaufen/marktplatz?keyword=${encodeURIComponent(q)}&sort=2`,
+      "tradera":         q => `https://www.tradera.com/search?q=${encodeURIComponent(q)}&sort=newest`,
+      "tori":            q => `https://www.tori.fi/koko_suomi?q=${encodeURIComponent(q)}&sort=newest`,
+      "finn":            q => `https://www.finn.no/bap/forsale/search.html?q=${encodeURIComponent(q)}&sort=1`,
+      "dba":             q => `https://www.dba.dk/soeg?soeg=${encodeURIComponent(q)}&sort=createdTime`,
+      "marktplaats":     q => `https://www.marktplaats.nl/q/${encodeURIComponent(q)}/#q:${encodeURIComponent(q)}|sortBy:SortByDate`,
+      "kleinanzeigen":   q => `https://www.kleinanzeigen.de/s-${encodeURIComponent(q)}/k0`,
+      "shpock":          q => `https://www.shpock.com/en-gb/search?q=${encodeURIComponent(q)}&sort=newest`,
       "secondstreet":    q => `https://ec.2ndstreetusa.com/pages/search-results-page?q=${encodeURIComponent(q)}&tab=products&sort_by=created&page=1`,
       "therealreal":     q => `https://www.therealreal.com/products?keywords=${encodeURIComponent(q)}`,
-      "vestiaire":       q => `https://us.vestiairecollective.com/search/?q=${encodeURIComponent(q)}&sortBy=3`
+      "vestiaire":       q => `https://us.vestiairecollective.com/search/?q=${encodeURIComponent(q)}&sortBy=3`,
+      "rebelle":         q => `https://www.rebelle.com/en/search?q=${encodeURIComponent(q)}&sort=created_at_desc`,
+      "tradesy":         q => `https://www.tradesy.com/browse/?q=${encodeURIComponent(q)}&sort=newest`,
+      "fashionphile":    q => `https://www.fashionphile.com/search?q=${encodeURIComponent(q)}&sort=relevance`,
+      "rebag":           q => `https://shop.rebag.com/search?q=${encodeURIComponent(q)}&sort=relevance`,
+      "farfetch":        q => `https://www.farfetch.com/shopping/women/items.aspx?q=${encodeURIComponent(q)}&sort=3`,
+      "yoox":            q => `https://www.yoox.com/us/women/search?dept=women&query=${encodeURIComponent(q)}&sort=8`
     };
     // Custom market URLs: key is "custom-section-id"
     function getCustomMarketUrl(section, id, q) {
@@ -4210,8 +4353,11 @@
     document.addEventListener('click', function(e) {
       // --- Market button logic (support custom) ---
       const marketBtn = e.target.closest('.market-btn');
-      // Only proceed if clicking the button (not checkbox) and not disabled
-      if (marketBtn && !marketBtn.classList.contains('disabled') && !e.target.classList.contains('market-toggle')) {
+      // Only proceed if clicking the button (not checkbox, not favorite button, not remove button) and not disabled
+      if (marketBtn && !marketBtn.classList.contains('disabled') && 
+          !e.target.classList.contains('market-toggle') && 
+          !e.target.classList.contains('market-favorite-btn') &&
+          !e.target.classList.contains('market-remove-btn')) {
         // Check if any search terms are selected
         const selectedTerms = getSelectedSearchTerms();
         
@@ -4294,8 +4440,9 @@
               
               if (market.custom) {
                 const parts = market.key.split("-");
+                const originalSection = parts[1]; // Get original section (asia, international, special)
                 const customId = parts.slice(2).join("-");
-                const url = getCustomMarketUrl(section, customId, term);
+                const url = getCustomMarketUrl(originalSection, customId, term);
                 if (url) tabQueue.add(url);
               } else if (marketUrls[market.key]) {
                 tabQueue.add(marketUrls[market.key](term));
@@ -4328,8 +4475,9 @@
             
             if (market.custom) {
               const parts = market.key.split("-");
+              const originalSection = parts[1]; // Get original section (asia, international, special)
               const customId = parts.slice(2).join("-");
-              const url = getCustomMarketUrl(section, customId, query);
+              const url = getCustomMarketUrl(originalSection, customId, query);
               if (url) urls.push(url);
             } else if (marketUrls[market.key]) {
               urls.push(marketUrls[market.key](query));
@@ -4384,28 +4532,9 @@
       }
     });
 
-    // Update color indicator based on selected category
-    function updateRandomizeColorIndicator() {
-      const select = document.getElementById('randomize-category-select');
-      const indicator = document.getElementById('randomize-color-indicator');
-      const colors = {
-        'all': '#6a0572',
-        'asia': '#ff6b6b',
-        'international': '#4ecdc4',
-        'special': '#ffe66d'
-      };
-      indicator.style.backgroundColor = colors[select.value];
-    }
-
-    // Initialize color indicator
-    updateRandomizeColorIndicator();
-    
-    // Update indicator when selection changes
-    document.getElementById('randomize-category-select').addEventListener('change', updateRandomizeColorIndicator);
-    
     // Randomize button functionality
     document.getElementById('sidebar-randomize-btn').addEventListener('click', function() {
-      const category = document.getElementById('randomize-category-select').value;
+      const category = 'all';
       
       // Get the current folder's searches
       const folder = savedFolders[currentFolderIdx];
@@ -4914,45 +5043,6 @@
   });
 })();
 </script>
-  <!-- Theme Editor Modal -->
-  <div id="theme-editor-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;background:rgba(10,10,10,0.65);backdrop-filter:blur(2.5px);align-items:center;justify-content:center;">
-    <div style="background:rgba(32,34,36,0.98);border-radius:18px;box-shadow:0 8px 32px #000a;padding:28px 22px 18px 22px;max-width:350px;width:96vw;border:1.5px solid #232323;backdrop-filter:blur(7px);cursor:default;">
-      <h3 style="margin-top:0;font-size:1.17em;color:#e3e3e3;margin-bottom:10px;font-weight:bold;letter-spacing:0.01em;text-shadow:0 1px 8px #2224;">Theme Editor</h3>
-      <div style="margin-bottom:15px;">
-        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Background Color</label>
-        <input type="color" id="theme-bg-color" value="#121212" style="width:100%;height:40px;border-radius:5px;border:1.5px solid #232323;">
-      </div>
-      <div style="margin-bottom:15px;">
-        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Accent Color</label>
-        <input type="color" id="theme-accent-color" value="#666" style="width:100%;height:40px;border-radius:5px;border:1.5px solid #232323;">
-      </div>
-      <div style="margin-bottom:15px;">
-        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Search Highlight Color</label>
-        <input type="color" id="theme-highlight-color" value="#a0d8ed" style="width:100%;height:40px;border-radius:5px;border:1.5px solid #232323;">
-      </div>
-      <div style="margin-bottom:15px;">
-        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Background Image</label>
-        <input type="file" id="theme-bg-image" accept="image/*" style="width:100%;border-radius:5px;border:1.5px solid #232323;padding:5px;">
-        <div style="display:flex;gap:5px;margin-top:5px;">
-          <button id="theme-bg-image-remove" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Remove Image</button>
-          <button id="theme-bg-image-preview" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Preview</button>
-        </div>
-      </div>
-      <div style="margin-bottom:15px;">
-        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Logo Image</label>
-        <input type="file" id="theme-logo-image" accept="image/*" style="width:100%;border-radius:5px;border:1.5px solid #232323;padding:5px;">
-        <div style="display:flex;gap:5px;margin-top:5px;">
-          <button id="theme-logo-image-remove" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Reset Default</button>
-          <button id="theme-logo-image-preview" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Preview</button>
-        </div>
-      </div>
-      <div style="display:flex;gap:11px;margin-top:18px;justify-content:flex-end;">
-        <button id="theme-apply-btn" style="background:#232323;color:#e3e3e3;border:none;border-radius:6px;font-size:1em;font-weight:bold;cursor:pointer;padding:8px 22px;transition:background .18s,box-shadow .18s,transform .13s;box-shadow:0 2px 8px #2224;opacity:0.93;backdrop-filter:blur(1.5px);">Apply</button>
-        <button id="theme-reset-btn" style="background:#232323;color:#e3e3e3;border:none;border-radius:6px;font-size:1em;font-weight:bold;cursor:pointer;padding:8px 22px;transition:background .14s,color .14s;opacity:0.93;backdrop-filter:blur(1.5px);">Reset</button>
-        <button id="theme-close-btn" style="background:#232323;color:#e3e3e3;border:none;border-radius:6px;font-size:1em;font-weight:bold;cursor:pointer;padding:8px 22px;transition:background .14s,color .14s;opacity:0.93;backdrop-filter:blur(1.5px);">Close</button>
-      </div>
-    </div>
-  </div>
 
   <!-- Particle Background Effect -->
   <canvas id="particle-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
@@ -5008,120 +5098,9 @@
     })();
   </script>
   <script>
-    // Theme Editor Functionality
+    // Theme editor removed - keeping theme loading for backward compatibility
     (function() {
-      const themeEditorBtn = document.getElementById('theme-editor-btn');
-      const themeCloseBtn = document.getElementById('theme-close-btn');
-      const themeModal = document.getElementById('theme-editor-modal');
-      const themeBgImage = document.getElementById('theme-bg-image');
-      const themeBgImageRemove = document.getElementById('theme-bg-image-remove');
-      const themeBgImagePreview = document.getElementById('theme-bg-image-preview');
-      const themeApplyBtn = document.getElementById('theme-apply-btn');
-      
-      if (themeEditorBtn) {
-        themeEditorBtn.addEventListener('click', function() {
-          if (themeModal) themeModal.style.display = 'flex';
-        });
-      }
 
-      if (themeCloseBtn) {
-        themeCloseBtn.addEventListener('click', function() {
-          if (themeModal) themeModal.style.display = 'none';
-        });
-      }
-
-      // Handle background image upload
-      if (themeBgImage) {
-        themeBgImage.addEventListener('change', function(e) {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-              const bgImage = event.target.result;
-              document.documentElement.style.setProperty('--theme-bg-image', `url(${bgImage})`);
-              localStorage.setItem('themeBgImage', bgImage);
-            };
-            reader.readAsDataURL(file);
-          }
-        });
-      }
-
-      // Remove background image
-      if (themeBgImageRemove) {
-        themeBgImageRemove.addEventListener('click', function() {
-          document.documentElement.style.setProperty('--theme-bg-image', 'none');
-          localStorage.removeItem('themeBgImage');
-          if (themeBgImage) themeBgImage.value = '';
-        });
-      }
-
-      // Preview background image
-      if (themeBgImagePreview) {
-        themeBgImagePreview.addEventListener('click', function() {
-          const bgImage = localStorage.getItem('themeBgImage');
-          if (bgImage) {
-            document.documentElement.style.setProperty('--theme-bg-image', `url(${bgImage})`);
-          } else {
-            document.documentElement.style.setProperty('--theme-bg-image', 'url("bg.svg")');
-          }
-        });
-      }
-
-      if (themeApplyBtn) {
-        themeApplyBtn.addEventListener('click', function() {
-          const bgColorEl = document.getElementById('theme-bg-color');
-          const accentColorEl = document.getElementById('theme-accent-color');
-          const highlightColorEl = document.getElementById('theme-highlight-color');
-          const bgColor = bgColorEl ? bgColorEl.value : '#0a0a0a';
-          const accentColor = accentColorEl ? accentColorEl.value : '#444';
-          const highlightColor = highlightColorEl ? highlightColorEl.value : '#00e6d6';
-          
-          // Apply theme
-          document.documentElement.style.setProperty('--theme-bg', bgColor);
-          document.documentElement.style.setProperty('--theme-accent', accentColor);
-          document.documentElement.style.setProperty('--theme-highlight', highlightColor);
-          
-          // Save to localStorage
-          localStorage.setItem('themeSettings', JSON.stringify({
-            bgColor,
-            accentColor,
-            highlightColor
-          }));
-        });
-      }
-
-      const themeResetBtn = document.getElementById('theme-reset-btn');
-      if (themeResetBtn) {
-        themeResetBtn.addEventListener('click', function() {
-          // Reset to defaults
-          const bgColorReset = document.getElementById('theme-bg-color');
-          const accentColorReset = document.getElementById('theme-accent-color');
-          const highlightColorReset = document.getElementById('theme-highlight-color');
-          const logoImageReset = document.getElementById('theme-logo-image');
-          const bgImageReset = document.getElementById('theme-bg-image');
-          
-          if (bgColorReset) bgColorReset.value = '#121212';
-          if (accentColorReset) accentColorReset.value = '#666';
-          if (highlightColorReset) highlightColorReset.value = '#a0d8ed';
-          
-          // Remove saved theme
-          localStorage.removeItem('themeSettings');
-          localStorage.removeItem('themeBgImage');
-          
-          // Apply defaults
-          document.documentElement.style.setProperty('--theme-bg', '#121212');
-          document.documentElement.style.setProperty('--theme-accent', '#666');
-          document.documentElement.style.setProperty('--theme-highlight', '#a0d8ed');
-          document.documentElement.style.setProperty('--theme-bg-image', 'url("bg.svg")');
-          
-          // Reset logo to default
-          const mascot = document.querySelector('.wishlist-mascot');
-          if (mascot) mascot.src = 'mmcs.svg';
-          localStorage.removeItem('themeLogoImage');
-          if (logoImageReset) logoImageReset.value = '';
-          if (bgImageReset) bgImageReset.value = '';
-        });
-      }
 
       // Reset highlights button
       const resetHighlightsBtn = document.getElementById('sidebar-reset-highlights-btn');
@@ -5145,15 +5124,16 @@
     function openAllMarketsWithQuery(query) {
       // Collect all URLs first (only enabled markets)
       const urls = [];
-      ['asia', 'international', 'special'].forEach(section => {
+      ['asia', 'international', 'special', 'favorites'].forEach(section => {
         getMarkets(section).forEach(market => {
           // Skip if this market is toggled off
           if (!loadMarketToggleState(market.key)) return;
           
           if (market.custom) {
             const parts = market.key.split("-");
+            const originalSection = parts[1]; // Get original section (asia, international, special)
             const customId = parts.slice(2).join("-");
-            const url = getCustomMarketUrl(section, customId, query);
+            const url = getCustomMarketUrl(originalSection, customId, query);
             if (url) urls.push(url);
           } else if (marketUrls[market.key]) {
             urls.push(marketUrls[market.key](query));
@@ -5170,20 +5150,15 @@
       renderSavedSearches();
     }
 
-    // Load saved theme on startup
+    // Load saved theme on startup (backward compatibility - no editor UI)
     const savedTheme = localStorage.getItem('themeSettings');
     if (savedTheme) {
       const theme = JSON.parse(savedTheme);
-      document.getElementById('theme-bg-color').value = theme.bgColor;
-      document.getElementById('theme-accent-color').value = theme.accentColor;
-      document.getElementById('theme-highlight-color').value = theme.highlightColor || '#00e6d6';
-      
       document.documentElement.style.setProperty('--theme-bg', theme.bgColor);
       document.documentElement.style.setProperty('--theme-accent', theme.accentColor);
       document.documentElement.style.setProperty('--theme-highlight', theme.highlightColor || '#00e6d6');
     } else {
-      // Apply default background image if no saved theme
-        document.documentElement.style.setProperty('--theme-bg-image', 'url("bg.svg")');
+      document.documentElement.style.setProperty('--theme-bg-image', 'url("bg.svg")');
     }
 
     // Load saved background image
@@ -5192,40 +5167,12 @@
       document.documentElement.style.setProperty('--theme-bg-image', `url(${savedBgImage})`);
     }
 
-    // Load saved logo image
+    // Theme editor removed - logo image loading kept for backward compatibility
     const savedLogoImage = localStorage.getItem('themeLogoImage');
     if (savedLogoImage) {
-      document.querySelector('.wishlist-mascot').src = savedLogoImage;
+      const mascot = document.querySelector('.wishlist-mascot');
+      if (mascot) mascot.src = savedLogoImage;
     }
-
-    // Handle logo image upload
-    document.getElementById('theme-logo-image').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const logoImage = event.target.result;
-          document.querySelector('.wishlist-mascot').src = logoImage;
-          localStorage.setItem('themeLogoImage', logoImage);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Reset logo to default
-    document.getElementById('theme-logo-image-remove').addEventListener('click', function() {
-      document.querySelector('.wishlist-mascot').src = 'mmcs.svg';
-      localStorage.removeItem('themeLogoImage');
-      document.getElementById('theme-logo-image').value = '';
-    });
-
-    // Preview logo
-    document.getElementById('theme-logo-image-preview').addEventListener('click', function() {
-      const logoImage = localStorage.getItem('themeLogoImage');
-      if (logoImage) {
-        document.querySelector('.wishlist-mascot').src = logoImage;
-      }
-    });
 
     // Sidebar detach/reattach functionality
     (function() {
