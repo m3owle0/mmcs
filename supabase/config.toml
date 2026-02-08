@@ -1,0 +1,5 @@
+# Supabase Configuration
+# This file configures Supabase Edge Functions
+
+[functions.stripe-webhook]
+verify_jwt = false
