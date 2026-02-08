@@ -977,6 +977,34 @@
       margin-top: 2px;
       font-weight: bold;
     }
+    /* Notification market buttons */
+    .notification-market-btn {
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 2px solid #444;
+      background: rgba(35, 35, 35, 0.8);
+      color: #e3e3e3;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      min-height: 44px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      font-weight: 500;
+    }
+    .notification-market-btn:hover {
+      background: rgba(50, 50, 50, 0.9);
+      border-color: #666;
+    }
+    .notification-market-btn.selected {
+      border-color: #00e6d6;
+      background: rgba(0, 230, 214, 0.2);
+      color: #00e6d6;
+    }
+    .notification-market-btn.selected:hover {
+      background: rgba(0, 230, 214, 0.3);
+    }
     /* Add website buttons */
     .add-market-row {
       display: flex;
@@ -1627,18 +1655,22 @@
         }
         #notification-markets {
           grid-template-columns: 1fr !important;
-          max-height: 300px;
+          max-height: 400px;
+          gap: 10px;
         }
-        #notification-markets label {
-          padding: 12px;
-          min-height: 44px;
-          display: flex;
-          align-items: center;
+        .notification-market-btn {
+          width: 100% !important;
+          min-height: 48px !important;
+          padding: 14px 16px !important;
+          font-size: 15px !important;
         }
-        #notification-markets input[type="checkbox"] {
-          width: 20px;
-          height: 20px;
-          margin-right: 10px;
+        .notification-market-btn:active {
+          transform: scale(0.98);
+          opacity: 0.8;
+        }
+        .notification-market-btn.selected {
+          border-color: #00e6d6 !important;
+          background: rgba(0, 230, 214, 0.2) !important;
         }
         .webhook-buttons-row {
           grid-template-columns: 1fr !important;
@@ -2379,7 +2411,7 @@
         <p style="color: #888; font-size: 12px; margin-bottom: 8px;">
           Only Japanese markets supported by Sendico API will send notifications. Leave empty to search all 5 markets.
         </p>
-        <div id="notification-markets" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px; -webkit-overflow-scrolling: touch;">
+        <div id="notification-markets" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 300px; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px; -webkit-overflow-scrolling: touch;">
           <!-- Markets will be populated by JavaScript -->
         </div>
       </div>
@@ -3511,14 +3543,33 @@
         ];
 
         notificationMarkets.innerHTML = sendicoSupportedMarkets.map(market => {
-          const checked = selectedMarkets.includes(market.key) ? 'checked' : '';
+          const isSelected = selectedMarkets.includes(market.key);
           return `
-            <label style="display: flex; align-items: center; color: #e3e3e3; font-size: 13px; cursor: pointer;">
-              <input type="checkbox" value="${market.key}" ${checked} style="margin-right: 8px;">
-              ${market.label}
-            </label>
+            <button type="button" class="notification-market-btn ${isSelected ? 'selected' : ''}" 
+                    data-market="${market.key}">
+              ${isSelected ? '✓ ' : ''}${market.label}
+            </button>
           `;
         }).join('');
+        
+        // Add click handlers for toggle buttons
+        notificationMarkets.querySelectorAll('.notification-market-btn').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const isSelected = this.classList.contains('selected');
+            const label = this.textContent.replace('✓ ', '').trim();
+            
+            // Toggle selected state
+            if (isSelected) {
+              this.classList.remove('selected');
+              this.textContent = label;
+            } else {
+              this.classList.add('selected');
+              this.textContent = '✓ ' + label;
+            }
+          }, { passive: false });
+        });
         
         // Add info message about Sendico-only support
         const infoDiv = document.createElement('div');
@@ -3551,8 +3602,8 @@
           // Only allow Sendico-supported markets
           const sendicoMarkets = ['mercari-jp', 'paypay-fleamarket', 'rakuma', 'rakuten-jp', 'yahoo-auctions'];
           if (notificationMarkets) {
-            notificationMarkets.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-              const market = cb.value;
+            notificationMarkets.querySelectorAll('.notification-market-btn.selected').forEach(btn => {
+              const market = btn.getAttribute('data-market');
               // Only add if it's a Sendico-supported market
               if (sendicoMarkets.includes(market)) {
                 selectedMarkets.push(market);
