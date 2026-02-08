@@ -3164,12 +3164,15 @@
         height: 100vh !important;
         max-width: 100vw !important;
         max-height: 100vh !important;
+        background: rgba(0, 0, 0, 0.98) !important; /* Fully opaque on mobile */
+        backdrop-filter: blur(10px) !important;
         z-index: 999999 !important; /* Highest z-index for mobile */
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         padding: 20px !important;
         box-sizing: border-box !important;
+        pointer-events: auto !important; /* Ensure it's clickable */
       }
       
       .unlock-modal-bg.show {
@@ -3181,16 +3184,47 @@
         max-width: 400px !important;
         padding: 20px 15px !important;
         border-radius: 15px !important;
+        background: rgba(20, 20, 20, 1) !important; /* Fully opaque */
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
         position: relative !important;
         z-index: 1000000 !important;
         max-height: 90vh !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
+        pointer-events: auto !important; /* Ensure modal is clickable */
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9) !important;
+      }
+      
+      /* Ensure all elements inside modal are clickable */
+      .unlock-modal * {
+        pointer-events: auto !important;
+      }
+      
+      /* Make buttons larger and more touch-friendly on mobile */
+      .unlock-submit-btn,
+      .unlock-cancel-btn {
+        min-height: 48px !important;
+        padding: 14px 24px !important;
+        font-size: 16px !important;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2) !important;
+        touch-action: manipulation !important;
+        pointer-events: auto !important;
+        z-index: 1000001 !important;
+        position: relative !important;
+      }
+      
+      /* Ensure inputs are also clickable */
+      .unlock-input {
+        pointer-events: auto !important;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1) !important;
+        touch-action: manipulation !important;
+        min-height: 44px !important;
       }
       
       /* Ensure unlock modal is always visible on mobile when site is locked */
       body.site-locked .unlock-modal-bg {
         display: flex !important;
+        background: rgba(0, 0, 0, 0.98) !important;
       }
       
       .unlock-input {
@@ -3833,8 +3867,8 @@
     height: 100vh;
     max-width: 100vw;
     max-height: 100vh;
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.98); /* More opaque */
+    backdrop-filter: blur(10px);
     display: none; /* Start hidden, only show when explicitly needed */
     align-items: center;
     justify-content: center;
@@ -3842,6 +3876,7 @@
     box-sizing: border-box;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
+    pointer-events: auto; /* Ensure it's clickable */
   }
 
   .unlock-modal-bg.show {
@@ -3873,13 +3908,23 @@
   }
 
   .unlock-modal {
-    background: rgba(20, 20, 20, 0.98);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(20, 20, 20, 1); /* Fully opaque */
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 18px;
     padding: 32px 28px;
     width: min(400px, 90vw);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
     text-align: center;
+    pointer-events: auto; /* Ensure modal is clickable */
+  }
+  
+  /* Ensure all buttons and inputs in modal are clickable */
+  .unlock-modal button,
+  .unlock-modal input,
+  .unlock-modal a {
+    pointer-events: auto !important;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1) !important;
+    touch-action: manipulation !important;
   }
 
   .unlock-modal h3 {
@@ -3923,14 +3968,22 @@
     cursor: pointer;
     transition: all 0.2s;
     /* iOS fixes */
-    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
-    touch-action: manipulation;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-    pointer-events: auto;
-    -webkit-appearance: none;
-    appearance: none;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2) !important;
+    touch-action: manipulation !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    pointer-events: auto !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    min-height: 44px; /* Minimum touch target for mobile */
+    position: relative;
+    z-index: 1000001; /* Above modal */
+  }
+  
+  .unlock-submit-btn:active {
+    background: #00d4c4 !important;
+    transform: scale(0.98) !important;
   }
 
   .unlock-submit-btn:hover {
@@ -3948,6 +4001,18 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    /* iOS fixes */
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1) !important;
+    touch-action: manipulation !important;
+    pointer-events: auto !important;
+    min-height: 44px; /* Minimum touch target for mobile */
+    position: relative;
+    z-index: 1000001; /* Above modal */
+  }
+  
+  .unlock-cancel-btn:active {
+    background: rgba(80, 80, 80, 0.9) !important;
+    transform: scale(0.98) !important;
   }
 
   .unlock-cancel-btn:hover {
@@ -4011,10 +4076,26 @@
       display: flex !important;
       position: fixed !important;
       z-index: 999999 !important;
+      background: rgba(0, 0, 0, 0.98) !important; /* Fully opaque */
+      pointer-events: auto !important;
     }
     
     body.site-locked .unlock-modal-bg * {
       pointer-events: auto !important;
+    }
+    
+    body.site-locked .unlock-modal {
+      background: rgba(20, 20, 20, 1) !important; /* Fully opaque */
+      pointer-events: auto !important;
+    }
+    
+    /* Ensure buttons are clickable on mobile */
+    body.site-locked .unlock-modal button,
+    body.site-locked .unlock-modal input {
+      pointer-events: auto !important;
+      -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1) !important;
+      touch-action: manipulation !important;
+      cursor: pointer !important;
     }
   }
 
