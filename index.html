@@ -24,21 +24,25 @@
 
     /* Main Styles */
     html, body {
-      height: 100%;
+      min-height: 100vh;
+      height: auto;
       background: var(--theme-bg) var(--theme-bg-image);
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
       color: var(--theme-text);
-      min-height: 100vh;
       overflow-x: hidden;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
     }
     @media (max-width: 768px) {
       html, body {
         overflow-y: auto;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
+        height: auto;
+        min-height: 100vh;
       }
     }
     @keyframes gradientBG {
@@ -84,6 +88,21 @@
         margin-top: 60px;
         max-height: none;
         border-radius: 0;
+        width: 100%;
+        max-width: 100%;
+        padding: 15px 10px;
+        min-height: auto;
+      }
+    }
+    @media (max-width: 768px) {
+      .container {
+        margin-top: 70px;
+        padding: 12px 8px;
+        overflow-y: visible;
+      }
+      body {
+        overflow-y: auto !important;
+        height: auto !important;
       }
     }
 
@@ -225,7 +244,11 @@
       backdrop-filter: blur(2px);
       opacity: 0.93;
       touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .section-openall-btn:hover {
       background: #444;
@@ -298,6 +321,11 @@
       backdrop-filter: blur(2px);
       opacity: 0.93;
       border: 1px solid rgba(255,255,255,0.1);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
     }
     .market-btn.disabled {
       opacity: 0.5;
@@ -400,6 +428,12 @@
       border: none;
       border-radius: 10px;
       font-size: 17px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
       font-weight: bold;
       padding: 13px 28px;
       margin: 0 0 25px 0;
@@ -597,8 +631,15 @@
       box-shadow: 0 2px 8px #2224;
       opacity: 0.93;
       backdrop-filter: blur(1.5px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .sidebar-folder-btn:hover { background: #444; box-shadow: 0 4px 16px #2226; transform: translateY(-1px) scale(1.04);}
+    .sidebar-folder-btn:active { transform: translateY(0) scale(1); }
     .saved-folder-list {
       list-style: none;
       padding: 0;
@@ -670,6 +711,12 @@
       box-shadow: 0 1px 4px #2224;
       opacity: 0.93;
       backdrop-filter: blur(2px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .randomize-section {
       margin-bottom: 15px;
@@ -727,6 +774,12 @@
       box-shadow: 0 1px 4px #2224;
       opacity: 0.93;
       backdrop-filter: blur(2px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .sidebar-randomize-btn:hover,
     .sidebar-multi-search-btn:hover,
@@ -748,6 +801,12 @@
       box-shadow: 0 1px 4px #2224;
       opacity: 0.93;
       backdrop-filter: blur(2px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .randomize-select:focus { 
       border: 1.5px solid #888; 
@@ -773,8 +832,49 @@
       box-shadow: 0 1px 4px #2224;
       opacity: 0.93;
       backdrop-filter: blur(2px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .sidebar-imp-btn input[type="file"] { display: none; }
+    .sidebar-add-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .sidebar-add-btn {
+      background: #232323;
+      color: #e3e3e3;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.08em;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 4.5px 13px;
+      transition: background .15s, box-shadow .15s, transform .13s;
+      box-shadow: 0 2px 8px #2224;
+      opacity: 0.93;
+      backdrop-filter: blur(1.5px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-add-btn:hover {
+      background: #444;
+      box-shadow: 0 4px 16px #2226;
+      transform: translateY(-1px) scale(1.04);
+    }
+    .sidebar-add-btn:active {
+      transform: translateY(0) scale(1);
+    }
     .sidebar-divider {
       border: none;
       border-top: 1.5px solid #232323;
@@ -943,7 +1043,11 @@
       opacity: 0.93;
       backdrop-filter: blur(1.5px);
       touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .custom-market-modal .modal-btn:hover { background: #444; box-shadow: 0 4px 16px #2226; transform: translateY(-1px) scale(1.04);}
     .custom-market-modal .modal-btn:active { transform: translateY(0) scale(1); }
@@ -960,7 +1064,11 @@
       opacity: 0.93;
       backdrop-filter: blur(1.5px);
       touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .custom-market-modal .modal-cancel-btn:hover { background: #2224; color: #fff; }
     .custom-market-modal .modal-cancel-btn:active { transform: translateY(0); }
@@ -1032,7 +1140,11 @@
       opacity: 0.93;
       backdrop-filter: blur(2px);
       touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .add-market-btn:hover { background: #444; color: #fff; box-shadow: 0 4px 16px #2226; transform: translateY(-1px) scale(1.04);}
     .add-market-btn:active { transform: translateY(0) scale(1); }
@@ -1876,11 +1988,21 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+    -webkit-appearance: none;
+    appearance: none;
+    user-select: none;
+    pointer-events: auto;
   }
 
   .unlock-btn:hover {
     background: rgba(0, 230, 214, 0.3);
     transform: translateY(-1px);
+  }
+  
+  .unlock-btn:active {
+    transform: translateY(0);
   }
 
   /* Unlock Modal Styles */
@@ -1979,7 +2101,11 @@
     cursor: pointer;
     transition: all 0.2s;
     touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: rgba(0, 230, 214, 0.3);
+    -webkit-appearance: none;
+    appearance: none;
+    user-select: none;
+    pointer-events: auto;
   }
   @media (max-width: 768px) {
     .unlock-submit-btn {
@@ -2090,6 +2216,93 @@
   body.site-locked .top-header,
   body.site-locked .top-header * {
     pointer-events: auto !important;
+  }
+  
+  /* Global button fixes for iOS */
+  button {
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    user-select: none;
+    pointer-events: auto;
+  }
+  button:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  
+  /* Ensure buttons work on iOS */
+  @media (max-width: 768px) {
+    button, a, input, select, textarea, label {
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.3);
+      cursor: pointer;
+    }
+    button:not(:disabled), a:not(:disabled) {
+      pointer-events: auto !important;
+      touch-action: manipulation;
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+    }
+    /* Fix iOS button click issues */
+    button {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    /* Ensure all interactive elements are tappable */
+    .market-btn, .add-market-btn, .section-openall-btn, 
+    .sidebar-add-btn, .sidebar-folder-btn, .sidebar-exp-btn,
+    .sidebar-imp-btn, .sidebar-reset-btn, .sidebar-multi-clear-btn,
+    .sidebar-randomize-btn, .unlock-btn, .unlock-submit-btn,
+    .unlock-cancel-btn, .modal-btn, .modal-cancel-btn,
+    .notification-market-btn, .notification-action-btn {
+      pointer-events: auto !important;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+    }
+    /* Fix iOS scrolling */
+    html {
+      -webkit-overflow-scrolling: touch;
+      overflow-y: auto;
+      height: auto;
+      position: relative;
+    }
+    body {
+      -webkit-overflow-scrolling: touch;
+      overflow-y: auto !important;
+      height: auto !important;
+      min-height: 100vh;
+      position: relative;
+    }
+    /* Prevent fixed positioning from blocking scroll on iOS */
+    .container {
+      position: relative !important;
+      transform: none !important;
+      left: auto !important;
+      top: auto !important;
+    }
+    /* Ensure content can scroll */
+    .container, .sidebar, #notifications-list, .unlock-modal {
+      -webkit-overflow-scrolling: touch;
+      overflow-y: auto;
+    }
+  }
+  
+  /* iOS-specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    /* iOS Safari specific */
+    html, body {
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    button, a, [role="button"] {
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.3);
+      touch-action: manipulation;
+    }
   }
 
   /* Visual feedback for locked content */
@@ -5930,5 +6143,174 @@
       });
     })();
   </script>
+<script>
+  // iOS-specific fixes for buttons and scrolling
+  (function() {
+    let buttonFixApplied = new WeakSet();
+    
+    // Fix iOS button clicks - ensure all buttons work
+    function fixIOSButtons() {
+      const buttons = document.querySelectorAll('button, a[href], [role="button"], .market-btn, .add-market-btn, .section-openall-btn, .sidebar-add-btn, .sidebar-folder-btn, .sidebar-exp-btn, .sidebar-imp-btn, .sidebar-reset-btn, .sidebar-multi-clear-btn, .sidebar-randomize-btn, .unlock-btn, .unlock-submit-btn, .unlock-cancel-btn, .modal-btn, .modal-cancel-btn, .notification-market-btn, .notification-action-btn');
+      
+      buttons.forEach(btn => {
+        if (buttonFixApplied.has(btn)) return;
+        buttonFixApplied.add(btn);
+        
+        // Remove any inline styles that might block clicks
+        if (btn.style.pointerEvents === 'none' && !btn.disabled) {
+          btn.style.pointerEvents = 'auto';
+        }
+        
+        // Ensure CSS properties are set
+        btn.style.touchAction = 'manipulation';
+        btn.style.webkitTapHighlightColor = 'rgba(0, 230, 214, 0.2)';
+        btn.style.webkitAppearance = 'none';
+        btn.style.appearance = 'none';
+        btn.style.userSelect = 'none';
+        if (!btn.disabled) {
+          btn.style.pointerEvents = 'auto';
+        }
+        
+        // Ensure touch events work - don't prevent default
+        const touchHandler = function(e) {
+          if (btn.disabled) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        };
+        
+        btn.addEventListener('touchstart', touchHandler, { passive: false });
+        btn.addEventListener('touchend', touchHandler, { passive: false });
+        
+        // Fix click events on iOS - ensure they fire
+        const clickHandler = function(e) {
+          if (btn.disabled) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        };
+        
+        btn.addEventListener('click', clickHandler, { passive: false });
+      });
+    }
+    
+    // Fix iOS scrolling
+    function fixIOSScrolling() {
+      // Ensure body can scroll
+      document.body.style.height = 'auto';
+      document.body.style.minHeight = '100vh';
+      document.body.style.overflowY = 'auto';
+      document.body.style.webkitOverflowScrolling = 'touch';
+      document.body.style.position = 'relative';
+      
+      // Ensure html can scroll
+      document.documentElement.style.height = 'auto';
+      document.documentElement.style.minHeight = '100vh';
+      document.documentElement.style.overflowY = 'auto';
+      document.documentElement.style.webkitOverflowScrolling = 'touch';
+      document.documentElement.style.position = 'relative';
+      
+      // Fix container scrolling on mobile
+      const container = document.querySelector('.container');
+      if (container && window.innerWidth <= 768) {
+        container.style.position = 'relative';
+        container.style.transform = 'none';
+        container.style.left = 'auto';
+        container.style.top = 'auto';
+        container.style.maxHeight = 'none';
+        container.style.overflowY = 'visible';
+        container.style.height = 'auto';
+      }
+      
+      // Ensure sidebar doesn't block scrolling
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar && window.innerWidth <= 1000) {
+        sidebar.style.position = 'relative';
+        sidebar.style.height = 'auto';
+        sidebar.style.overflowY = 'visible';
+      }
+    }
+    
+    // Run fixes on load and after DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        fixIOSButtons();
+        fixIOSScrolling();
+      });
+    } else {
+      fixIOSButtons();
+      fixIOSScrolling();
+    }
+    
+    // Re-run fixes after delays to catch dynamically added buttons
+    setTimeout(function() {
+      fixIOSButtons();
+      fixIOSScrolling();
+    }, 100);
+    
+    setTimeout(function() {
+      fixIOSButtons();
+      fixIOSScrolling();
+    }, 500);
+    
+    setTimeout(function() {
+      fixIOSButtons();
+      fixIOSScrolling();
+    }, 1000);
+    
+    // Fix buttons when window resizes (orientation change)
+    window.addEventListener('resize', function() {
+      setTimeout(function() {
+        fixIOSButtons();
+        fixIOSScrolling();
+      }, 100);
+    });
+    
+    // Fix buttons when content is added dynamically
+    const observer = new MutationObserver(function(mutations) {
+      let shouldFix = false;
+      mutations.forEach(function(mutation) {
+        if (mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1 && (node.tagName === 'BUTTON' || node.querySelector && node.querySelector('button'))) {
+              shouldFix = true;
+            }
+          });
+        }
+      });
+      if (shouldFix) {
+        setTimeout(function() {
+          fixIOSButtons();
+          fixIOSScrolling();
+        }, 50);
+      }
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    
+    // Also observe for attribute changes that might affect buttons
+    const attrObserver = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          const target = mutation.target;
+          if (target.tagName === 'BUTTON' && target.style.pointerEvents === 'none' && !target.disabled) {
+            target.style.pointerEvents = 'auto';
+          }
+        }
+      });
+    });
+    
+    attrObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['style'],
+      subtree: true
+    });
+  })();
+</script>
 </body>
 </html>
