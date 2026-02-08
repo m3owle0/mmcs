@@ -3525,6 +3525,7 @@
         <button type="button" class="add-market-btn" data-section="asia">+ Add Website to Asia</button>
         <button type="button" class="add-market-btn" data-section="international">+ Add Website to International</button>
         <button type="button" class="add-market-btn" data-section="special">+ Add Website to Designer</button>
+        <button type="button" id="add-custom-category-btn" style="background: #00e6d6; color: #0a0a0a; border: none; border-radius: 7px; font-size: 13px; font-weight: bold; cursor: pointer; padding: 9px 16px; margin-bottom: 2px; margin-top: 2px; transition: background .18s, box-shadow .18s, transform .13s; box-shadow: 0 1px 4px #2224; opacity: 0.93; backdrop-filter: blur(2px);">+ Create Custom Category</button>
       </div>
       <div class="section-header-row">
         <h2>Asia</h2>
@@ -3597,6 +3598,24 @@
       <div class="modal-btn-row">
         <button class="modal-btn" id="custom-market-modal-save-btn">Save</button>
         <button class="modal-cancel-btn" id="custom-market-modal-cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Custom Category Modal -->
+  <div id="custom-category-modal-bg" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;background:rgba(10,10,10,0.65);backdrop-filter:blur(2.5px);align-items:center;justify-content:center;">
+    <div class="custom-market-modal">
+      <div class="drag-handle"></div>
+      <h3 id="custom-category-modal-title">Create Custom Category</h3>
+      <label for="custom-category-name-input">Category Name</label>
+      <input type="text" id="custom-category-name-input" maxlength="50" placeholder="e.g. Vintage, Sneakers, etc." required />
+      <div class="modal-tip">
+        Create a custom category to organize your websites. You can add websites to this category after creating it.
+      </div>
+      <div class="modal-btn-row">
+        <button class="modal-btn" id="custom-category-modal-save-btn">Save</button>
+        <button class="modal-cancel-btn" id="custom-category-modal-cancel-btn">Cancel</button>
+        <button class="modal-cancel-btn" id="custom-category-modal-delete-btn" style="display:none;background:rgba(255,107,107,0.2);color:#ff6b6b;border-color:rgba(255,107,107,0.5);">Delete</button>
       </div>
     </div>
   </div>
@@ -6016,6 +6035,23 @@
         : JSON.parse(localStorage.getItem(CUSTOM_MARKETS_KEY)) || { asia: [], international: [], special: [] };
     }
     const saveCustomMarkets = data => localStorage.setItem(CUSTOM_MARKETS_KEY, JSON.stringify(data));
+    
+    // Custom Categories Storage
+    const CUSTOM_CATEGORIES_KEY = 'customCategories_v1';
+    function loadCustomCategories() {
+      const raw = localStorage.getItem(CUSTOM_CATEGORIES_KEY);
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch {}
+      }
+      return [];
+    }
+    function saveCustomCategories(categories) {
+      localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(categories));
+    }
+    let customCategories = loadCustomCategories();
+    
     // Folder Storage
     const FOLDER_KEY = 'savedFolders_v2';
     function loadFoldersObj() {
@@ -6099,7 +6135,21 @@
 
     // Combined Market Data + Custom
     function getMarkets(section) {
-      const orig = marketDataInitial[section].slice();
+      // Check if it's a custom category
+      const customCategory = customCategories.find(cat => cat.id === section);
+      if (customCategory) {
+        // Return custom markets for this custom category
+        return (customMarkets[section] || []).map(m => ({
+          key: "custom-" + section + "-" + m.id,
+          label: m.title,
+          custom: true,
+          urlTemplate: m.url,
+          id: m.id
+        }));
+      }
+      
+      // Standard sections (asia, international, special)
+      const orig = marketDataInitial[section] ? marketDataInitial[section].slice() : [];
       const custom = (customMarkets[section] || []).map(m => ({
         key: "custom-" + section + "-" + m.id,
         label: m.title,
@@ -6108,6 +6158,22 @@
         id: m.id
       }));
       return orig.concat(custom);
+    }
+    
+    // Get all available sections (including custom categories)
+    function getAllSections() {
+      const standardSections = ['asia', 'international', 'special'];
+      const customSectionIds = customCategories.map(cat => cat.id);
+      return [...standardSections, ...customSectionIds];
+    }
+    
+    // Get section display name
+    function getSectionDisplayName(section) {
+      if (section === 'asia') return 'Asia';
+      if (section === 'international') return 'International & Other Markets';
+      if (section === 'special') return 'Designer & Global Select';
+      const customCategory = customCategories.find(cat => cat.id === section);
+      return customCategory ? customCategory.name : section;
     }
     // Helper function to create a single market button
     function createSingleMarketButton(market, sectionName) {
@@ -6193,9 +6259,97 @@
       });
     }
     function refreshAllMarketButtons() {
+      // Render standard sections
       createMarketButtons(getMarkets('asia'), "asia-markets", "asia");
       createMarketButtons(getMarkets('international'), "international-markets", "international");
       createMarketButtons(getMarkets('special'), "special-markets", "special");
+      
+      // Render custom categories
+      customCategories.forEach(category => {
+        const sectionId = category.id + "-markets";
+        const container = document.getElementById(sectionId);
+        if (container) {
+          createMarketButtons(getMarkets(category.id), sectionId, category.id);
+        } else {
+          // Create the section if it doesn't exist
+          createCustomCategorySection(category);
+        }
+      });
+    }
+    
+    // Create HTML structure for a custom category section
+    function createCustomCategorySection(category) {
+      const container = document.querySelector('.container form');
+      if (!container) return;
+      
+      // Find where to insert (after special section)
+      const specialGroup = container.querySelector('.special-group');
+      if (!specialGroup) return;
+      
+      // Check if section already exists
+      const existingSection = document.getElementById(category.id + "-markets");
+      if (existingSection) return;
+      
+      // Create section HTML
+      const sectionDiv = document.createElement('div');
+      sectionDiv.className = 'custom-category-section';
+      sectionDiv.setAttribute('data-category-id', category.id);
+      
+      const headerRow = document.createElement('div');
+      headerRow.className = 'section-header-row';
+      
+      const title = document.createElement('h2');
+      title.textContent = category.name;
+      
+      const openAllBtn = document.createElement('button');
+      openAllBtn.type = 'button';
+      openAllBtn.className = 'section-openall-btn';
+      openAllBtn.setAttribute('data-section', category.id);
+      openAllBtn.textContent = `Open All ${category.name}`;
+      
+      const manageBtn = document.createElement('button');
+      manageBtn.type = 'button';
+      manageBtn.className = 'category-manage-btn';
+      manageBtn.setAttribute('data-category-id', category.id);
+      manageBtn.innerHTML = '⚙️';
+      manageBtn.title = 'Manage Category';
+      manageBtn.style.cssText = 'background: #232323; color: #e3e3e3; border: none; border-radius: 6px; font-size: 13px; padding: 4px 8px; cursor: pointer; margin-left: 8px;';
+      
+      headerRow.appendChild(title);
+      headerRow.appendChild(openAllBtn);
+      headerRow.appendChild(manageBtn);
+      
+      const marketsDiv = document.createElement('div');
+      marketsDiv.className = 'markets';
+      marketsDiv.id = category.id + "-markets";
+      
+      const addWebsiteBtn = document.createElement('button');
+      addWebsiteBtn.type = 'button';
+      addWebsiteBtn.className = 'add-market-btn';
+      addWebsiteBtn.setAttribute('data-section', category.id);
+      addWebsiteBtn.textContent = `+ Add Website to ${category.name}`;
+      addWebsiteBtn.style.cssText = 'margin-top: 8px; margin-bottom: 20px;';
+      
+      sectionDiv.appendChild(headerRow);
+      sectionDiv.appendChild(addWebsiteBtn);
+      sectionDiv.appendChild(marketsDiv);
+      
+      // Insert after special group
+      specialGroup.parentNode.insertBefore(sectionDiv, specialGroup.nextSibling);
+      
+      // Render markets
+      createMarketButtons(getMarkets(category.id), category.id + "-markets", category.id);
+      
+      // Add event listeners
+      manageBtn.addEventListener('click', () => showCategoryManageModal(category));
+    }
+    
+    // Remove custom category section from DOM
+    function removeCustomCategorySection(categoryId) {
+      const section = document.querySelector(`[data-category-id="${categoryId}"]`);
+      if (section) {
+        section.remove();
+      }
     }
     refreshAllMarketButtons();
 
@@ -6798,7 +6952,11 @@
       // Get markets for the selected category
       let markets = [];
       if (category === 'all') {
+          // Include all standard sections and custom categories
           markets = [...getMarkets('asia'), ...getMarkets('international'), ...getMarkets('special')];
+          customCategories.forEach(cat => {
+            markets = [...markets, ...getMarkets(cat.id)];
+          });
       } else {
           markets = getMarkets(category);
       }
@@ -6814,11 +6972,46 @@
       // Open all market URLs immediately without delays
       enabledMarkets.forEach(market => {
         if (market.custom) {
-          const parts = market.key.split("-");
-          const customId = parts.slice(2).join("-");
-          const section = market.key.split("-")[1]; // Get the section from the key
-          const url = getCustomMarketUrl(section, customId, query);
-          if (url) tabQueue.add(url);
+          // For openRandomizedTerm, we need to extract section from the key
+          // Key format: "custom-{section}-{id}"
+          const keyParts = market.key.split("-");
+          if (keyParts.length >= 3) {
+            // Try to find the section by checking custom categories first
+            let section = null;
+            let customId = null;
+            
+            // Check if it's a custom category
+            for (const cat of customCategories) {
+              const prefix = `custom-${cat.id}-`;
+              if (market.key.startsWith(prefix)) {
+                section = cat.id;
+                customId = market.key.substring(prefix.length);
+                break;
+              }
+            }
+            
+            // If not found, try standard sections
+            if (!section) {
+              const standardSections = ['asia', 'international', 'special'];
+              for (const stdSection of standardSections) {
+                const prefix = `custom-${stdSection}-`;
+                if (market.key.startsWith(prefix)) {
+                  section = stdSection;
+                  customId = market.key.substring(prefix.length);
+                  break;
+                }
+              }
+            }
+            
+            // Fallback to old method if still not found
+            if (!section) {
+              section = keyParts[1];
+              customId = keyParts.slice(2).join("-");
+            }
+            
+            const url = getCustomMarketUrl(section, customId, query);
+            if (url) tabQueue.add(url);
+          }
         } else if (marketUrls[market.key]) {
           tabQueue.add(marketUrls[market.key](query));
         }
@@ -7099,8 +7292,10 @@
           
           openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
             if (market.startsWith("custom-")) {
-              const parts = market.split("-");
-              const customId = parts.slice(2).join("-");
+              // Extract market ID: key format is "custom-{section}-{id}"
+              // Since we have the section, remove "custom-{section}-" prefix
+              const prefix = `custom-${section}-`;
+              const customId = market.startsWith(prefix) ? market.substring(prefix.length) : market.split("-").slice(2).join("-");
               const url = getCustomMarketUrl(section, customId, term);
               if (url) tabQueue.add(url);
             } else if (marketUrls[market]) {
@@ -7151,8 +7346,10 @@
             const market = marketBtn.getAttribute('data-market');
             const section = marketBtn.getAttribute('data-section');
             if (market.startsWith("custom-")) {
-              const parts = market.split("-");
-              const customId = parts.slice(2).join("-");
+              // Extract market ID: key format is "custom-{section}-{id}"
+              // Since we have the section, remove "custom-{section}-" prefix
+              const prefix = `custom-${section}-`;
+              const customId = market.startsWith(prefix) ? market.substring(prefix.length) : market.split("-").slice(2).join("-");
               const url = getCustomMarketUrl(section, customId, query);
               if (url) tabQueue.add(url);
             } else if (marketUrls[market]) {
@@ -7213,8 +7410,10 @@
                 if (!loadMarketToggleState(market.key)) return;
                 
                 if (market.custom) {
-                  const parts = market.key.split("-");
-                  const customId = parts.slice(2).join("-");
+                  // Extract market ID: key format is "custom-{section}-{id}"
+                  // Since we have the section, remove "custom-{section}-" prefix
+                  const prefix = `custom-${section}-`;
+                  const customId = market.key.startsWith(prefix) ? market.key.substring(prefix.length) : market.key.split("-").slice(2).join("-");
                   const url = getCustomMarketUrl(section, customId, term);
                   if (url) tabQueue.add(url);
                 } else if (marketUrls[market.key]) {
@@ -7247,8 +7446,10 @@
               if (!loadMarketToggleState(market.key)) return;
               
               if (market.custom) {
-                const parts = market.key.split("-");
-                const customId = parts.slice(2).join("-");
+                // Extract market ID: key format is "custom-{section}-{id}"
+                // Since we have the section, remove "custom-{section}-" prefix
+                const prefix = `custom-${section}-`;
+                const customId = market.key.startsWith(prefix) ? market.key.substring(prefix.length) : market.key.split("-").slice(2).join("-");
                 const url = getCustomMarketUrl(section, customId, query);
                 if (url) urls.push(url);
               } else if (marketUrls[market.key]) {
@@ -7335,13 +7536,23 @@
     function updateRandomizeColorIndicator() {
       const select = document.getElementById('randomize-category-select');
       const indicator = document.getElementById('randomize-color-indicator');
+      if (!select || !indicator) return;
+      
       const colors = {
         'all': '#6a0572',
         'asia': '#ff6b6b',
         'international': '#4ecdc4',
         'special': '#ffe66d'
       };
-      indicator.style.backgroundColor = colors[select.value];
+      
+      // Check if it's a custom category
+      const customCategory = customCategories.find(cat => cat.id === select.value);
+      if (customCategory) {
+        // Use a default color for custom categories
+        indicator.style.backgroundColor = '#9b59b6';
+      } else {
+        indicator.style.backgroundColor = colors[select.value] || '#888';
+      }
     }
 
     // Initialize color indicator
@@ -7564,11 +7775,20 @@
     // --- Custom Market Modal Logic ---
     function showCustomMarketModal(section) {
       const bg = document.getElementById('custom-market-modal-bg');
-      document.getElementById('custom-market-modal-section').textContent = {
-        asia: "Asia Section",
-        international: "International Section",
-        special: "Designer Section"
-      }[section] || "";
+      const sectionLabel = document.getElementById('custom-market-modal-section');
+      
+      // Check if it's a custom category
+      const customCategory = customCategories.find(cat => cat.id === section);
+      if (customCategory) {
+        sectionLabel.textContent = `${customCategory.name} Section`;
+      } else {
+        sectionLabel.textContent = {
+          asia: "Asia Section",
+          international: "International Section",
+          special: "Designer Section"
+        }[section] || "";
+      }
+      
       bg.style.display = 'flex';
       bg.setAttribute('data-section', section);
       document.getElementById('custom-market-title-input').value = '';
@@ -7753,6 +7973,203 @@
     document.getElementById('site-list-close-btn').onclick = hideSiteListModal;
     document.getElementById('site-list-modal-bg').onclick = function(e) {
       if (e.target === this) hideSiteListModal();
+    };
+    
+    // Custom Category Management
+    let editingCategoryId = null;
+    
+    function showCategoryModal(category = null) {
+      const bg = document.getElementById('custom-category-modal-bg');
+      const titleEl = document.getElementById('custom-category-modal-title');
+      const nameInput = document.getElementById('custom-category-name-input');
+      const deleteBtn = document.getElementById('custom-category-modal-delete-btn');
+      
+      if (category) {
+        // Editing existing category
+        titleEl.textContent = 'Edit Custom Category';
+        nameInput.value = category.name;
+        editingCategoryId = category.id;
+        deleteBtn.style.display = 'inline-block';
+      } else {
+        // Creating new category
+        titleEl.textContent = 'Create Custom Category';
+        nameInput.value = '';
+        editingCategoryId = null;
+        deleteBtn.style.display = 'none';
+      }
+      
+      bg.style.display = 'flex';
+      setTimeout(() => {
+        nameInput.focus();
+      }, 20);
+    }
+    
+    function hideCategoryModal() {
+      document.getElementById('custom-category-modal-bg').style.display = 'none';
+      editingCategoryId = null;
+    }
+    
+    function addCustomCategory(name) {
+      if (!name || !name.trim()) {
+        alert('Please enter a category name.');
+        return false;
+      }
+      
+      // Check for duplicate names
+      const allSections = ['asia', 'international', 'special'];
+      const existingNames = [
+        ...allSections.map(s => getSectionDisplayName(s).toLowerCase()),
+        ...customCategories.map(c => c.name.toLowerCase())
+      ];
+      
+      if (existingNames.includes(name.trim().toLowerCase())) {
+        alert('A category with this name already exists.');
+        return false;
+      }
+      
+      // Generate unique ID
+      const id = 'custom-' + Date.now().toString(36) + '-' + Math.floor(Math.random()*99999).toString(36);
+      const category = { id, name: name.trim() };
+      
+      customCategories.push(category);
+      saveCustomCategories(customCategories);
+      
+      // Initialize empty markets array for this category
+      customMarkets[id] = [];
+      foldersObj.customMarkets = customMarkets;
+      saveFoldersObj(foldersObj);
+      
+      // Create the section in the DOM
+      createCustomCategorySection(category);
+      
+      // Update randomize dropdown
+      updateRandomizeDropdown();
+      
+      return true;
+    }
+    
+    function updateCustomCategory(categoryId, newName) {
+      if (!newName || !newName.trim()) {
+        alert('Please enter a category name.');
+        return false;
+      }
+      
+      const category = customCategories.find(c => c.id === categoryId);
+      if (!category) return false;
+      
+      // Check for duplicate names (excluding current category)
+      const allSections = ['asia', 'international', 'special'];
+      const existingNames = [
+        ...allSections.map(s => getSectionDisplayName(s).toLowerCase()),
+        ...customCategories.filter(c => c.id !== categoryId).map(c => c.name.toLowerCase())
+      ];
+      
+      if (existingNames.includes(newName.trim().toLowerCase())) {
+        alert('A category with this name already exists.');
+        return false;
+      }
+      
+      category.name = newName.trim();
+      saveCustomCategories(customCategories);
+      
+      // Update the section header
+      const section = document.querySelector(`[data-category-id="${categoryId}"]`);
+      if (section) {
+        const titleEl = section.querySelector('h2');
+        if (titleEl) titleEl.textContent = category.name;
+        
+        const openAllBtn = section.querySelector('.section-openall-btn');
+        if (openAllBtn) openAllBtn.textContent = `Open All ${category.name}`;
+        
+        const addBtn = section.querySelector('.add-market-btn');
+        if (addBtn) addBtn.textContent = `+ Add Website to ${category.name}`;
+      }
+      
+      // Update randomize dropdown
+      updateRandomizeDropdown();
+      
+      return true;
+    }
+    
+    function deleteCustomCategory(categoryId) {
+      if (!confirm('Are you sure you want to delete this category? All websites in this category will also be deleted.')) {
+        return false;
+      }
+      
+      // Remove from categories array
+      customCategories = customCategories.filter(c => c.id !== categoryId);
+      saveCustomCategories(customCategories);
+      
+      // Remove markets for this category
+      delete customMarkets[categoryId];
+      foldersObj.customMarkets = customMarkets;
+      saveFoldersObj(foldersObj);
+      
+      // Remove from DOM
+      removeCustomCategorySection(categoryId);
+      
+      // Update randomize dropdown
+      updateRandomizeDropdown();
+      
+      return true;
+    }
+    
+    function showCategoryManageModal(category) {
+      showCategoryModal(category);
+    }
+    
+    function updateRandomizeDropdown() {
+      const select = document.getElementById('randomize-category-select');
+      if (!select) return;
+      
+      // Store current value
+      const currentValue = select.value;
+      
+      // Clear and add standard options
+      select.innerHTML = '<option value="all">All Categories</option><option value="asia">Asia</option><option value="international">International</option><option value="special">Designer</option>';
+      
+      // Add custom categories
+      customCategories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = category.name;
+        select.appendChild(option);
+      });
+      
+      // Restore selection if still valid
+      if (currentValue && Array.from(select.options).some(opt => opt.value === currentValue)) {
+        select.value = currentValue;
+      }
+      
+      // Update color indicator
+      if (window.updateRandomizeColorIndicator) {
+        updateRandomizeColorIndicator();
+      }
+    }
+    
+    // Category modal event handlers
+    document.getElementById('add-custom-category-btn').onclick = () => showCategoryModal();
+    document.getElementById('custom-category-modal-cancel-btn').onclick = hideCategoryModal;
+    document.getElementById('custom-category-modal-save-btn').onclick = function() {
+      const name = document.getElementById('custom-category-name-input').value.trim();
+      
+      if (editingCategoryId) {
+        if (updateCustomCategory(editingCategoryId, name)) {
+          hideCategoryModal();
+        }
+      } else {
+        if (addCustomCategory(name)) {
+          hideCategoryModal();
+        }
+      }
+    };
+    document.getElementById('custom-category-modal-delete-btn').onclick = function() {
+      if (editingCategoryId && deleteCustomCategory(editingCategoryId)) {
+        hideCategoryModal();
+      }
+    };
+    document.getElementById('custom-category-modal-bg').onclick = function(e) {
+      if (e.target === this) hideCategoryModal();
     };
 
     // Container minimize/restore functionality (no dragging)
@@ -8410,8 +8827,10 @@
           
           let url;
           if (market.startsWith("custom-")) {
-            const parts = market.split("-");
-            const customId = parts.slice(2).join("-");
+            // Extract market ID: key format is "custom-{section}-{id}"
+            // Since we have the section, remove "custom-{section}-" prefix
+            const prefix = `custom-${section}-`;
+            const customId = market.startsWith(prefix) ? market.substring(prefix.length) : market.split("-").slice(2).join("-");
             url = getCustomMarketUrl(section, customId, query);
           } else if (marketUrls[market]) {
             url = marketUrls[market](query);
@@ -8769,8 +9188,10 @@
           if (!loadMarketToggleState(market.key)) return;
           
           if (market.custom) {
-            const parts = market.key.split("-");
-            const customId = parts.slice(2).join("-");
+            // Extract market ID: key format is "custom-{section}-{id}"
+            // Since we have the section, remove "custom-{section}-" prefix
+            const prefix = `custom-${section}-`;
+            const customId = market.key.startsWith(prefix) ? market.key.substring(prefix.length) : market.key.split("-").slice(2).join("-");
             const url = getCustomMarketUrl(section, customId, query);
             if (url) urls.push(url);
           } else if (marketUrls[market.key]) {
