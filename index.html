@@ -8522,20 +8522,43 @@
           textSpan.className = 'search-term-text';
           textSpan.textContent = term.value;
           textSpan.onclick = () => {
-            document.getElementById('query').value = term.value;
+            const searchTerm = term.value;
+            document.getElementById('query').value = searchTerm;
             document.getElementById('query').focus();
             
             // Mark as clicked with category
-            clickedSearches[term.value] = { 
+            clickedSearches[searchTerm] = { 
               clicked: true, 
-              category: determineSearchCategory(term.value) 
+              category: determineSearchCategory(searchTerm) 
             };
             localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
         
             // Update UI
             termBtn.classList.add('active');
-            termBtn.setAttribute('data-category', determineSearchCategory(term.value));
+            termBtn.setAttribute('data-category', determineSearchCategory(searchTerm));
             updateUnhighlightedCount();
+            
+            // Automatically open all markets with this search term
+            (async function() {
+              // Check if user can perform searches
+              if (window.canPerformSearch) {
+                try {
+                  const searchPermission = await window.canPerformSearch();
+                  if (!searchPermission.allowed) {
+                    alert('Please log in to perform searches.');
+                    return;
+                  }
+                } catch (err) {
+                  console.error('Error checking search permission:', err);
+                  // Continue anyway if check fails
+                }
+              }
+              
+              // Open all markets with the search term
+              if (typeof openAllMarketsWithQuery === 'function') {
+                openAllMarketsWithQuery(searchTerm);
+              }
+            })();
           };
           
           termBtn.appendChild(checkbox);
@@ -8775,20 +8798,43 @@
           textSpan.className = 'search-term-text';
           textSpan.textContent = term.value;
           textSpan.onclick = () => {
-            document.getElementById('query').value = term.value;
+            const searchTerm = term.value;
+            document.getElementById('query').value = searchTerm;
             document.getElementById('query').focus();
             
             // Mark as clicked with category
-            clickedSearches[term.value] = { 
+            clickedSearches[searchTerm] = { 
               clicked: true, 
-              category: determineSearchCategory(term.value) 
+              category: determineSearchCategory(searchTerm) 
             };
             localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
         
             // Update UI
             termBtn.classList.add('active');
-            termBtn.setAttribute('data-category', determineSearchCategory(term.value));
+            termBtn.setAttribute('data-category', determineSearchCategory(searchTerm));
             updateUnhighlightedCount();
+            
+            // Automatically open all markets with this search term
+            (async function() {
+              // Check if user can perform searches
+              if (window.canPerformSearch) {
+                try {
+                  const searchPermission = await window.canPerformSearch();
+                  if (!searchPermission.allowed) {
+                    alert('Please log in to perform searches.');
+                    return;
+                  }
+                } catch (err) {
+                  console.error('Error checking search permission:', err);
+                  // Continue anyway if check fails
+                }
+              }
+              
+              // Open all markets with the search term
+              if (typeof openAllMarketsWithQuery === 'function') {
+                openAllMarketsWithQuery(searchTerm);
+              }
+            })();
           };
           
           termBtn.appendChild(checkbox);
@@ -11092,6 +11138,8 @@
     function openAllMarketsWithQuery(query) {
       // Collect all URLs first (only enabled markets)
       const urls = [];
+      
+      // Standard sections
       ['asia', 'international', 'special'].forEach(section => {
         getMarkets(section).forEach(market => {
           // Skip if this market is toggled off
@@ -11109,6 +11157,25 @@
           }
         });
       });
+      
+      // Custom categories
+      if (typeof customCategories !== 'undefined' && Array.isArray(customCategories)) {
+        customCategories.forEach(category => {
+          getMarkets(category.id).forEach(market => {
+            // Skip if this market is toggled off
+            if (!loadMarketToggleState(market.key)) return;
+            
+            if (market.custom) {
+              const prefix = `custom-${category.id}-`;
+              const customId = market.key.startsWith(prefix) ? market.key.substring(prefix.length) : market.key.split("-").slice(2).join("-");
+              const url = getCustomMarketUrl(category.id, customId, query);
+              if (url) urls.push(url);
+            } else if (marketUrls[market.key]) {
+              urls.push(marketUrls[market.key](query));
+            }
+          });
+        });
+      }
       
       // Process URLs with queue
       urls.forEach(url => tabQueue.add(url));
