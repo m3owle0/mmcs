@@ -4350,24 +4350,24 @@
       <div id="login-success" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(0, 230, 214, 0.2); border: 1px solid rgba(0, 230, 214, 0.5);">
         <p style="color: #00e6d6; margin: 0; font-size: 14px;" id="login-success-text"></p>
       </div>
-      <form id="login-form" onsubmit="event.preventDefault(); return false;">
+      <form id="login-form" onsubmit="if(window.handleLoginSubmit){window.handleLoginSubmit(event);} return false;" style="pointer-events: auto;">
         <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" autocomplete="email" />
         <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" autocomplete="current-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button type="button" id="login-submit-btn" class="unlock-submit-btn">Login</button>
+          <button type="submit" id="login-submit-btn" class="unlock-submit-btn" onclick="if(window.handleLoginSubmit){window.handleLoginSubmit(event);} return false;">Login</button>
           <button type="button" id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
           <button type="button" id="login-cancel-btn" class="unlock-cancel-btn" style="display: none;">Cancel</button>
         </div>
       </form>
-      <div id="signup-form" style="display: none;">
-        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="email" id="signup-email-input" placeholder="Your email (for verification)" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" />
+      <form id="signup-form" style="display: none; pointer-events: auto;" onsubmit="if(window.handleSignupSubmit){window.handleSignupSubmit(event);} return false;">
+        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" autocomplete="username" />
+        <input type="email" id="signup-email-input" placeholder="Your email (for verification)" class="unlock-input" style="margin-bottom: 12px;" autocomplete="email" />
+        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" autocomplete="new-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button id="signup-submit-btn" class="unlock-submit-btn">Create Account</button>
-          <button id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
+          <button type="submit" id="signup-submit-btn" class="unlock-submit-btn" onclick="if(window.handleSignupSubmit){window.handleSignupSubmit(event);} return false;">Create Account</button>
+          <button type="button" id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
         </div>
-      </div>
+      </form>
       <div style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 10px; padding: 15px; margin-top: 20px; margin-bottom: 15px;">
         <div style="color: #ffd700; font-weight: bold; font-size: 14px; margin-bottom: 10px;">💎 Pricing:</div>
         <div style="color: #e3e3e3; font-size: 12px; line-height: 1.8;">
@@ -5225,14 +5225,18 @@
             const isUnlockModal = target.closest('.unlock-modal-bg');
             const isUnlockModalContent = target.closest('.unlock-modal');
             const isTopHeader = target.closest('.top-header');
-            const isLoginButton = target.id === 'login-submit-btn' || target.closest('#login-submit-btn');
-            const isSignupButton = target.id === 'signup-submit-btn' || target.closest('#signup-submit-btn');
-            const isModalInput = target.closest('.unlock-input');
-            const isModalButton = target.classList.contains('unlock-submit-btn') || target.classList.contains('unlock-cancel-btn');
             
-            // Allow all interactions within unlock modal
-            if (isUnlockModal || isUnlockModalContent || isLoginButton || isSignupButton || isModalInput || isModalButton) {
-              return true; // Allow the interaction
+            // CRITICAL: Allow ALL interactions within unlock modal - be very permissive for mobile
+            if (isUnlockModal || isUnlockModalContent) {
+              // Allow everything inside the modal
+              return true; // Allow the interaction - don't block
+            }
+            
+            // Also check if target is a button/input/form inside modal
+            if (target.tagName === 'BUTTON' || target.tagName === 'INPUT' || target.tagName === 'FORM' || target.tagName === 'TEXTAREA') {
+              if (target.closest('.unlock-modal-bg') || target.closest('.unlock-modal')) {
+                return true; // Allow
+              }
             }
             
             if (!isTopHeader) {
@@ -5249,8 +5253,24 @@
           }
           
           // Add event listeners to block all interactions (capture phase to catch everything)
-          const mouseHandler = (e) => blockInteractions(e);
-          const touchHandler = (e) => blockInteractions(e);
+          const mouseHandler = (e) => {
+            // Check if it's in the modal FIRST before blocking
+            const target = e.target;
+            if (target.closest('.unlock-modal-bg') || target.closest('.unlock-modal')) {
+              return; // Don't block modal interactions
+            }
+            return blockInteractions(e);
+          };
+          
+          const touchHandler = (e) => {
+            // Check if it's in the modal FIRST before blocking
+            const target = e.target;
+            if (target.closest('.unlock-modal-bg') || target.closest('.unlock-modal')) {
+              return; // Don't block modal interactions
+            }
+            return blockInteractions(e);
+          };
+          
           const keyHandler = (e) => {
             const target = e.target;
             const isUnlockModal = target.closest('.unlock-modal-bg');
@@ -5262,10 +5282,11 @@
           };
           
           // Use capture phase but allow modal interactions
-          document.addEventListener('mousedown', mouseHandler, true);
-          document.addEventListener('click', mouseHandler, true);
-          document.addEventListener('touchstart', touchHandler, true);
-          document.addEventListener('touchend', touchHandler, true);
+          // Use lower priority (bubble phase false) for blocking so modal handlers run first
+          document.addEventListener('mousedown', mouseHandler, false);
+          document.addEventListener('click', mouseHandler, false);
+          document.addEventListener('touchstart', touchHandler, false);
+          document.addEventListener('touchend', touchHandler, false);
           document.addEventListener('keydown', keyHandler, true);
           
           // Store handlers for cleanup
@@ -5392,41 +5413,40 @@
           };
         }
         
-        // Login handler - Mobile-friendly with multiple event types
-        if (loginSubmitBtn) {
-          // Remove any existing handlers
-          loginSubmitBtn.onclick = null;
+        // Login handler - Use form submission for maximum mobile compatibility
+        const handleLoginSubmit = async (e) => {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+          }
           
-          // Create the login function
-          const handleLogin = async (e) => {
-            if (e) {
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
+          console.log('Login form submitted');
+          
+          const usernameOrEmail = loginUsernameInput ? loginUsernameInput.value.trim() : '';
+          const password = loginPasswordInput ? loginPasswordInput.value : '';
+          
+          if (!usernameOrEmail || !password) {
+            if (loginError) {
+              loginErrorText.textContent = 'Please enter both username/email and password.';
+              loginError.style.display = 'block';
             }
-            
-            console.log('Login button clicked/touched');
-            
-            const usernameOrEmail = loginUsernameInput ? loginUsernameInput.value.trim() : '';
-            const password = loginPasswordInput ? loginPasswordInput.value : '';
-            
-            if (!usernameOrEmail || !password) {
-              if (loginError) {
-                loginErrorText.textContent = 'Please enter both username/email and password.';
-                loginError.style.display = 'block';
-              }
-              return;
-            }
-            
+            return false;
+          }
+          
+          if (loginSubmitBtn) {
             loginSubmitBtn.disabled = true;
             loginSubmitBtn.textContent = 'Logging in...';
-            if (loginError) loginError.style.display = 'none';
-            
-            const result = await loginUser(usernameOrEmail, password);
-            
+          }
+          if (loginError) loginError.style.display = 'none';
+          
+          const result = await loginUser(usernameOrEmail, password);
+          
+          if (loginSubmitBtn) {
             loginSubmitBtn.disabled = false;
             loginSubmitBtn.textContent = 'Login';
-            
+          }
+          
             if (result.success) {
               // Hide error message if showing
               if (loginError) loginError.style.display = 'none';
@@ -5473,8 +5493,6 @@
                   userDisplay.style.display = 'inline';
                 }
                 
-                // Trial display removed - searching is free!
-                
                 // Start session heartbeat
                 startSessionHeartbeat();
                 
@@ -5484,18 +5502,13 @@
                 }
                 
                 console.log('Site unlocked successfully!');
-                
-                // IMPORTANT: Don't call initUnlockSystem here - it might re-lock!
-                // The site is already unlocked above
-                return; // Exit early - don't continue
+                return false;
               } else {
                 // User logged in but not in unlocked_users table - keep modal open
                 console.warn('User logged in but not found in unlocked_users');
                 if (loginSuccess) {
                   loginSuccess.style.display = 'none';
                 }
-                // Keep modal open
-                // Don't call initUnlockSystem - it will re-lock them
               }
             } else {
               if (loginError) {
@@ -5506,99 +5519,140 @@
               // Clear password field on error
               if (loginPasswordInput) loginPasswordInput.value = '';
             }
+            
+            return false;
           };
           
-          // Add multiple event listeners for maximum compatibility
-          loginSubmitBtn.addEventListener('click', handleLogin, { capture: true, passive: false });
-          loginSubmitBtn.addEventListener('touchend', handleLogin, { capture: true, passive: false });
-          loginSubmitBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleLogin(e);
-          }, { capture: true, passive: false });
+          // Store globally for inline handler access
+          window.handleLoginSubmit = handleLoginSubmit;
           
-          // Also handle form submission if form exists
-          const loginForm = document.getElementById('login-form');
-          if (loginForm) {
-            loginForm.addEventListener('submit', handleLogin, { capture: true, passive: false });
+          if (loginSubmitBtn) {
+            // Add ALL possible event types - use bubble phase (false) so it runs after blockers
+            loginSubmitBtn.addEventListener('click', handleLoginSubmit, false);
+            loginSubmitBtn.addEventListener('touchend', handleLoginSubmit, false);
+            loginSubmitBtn.addEventListener('touchstart', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              handleLoginSubmit(e);
+            }, false);
+            loginSubmitBtn.onclick = handleLoginSubmit;
+            
+            // Visual feedback
+            loginSubmitBtn.addEventListener('touchstart', function() {
+              this.style.opacity = '0.7';
+            }, { passive: true });
+            loginSubmitBtn.addEventListener('touchend', function() {
+              this.style.opacity = '';
+            }, { passive: true });
           }
           
-          // Make button directly callable - use onclick as fallback
-          loginSubmitBtn.onclick = handleLogin;
+          // Form submission handler - use bubble phase
+          const loginForm = document.getElementById('login-form');
+          if (loginForm) {
+            loginForm.addEventListener('submit', handleLoginSubmit, false);
+          }
+        
+        // Signup handler - Use form submission for maximum mobile compatibility
+        const handleSignupSubmit = async (e) => {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+          }
           
-          // Store handler globally for direct access
-          window.handleLogin = handleLogin;
+          console.log('Signup form submitted');
           
-          // Add visual feedback on touch
-          loginSubmitBtn.addEventListener('touchstart', function() {
+          const username = signupUsernameInput ? signupUsernameInput.value.trim() : '';
+          const email = signupEmailInput ? signupEmailInput.value.trim() : '';
+          const password = signupPasswordInput ? signupPasswordInput.value : '';
+          
+          if (!username || !email || !password) {
+            if (loginError) {
+              loginErrorText.textContent = 'Please fill in all fields.';
+              loginError.style.display = 'block';
+            }
+            return false;
+          }
+          
+          if (signupSubmitBtn) {
+            signupSubmitBtn.disabled = true;
+            signupSubmitBtn.textContent = 'Creating account...';
+          }
+          if (loginError) loginError.style.display = 'none';
+          
+          const result = await signUpUser(username, email, password);
+          
+          if (signupSubmitBtn) {
+            signupSubmitBtn.disabled = false;
+            signupSubmitBtn.textContent = 'Create Account';
+          }
+          
+          if (result.success) {
+            if (result.needsEmailVerification) {
+              // Email confirmation required
+              if (loginSuccess) {
+                loginSuccessText.textContent = result.message || 'Account created! Please check your email (' + email + ') to verify your account before logging in.';
+                loginSuccess.style.display = 'block';
+              }
+              // Clear form
+              if (signupUsernameInput) signupUsernameInput.value = '';
+              if (signupEmailInput) signupEmailInput.value = '';
+              if (signupPasswordInput) signupPasswordInput.value = '';
+              // Switch to login form after 3 seconds
+              setTimeout(() => {
+                if (loginToggleBtn) loginToggleBtn.click();
+                if (loginSuccess) loginSuccess.style.display = 'none';
+              }, 5000);
+            } else {
+              // User is logged in immediately (email confirmation disabled)
+              if (loginSuccess) {
+                loginSuccessText.textContent = 'Account created! Welcome!';
+                loginSuccess.style.display = 'block';
+              }
+              setTimeout(async () => {
+                await initUnlockSystem();
+              }, 500);
+            }
+          } else {
+            if (loginError) {
+              // Show the actual error message from Supabase
+              const errorMsg = result.error || 'Account creation failed. Please try again.';
+              loginErrorText.textContent = errorMsg;
+              loginError.style.display = 'block';
+              console.error('Signup error:', result.error);
+            }
+          }
+          
+          return false;
+        };
+        
+        // Store globally for inline handler access
+        window.handleSignupSubmit = handleSignupSubmit;
+        
+        if (signupSubmitBtn) {
+          // Add ALL possible event types - use bubble phase (false) so it runs after blockers
+          signupSubmitBtn.addEventListener('click', handleSignupSubmit, false);
+          signupSubmitBtn.addEventListener('touchend', handleSignupSubmit, false);
+          signupSubmitBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSignupSubmit(e);
+          }, false);
+          signupSubmitBtn.onclick = handleSignupSubmit;
+          
+          // Visual feedback
+          signupSubmitBtn.addEventListener('touchstart', function() {
             this.style.opacity = '0.7';
           }, { passive: true });
-          
-          loginSubmitBtn.addEventListener('touchend', function() {
+          signupSubmitBtn.addEventListener('touchend', function() {
             this.style.opacity = '';
           }, { passive: true });
         }
         
-        // Signup handler
-        if (signupSubmitBtn) {
-          signupSubmitBtn.onclick = async () => {
-            const username = signupUsernameInput ? signupUsernameInput.value.trim() : '';
-            const email = signupEmailInput ? signupEmailInput.value.trim() : '';
-            const password = signupPasswordInput ? signupPasswordInput.value : '';
-            
-            if (!username || !email || !password) {
-              if (loginError) {
-                loginErrorText.textContent = 'Please fill in all fields.';
-                loginError.style.display = 'block';
-              }
-              return;
-            }
-            
-            signupSubmitBtn.disabled = true;
-            signupSubmitBtn.textContent = 'Creating account...';
-            if (loginError) loginError.style.display = 'none';
-            
-            const result = await signUpUser(username, email, password);
-            
-            signupSubmitBtn.disabled = false;
-            signupSubmitBtn.textContent = 'Create Account';
-            
-            if (result.success) {
-              if (result.needsEmailVerification) {
-                // Email confirmation required
-                if (loginSuccess) {
-                  loginSuccessText.textContent = result.message || 'Account created! Please check your email (' + email + ') to verify your account before logging in.';
-                  loginSuccess.style.display = 'block';
-                }
-                // Clear form
-                if (signupUsernameInput) signupUsernameInput.value = '';
-                if (signupEmailInput) signupEmailInput.value = '';
-                if (signupPasswordInput) signupPasswordInput.value = '';
-                // Switch to login form after 3 seconds
-                setTimeout(() => {
-                  if (loginToggleBtn) loginToggleBtn.click();
-                  if (loginSuccess) loginSuccess.style.display = 'none';
-                }, 5000);
-              } else {
-                // User is logged in immediately (email confirmation disabled)
-                if (loginSuccess) {
-                  loginSuccessText.textContent = 'Account created! Welcome!';
-                  loginSuccess.style.display = 'block';
-                }
-                setTimeout(async () => {
-                  await initUnlockSystem();
-                }, 500);
-              }
-            } else {
-              if (loginError) {
-                // Show the actual error message from Supabase
-                const errorMsg = result.error || 'Account creation failed. Please try again.';
-                loginErrorText.textContent = errorMsg;
-                loginError.style.display = 'block';
-                console.error('Signup error:', result.error);
-              }
-            }
-          };
+        // Form submission handler - use bubble phase
+        const signupForm = document.getElementById('signup-form');
+        if (signupForm) {
+          signupForm.addEventListener('submit', handleSignupSubmit, false);
         }
         
         // Cancel button
@@ -5611,19 +5665,29 @@
           };
         }
         
-        // Enter key handlers
+        // Enter key handlers - trigger form submission
         if (loginPasswordInput) {
           loginPasswordInput.onkeydown = (e) => {
-            if (e.key === 'Enter' && loginSubmitBtn) {
-              loginSubmitBtn.click();
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (window.handleLoginSubmit) {
+                window.handleLoginSubmit(e);
+              } else if (loginSubmitBtn) {
+                loginSubmitBtn.click();
+              }
             }
           };
         }
         
         if (signupPasswordInput) {
           signupPasswordInput.onkeydown = (e) => {
-            if (e.key === 'Enter' && signupSubmitBtn) {
-              signupSubmitBtn.click();
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (window.handleSignupSubmit) {
+                window.handleSignupSubmit(e);
+              } else if (signupSubmitBtn) {
+                signupSubmitBtn.click();
+              }
             }
           };
         }
