@@ -1793,9 +1793,8 @@
       
       function clearSession() {
         localStorage.removeItem(CURRENT_USER_KEY);
-        if (supabase) {
-          supabase.auth.signOut();
-        }
+        // Don't sign out from Supabase - let the session persist
+        // Only clear local storage for current user display
       }
       
       // Check if user is logged in via Supabase Auth AND verified in unlocked_users
@@ -2153,7 +2152,58 @@
             return;
           }
         
-        // Check if site is unlocked (async)
+        // First, check if there's an existing Supabase session
+        // Supabase automatically persists sessions in localStorage
+        if (supabase) {
+          try {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (session && !error) {
+              // Session exists - check if user is verified
+              const unlocked = await isUnlocked();
+              if (unlocked) {
+                // Restore user session
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                  const displayName = user.user_metadata?.username || user.email || user.id;
+                  setCurrentUser(displayName);
+                  
+                  // User is unlocked - remove lock overlay and show content
+                  document.body.classList.remove('site-locked');
+                  
+                  // Remove any existing blockers
+                  if (window._lockBlockers && Array.isArray(window._lockBlockers)) {
+                    window._lockBlockers.forEach(({ type, handler }) => {
+                      document.removeEventListener(type, handler, true);
+                    });
+                    window._lockBlockers = [];
+                  }
+                  
+                  // Always hide modal when unlocked
+                  if (unlockModalBg) {
+                    unlockModalBg.classList.remove('show');
+                    unlockModalBg.style.display = 'none';
+                  }
+                  
+                  if (unlockBtn) unlockBtn.style.display = 'none';
+                  if (userDisplay) {
+                    userDisplay.textContent = `Welcome, ${displayName}`;
+                    userDisplay.style.display = 'inline';
+                  }
+                  
+                  // Start session heartbeat for active session
+                  startSessionHeartbeat();
+                  
+                  isInitializing = false;
+                  return; // Exit early when session restored
+                }
+              }
+            }
+          } catch (err) {
+            console.error('Error checking session:', err);
+          }
+        }
+        
+        // Check if site is unlocked (async) - fallback check
         const unlocked = await isUnlocked();
         const currentUser = getCurrentUser();
         
@@ -2533,18 +2583,17 @@
             const { data: { session }, error } = await supabase.auth.refreshSession();
             
             if (error || !session) {
-              // Session invalidated, clear local session
-              clearSession();
-              clearInterval(sessionHeartbeatInterval);
-              await initUnlockSystem();
+              // Session expired or invalidated
+              // Don't clear session immediately - let user stay logged in until they refresh
+              // Only clear if session is truly invalid
+              console.warn('Session refresh failed, but keeping user logged in');
+              // Don't call clearSession() - let Supabase handle session persistence
             }
           } catch (err) {
             console.error('Error refreshing session:', err);
-            clearSession();
-            clearInterval(sessionHeartbeatInterval);
-            await initUnlockSystem();
+            // Don't clear session on error - let Supabase handle it
           }
-        }, 300000); // Refresh every 5 minutes (Supabase sessions last ~1 hour)
+        }, 300000); // Refresh every 5 minutes (Supabase sessions last ~1 hour by default)
       }
       
       function stopSessionHeartbeat() {
@@ -2554,22 +2603,11 @@
         }
       }
       
-      // Clear session on page close/unload
-      function handlePageUnload() {
-        if (supabase) {
-          // Sign out from Supabase (this clears the session)
-          supabase.auth.signOut().catch(err => {
-            console.error('Error signing out:', err);
-          });
-        }
-        clearSession();
-      }
-      
       // Initialize on page load
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
           initUnlockSystem().then(() => {
-            // Start heartbeat after initialization
+            // Start heartbeat after initialization if user is logged in
             const currentUser = getCurrentUser();
             if (currentUser) {
               startSessionHeartbeat();
@@ -2586,10 +2624,6 @@
           });
         }, 100);
       }
-      
-      // Set up page unload handler
-      window.addEventListener('beforeunload', handlePageUnload);
-      window.addEventListener('pagehide', handlePageUnload);
       
       // Also handle visibility change (tab switch) - but don't show modal unnecessarily
       let visibilityCheckTimeout = null;
@@ -2612,8 +2646,8 @@
             visibilityCheckTimeout = setTimeout(async () => {
               const unlocked = await isUnlocked();
               if (!unlocked) {
-                // Session expired, clear and reload
-                clearSession();
+                // Session expired - but don't clear session, let Supabase handle it
+                // Only reinitialize to check status
                 stopSessionHeartbeat();
                 await initUnlockSystem(true); // Suppress modal during visibility check
               } else {
