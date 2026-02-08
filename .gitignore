@@ -1,0 +1,40 @@
+# Development tools
+.aider.tags.cache.v4/
+.aider.chat.history.md
+.aider.input.history
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+supabase/.config/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Build artifacts (if any)
+dist/
+build/
+*.min.js
+*.min.css

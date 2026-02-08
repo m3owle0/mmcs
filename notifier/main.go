@@ -1,0 +1,642 @@
+package main
+
+// Discord Notifier with Sendico integration for 5 Japanese markets:
+// - mercari-jp (Mercari)
+// - paypay-fleamarket (Yahoo PayPay Flea)
+// - rakuma (Rakuten Rakuma)
+// - rakuten-jp (Rakuten)
+// - yahoo-auctions (Yahoo Auctions)
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"sync"
+	"time"
+)
+
+type Notification struct {
+	ID         string   `json:"id"`
+	SearchTerm string   `json:"searchTerm"`
+	Markets    []string `json:"markets"`
+	CreatedAt  string   `json:"createdAt"`
+}
+
+type User struct {
+	AuthUserID            string          `json:"auth_user_id"`
+	Email                 string          `json:"email"`
+	Username              string          `json:"username"`
+	DiscordWebhookURL     string          `json:"discord_webhook_url"`
+	DiscordNotifications  json.RawMessage `json:"discord_notifications"` // Store as raw JSON first
+	SubscriptionActive    bool            `json:"notifications_subscription_active"`
+	SubscriptionExpiresAt *string         `json:"notifications_subscription_expires_at"`
+
+	// Parsed notifications (populated after unmarshalling)
+	Notifications []Notification
+}
+
+type DiscordEmbed struct {
+	Title       string                 `json:"title"`
+	Description string                 `json:"description"`
+	URL         string                 `json:"url,omitempty"`
+	Color       int                    `json:"color"`
+	Fields      []DiscordEmbedField    `json:"fields,omitempty"`
+	Timestamp   string                 `json:"timestamp,omitempty"`
+	Footer      map[string]interface{} `json:"footer,omitempty"`
+	Image       map[string]string      `json:"image,omitempty"`
+}
+
+type DiscordEmbedField struct {
+	Name   string `json:"name"`
+	Value  string `json:"value"`
+	Inline bool   `json:"inline"`
+}
+
+type DiscordWebhookPayload struct {
+	Content string         `json:"content,omitempty"`
+	Embeds  []DiscordEmbed `json:"embeds,omitempty"`
+}
+
+var (
+	supabaseURL   = "https://wbpfuuiznsmysbskywdx.supabase.co"
+	supabaseKey   = ""
+	pollInterval  = 1 * time.Minute // Check every 1 minute (fast notifications)
+	sendicoClient *SendicoClient
+
+	// Cycle lock to prevent overlapping processing cycles
+	processingMu sync.Mutex
+	isProcessing bool
+
+	// Sendico-supported markets (5 Japanese markets via Sendico API)
+	sendicoMarkets = map[string]SendicoShop{
+		"mercari-jp":        SendicoMercari,
+		"paypay-fleamarket": SendicoYahoo,
+		"rakuma":            SendicoRakuma,
+		"rakuten-jp":        SendicoRakuten,
+		"yahoo-auctions":    SendicoYahooAuctions,
+	}
+
+	// Item tracking (simple in-memory - consider database for production)
+	seenItems   = make(map[string]bool)
+	seenItemsMu sync.RWMutex
+
+	// Translation cache to avoid duplicate API calls (many users search same terms)
+	translationCache   = make(map[string]string)
+	translationCacheMu sync.RWMutex
+
+	// Concurrency limits
+	maxConcurrentUsers    = 10 // Process 10 users in parallel
+	maxConcurrentSearches = 5  // Max 5 concurrent Sendico searches
+
+	// Supported markets - only these markets will be processed by the notifier
+	// This matches the marketUrls object in index.html
+	// Custom markets (starting with "custom-") are NOT supported and will be skipped
+	// If a notification has no supported markets after filtering, it will be skipped
+	supportedMarkets = map[string]bool{
+		"mercari-jp":               true,
+		"paypay-fleamarket":        true,
+		"rakuma":                   true,
+		"rakuten-jp":               true,
+		"xianyu":                   true,
+		"yahoo-auctions":           true,
+		"depop":                    true,
+		"ebay":                     true,
+		"facebook":                 true,
+		"gem":                      true,
+		"grailed":                  true,
+		"mercari-us":               true,
+		"poshmark":                 true,
+		"shopgoodwill":             true,
+		"vinted":                   true,
+		"secondstreet":             true,
+		"therealreal":              true,
+		"vestiaire":                true,
+		"2ndstreet-jp":             true,
+		"carousell-sg":             true,
+		"carousell-hk":             true,
+		"carousell-id":             true,
+		"carousell-my":             true,
+		"carousell-ph":             true,
+		"carousell-tw":             true,
+		"fruits-family":            true,
+		"kindal":                   true,
+		"automated-searches":       true,
+		"avito":                    true,
+		"ebay-global":              true,
+		"google-images-past-month": true,
+		"instagram":                true,
+	}
+)
+
+func main() {
+	// Get API key from environment or prompt
+	if key := os.Getenv("SUPABASE_ANON_KEY"); key != "" {
+		supabaseKey = key
+	} else {
+		fmt.Print("Enter your Supabase Anon Key: ")
+		fmt.Scanln(&supabaseKey)
+		if supabaseKey == "" {
+			log.Fatal("❌ API key is required")
+		}
+	}
+
+	log.Printf("🚀 Starting Discord Notifier")
+	log.Printf("📡 Supabase URL: %s", supabaseURL)
+	log.Printf("⏱️  Poll interval: %v", pollInterval)
+	log.Printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+	// Initialize Sendico client
+	log.Printf("🔧 Initializing Sendico client...")
+	var err error
+	sendicoClient, err = NewSendicoClient()
+	if err != nil {
+		log.Fatalf("❌ Failed to initialize Sendico client: %v", err)
+	}
+	log.Printf("✅ Sendico client initialized")
+
+	// Run immediately
+	processAllNotifications()
+
+	// Then run on interval
+	ticker := time.NewTicker(pollInterval)
+	defer ticker.Stop()
+
+	for {
+		<-ticker.C
+		processAllNotifications()
+	}
+}
+
+func processAllNotifications() {
+	// Prevent overlapping cycles - skip if previous cycle still running
+	processingMu.Lock()
+	if isProcessing {
+		log.Printf("⏭️  Previous cycle still running, skipping this check")
+		processingMu.Unlock()
+		return
+	}
+	isProcessing = true
+	processingMu.Unlock()
+
+	defer func() {
+		processingMu.Lock()
+		isProcessing = false
+		processingMu.Unlock()
+	}()
+
+	startTime := time.Now()
+	log.Printf("🔄 Starting notification cycle...")
+
+	users, err := fetchActiveSubscribers()
+	if err != nil {
+		log.Printf("❌ Error fetching users: %v", err)
+		return
+	}
+
+	if len(users) == 0 {
+		log.Printf("ℹ️  No active subscribers found")
+		return
+	}
+
+	log.Printf("✅ Found %d subscriber(s)", len(users))
+
+	// Filter to only active subscriptions
+	activeUsers := make([]User, 0, len(users))
+	for _, user := range users {
+		if isSubscriptionActive(user) {
+			activeUsers = append(activeUsers, user)
+		} else {
+			log.Printf("⏭️  Skipping %s - subscription expired", user.Email)
+		}
+	}
+
+	if len(activeUsers) == 0 {
+		log.Printf("ℹ️  No active subscriptions found")
+		return
+	}
+
+	log.Printf("🚀 Processing %d active subscriber(s) in parallel (max %d concurrent)", len(activeUsers), maxConcurrentUsers)
+
+	// Process users in parallel with worker pool
+	userSem := make(chan struct{}, maxConcurrentUsers)
+	var wg sync.WaitGroup
+
+	for i, user := range activeUsers {
+		wg.Add(1)
+		go func(idx int, u User) {
+			defer wg.Done()
+
+			// Acquire semaphore
+			userSem <- struct{}{}
+			defer func() { <-userSem }()
+
+			log.Printf("👤 Processing: %s (%s) [%d/%d]", u.Username, u.Email, idx+1, len(activeUsers))
+			processUserNotifications(u)
+		}(i, user)
+	}
+
+	wg.Wait()
+	duration := time.Since(startTime)
+	log.Printf("✅ Finished processing all subscribers (took %v)", duration)
+
+	// Warn if processing took longer than poll interval
+	if duration > pollInterval {
+		log.Printf("⚠️  WARNING: Processing took longer than poll interval! Consider reducing user count or increasing interval.")
+	}
+}
+
+func fetchActiveSubscribers() ([]User, error) {
+	url := fmt.Sprintf("%s/rest/v1/unlocked_users?select=auth_user_id,email,username,discord_webhook_url,discord_notifications,notifications_subscription_active,notifications_subscription_expires_at&notifications_subscription_active=eq.true&discord_webhook_url=not.is.null", supabaseURL)
+
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("apikey", supabaseKey)
+	req.Header.Set("Authorization", "Bearer "+supabaseKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+	}
+
+	var users []User
+	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {
+		return nil, err
+	}
+
+	// Parse notifications JSON (handle both string and array formats)
+	for i := range users {
+		users[i].Notifications = []Notification{}
+
+		if len(users[i].DiscordNotifications) == 0 {
+			continue
+		}
+
+		// Try to unmarshal as array directly
+		var notifications []Notification
+		if err := json.Unmarshal(users[i].DiscordNotifications, &notifications); err != nil {
+			// If that fails, try as a string first
+			var str string
+			if err2 := json.Unmarshal(users[i].DiscordNotifications, &str); err2 == nil {
+				// It's a string, try to unmarshal the string content
+				if err3 := json.Unmarshal([]byte(str), &notifications); err3 != nil {
+					log.Printf("   ⚠️  Failed to parse notifications for user %s: %v", users[i].Email, err3)
+					continue
+				}
+			} else {
+				log.Printf("   ⚠️  Failed to parse notifications for user %s: %v", users[i].Email, err)
+				continue
+			}
+		}
+
+		users[i].Notifications = notifications
+	}
+
+	return users, nil
+}
+
+func isSubscriptionActive(user User) bool {
+	if !user.SubscriptionActive {
+		return false
+	}
+	if user.SubscriptionExpiresAt == nil || *user.SubscriptionExpiresAt == "" {
+		return true // Lifetime subscription
+	}
+	expiresAt, err := time.Parse(time.RFC3339, *user.SubscriptionExpiresAt)
+	if err != nil {
+		return false
+	}
+	return time.Now().Before(expiresAt)
+}
+
+func processUserNotifications(user User) {
+	if len(user.Notifications) == 0 {
+		log.Printf("   ℹ️  No notifications configured")
+		return
+	}
+
+	for _, notif := range user.Notifications {
+		log.Printf("   🔍 Checking: '%s'", notif.SearchTerm)
+
+		// Filter markets to only include supported ones
+		validMarkets := filterSupportedMarkets(notif.Markets)
+
+		if len(notif.Markets) > 0 && len(validMarkets) == 0 {
+			log.Printf("   ⚠️  Skipping - no supported markets (requested: %v)", notif.Markets)
+			continue
+		}
+
+		if len(notif.Markets) > 0 {
+			log.Printf("   📋 Markets: %v (filtered to supported: %v)", notif.Markets, validMarkets)
+		} else {
+			log.Printf("   📋 Markets: All supported markets (none specified)")
+			// If no markets specified, use all supported markets
+			validMarkets = getAllSupportedMarkets()
+		}
+
+		// Filter to only Sendico-supported markets
+		sendicoMarketsList := filterSendicoMarkets(validMarkets)
+
+		if len(sendicoMarketsList) == 0 {
+			log.Printf("   ⚠️  No Sendico-supported markets in this notification")
+			log.Printf("   💡 Sendico supports: mercari-jp, paypay-fleamarket, rakuma, rakuten-jp, yahoo-auctions")
+			continue
+		}
+
+		// Translate search term to Japanese (Sendico requires Japanese)
+		// Use cache to avoid duplicate API calls
+		ctx := context.Background()
+		termJP := getCachedTranslation(notif.SearchTerm)
+
+		if termJP == "" {
+			// Not in cache, translate it
+			var err error
+			termJP, err = sendicoClient.Translate(ctx, notif.SearchTerm)
+			if err != nil {
+				log.Printf("   ❌ Translation error: %v", err)
+				continue
+			}
+			// Cache the translation
+			cacheTranslation(notif.SearchTerm, termJP)
+		}
+		log.Printf("   🇯🇵 Translated '%s' → '%s'", notif.SearchTerm, termJP)
+
+		// Search Sendico markets
+		shops := make([]SendicoShop, 0, len(sendicoMarketsList))
+		for _, marketKey := range sendicoMarketsList {
+			shops = append(shops, sendicoMarkets[marketKey])
+		}
+
+		log.Printf("   🔎 Searching %d market(s)...", len(shops))
+		items, err := sendicoClient.BulkSearch(ctx, shops, SendicoSearchOptions{
+			TermJP: termJP,
+		})
+		if err != nil {
+			log.Printf("   ❌ Search error: %v", err)
+			continue
+		}
+
+		log.Printf("   📦 Found %d item(s)", len(items))
+
+		// Filter out already-seen items
+		newItems := filterSeenItems(items, notif.ID)
+		if len(newItems) == 0 {
+			log.Printf("   ℹ️  No new items (all already seen)")
+			continue
+		}
+
+		log.Printf("   ✨ %d new item(s) found!", len(newItems))
+
+		// Convert to notification format
+		notificationItems := make([]map[string]interface{}, 0, len(newItems))
+		for _, item := range newItems {
+			marketName := getMarketNameFromShop(item.Shop)
+			notificationItems = append(notificationItems, map[string]interface{}{
+				"title":       item.Name,
+				"description": fmt.Sprintf("Price: ¥%d ($%d)", item.PriceYen, item.PriceUSD),
+				"url":         item.URL,
+				"price":       fmt.Sprintf("¥%d ($%d)", item.PriceYen, item.PriceUSD),
+				"market":      marketName,
+				"image":       item.Image,
+			})
+		}
+
+		// Send notification
+		log.Printf("   ✅ Sending notification...")
+		if err := sendDiscordNotification(user.DiscordWebhookURL, notif, notificationItems); err != nil {
+			log.Printf("   ❌ Error: %v", err)
+		} else {
+			log.Printf("   ✅ Notification sent!")
+		}
+	}
+}
+
+// filterSupportedMarkets filters the markets list to only include supported markets
+func filterSupportedMarkets(markets []string) []string {
+	if len(markets) == 0 {
+		return []string{}
+	}
+
+	valid := []string{}
+	for _, market := range markets {
+		// Skip custom markets (they start with "custom-")
+		if len(market) > 7 && market[:7] == "custom-" {
+			log.Printf("      ⚠️  Skipping custom market: %s (not supported by notifier)", market)
+			continue
+		}
+
+		if supportedMarkets[market] {
+			valid = append(valid, market)
+		} else {
+			log.Printf("      ⚠️  Skipping unsupported market: %s", market)
+		}
+	}
+
+	return valid
+}
+
+// getAllSupportedMarkets returns a list of all supported market keys
+func getAllSupportedMarkets() []string {
+	markets := make([]string, 0, len(supportedMarkets))
+	for market := range supportedMarkets {
+		markets = append(markets, market)
+	}
+	return markets
+}
+
+// filterSendicoMarkets filters markets to only include Sendico-supported ones
+func filterSendicoMarkets(markets []string) []string {
+	result := []string{}
+	for _, market := range markets {
+		if _, ok := sendicoMarkets[market]; ok {
+			result = append(result, market)
+		}
+	}
+	return result
+}
+
+// filterSeenItems filters out items that have already been seen
+func filterSeenItems(items []SendicoItem, notificationID string) []SendicoItem {
+	newItems := []SendicoItem{}
+
+	seenItemsMu.Lock()
+	defer seenItemsMu.Unlock()
+
+	for _, item := range items {
+		// Create unique key: notificationID:shop:code
+		key := fmt.Sprintf("%s:%s:%s", notificationID, item.Shop, item.Code)
+
+		if !seenItems[key] {
+			seenItems[key] = true
+			newItems = append(newItems, item)
+		}
+	}
+
+	return newItems
+}
+
+// getMarketNameFromShop returns the human-readable market name
+func getMarketNameFromShop(shop SendicoShop) string {
+	switch shop {
+	case SendicoMercari:
+		return "Mercari Japan"
+	case SendicoRakuma:
+		return "Rakuten Rakuma"
+	case SendicoRakuten:
+		return "Rakuten"
+	case SendicoYahooAuctions:
+		return "Yahoo Auctions"
+	case SendicoYahoo:
+		return "Yahoo PayPay Flea"
+	default:
+		return string(shop)
+	}
+}
+
+// Translation caching functions
+func getCachedTranslation(term string) string {
+	translationCacheMu.RLock()
+	defer translationCacheMu.RUnlock()
+	return translationCache[term]
+}
+
+func cacheTranslation(term, translation string) {
+	translationCacheMu.Lock()
+	defer translationCacheMu.Unlock()
+	translationCache[term] = translation
+	// Limit cache size to prevent memory issues (keep last 1000 translations)
+	if len(translationCache) > 1000 {
+		// Simple eviction: clear oldest 200 entries (or use LRU in production)
+		// For now, just clear if too large (simple approach)
+		if len(translationCache) > 1200 {
+			translationCache = make(map[string]string)
+		}
+	}
+}
+
+func sendDiscordNotification(webhookURL string, notification Notification, items []map[string]interface{}) error {
+	// Discord limits embeds to 10 per message, so we need to batch
+	maxEmbeds := 10
+	totalItems := len(items)
+
+	for i := 0; i < totalItems; i += maxEmbeds {
+		end := i + maxEmbeds
+		if end > totalItems {
+			end = totalItems
+		}
+
+		batch := items[i:end]
+		embeds := []DiscordEmbed{}
+
+		for _, item := range batch {
+			// Use item title, or fallback to search term
+			itemTitle := getString(item, "title", "")
+			if itemTitle == "" {
+				itemTitle = notification.SearchTerm
+			}
+
+			// Truncate title if too long (Discord limit is 256 chars)
+			if len(itemTitle) > 200 {
+				itemTitle = itemTitle[:197] + "..."
+			}
+
+			embed := DiscordEmbed{
+				Title:       itemTitle,
+				Description: getString(item, "description", ""),
+				URL:         getString(item, "url", ""),
+				Color:       3447003, // Blue color
+				Timestamp:   time.Now().Format(time.RFC3339),
+				Footer: map[string]interface{}{
+					"text": fmt.Sprintf("MMCS • %s", notification.SearchTerm),
+				},
+			}
+
+			if price := getString(item, "price", ""); price != "" {
+				embed.Fields = append(embed.Fields, DiscordEmbedField{
+					Name:   "Price",
+					Value:  price,
+					Inline: true,
+				})
+			}
+
+			if market := getString(item, "market", ""); market != "" {
+				embed.Fields = append(embed.Fields, DiscordEmbedField{
+					Name:   "Market",
+					Value:  market,
+					Inline: true,
+				})
+			}
+
+			// Add image thumbnail if available
+			if imageURL := getString(item, "image", ""); imageURL != "" {
+				embed.Image = map[string]string{
+					"url": imageURL,
+				}
+			}
+
+			embeds = append(embeds, embed)
+		}
+
+		// Create content message
+		var content string
+		if i == 0 {
+			// First batch
+			if totalItems > maxEmbeds {
+				content = fmt.Sprintf("🔔 **%d new item(s) found for: %s** (showing first %d)", totalItems, notification.SearchTerm, len(batch))
+			} else {
+				content = fmt.Sprintf("🔔 **%d new item(s) found for: %s**", totalItems, notification.SearchTerm)
+			}
+		} else {
+			// Subsequent batches
+			content = fmt.Sprintf("🔔 **More items for: %s** (%d-%d of %d)", notification.SearchTerm, i+1, end, totalItems)
+		}
+
+		payload := DiscordWebhookPayload{
+			Content: content,
+			Embeds:  embeds,
+		}
+
+		jsonData, err := json.Marshal(payload)
+		if err != nil {
+			return fmt.Errorf("failed to marshal payload: %w", err)
+		}
+
+		client := &http.Client{Timeout: 10 * time.Second}
+		resp, err := client.Post(webhookURL, "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			return fmt.Errorf("failed to send request: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != 200 && resp.StatusCode != 204 {
+			body, _ := io.ReadAll(resp.Body)
+			return fmt.Errorf("Discord returned status %d: %s", resp.StatusCode, string(body))
+		}
+
+		// Small delay between batches to avoid Discord rate limiting
+		// Discord limit: 30 requests per 10 seconds per webhook
+		// Reduced to 500ms for faster processing while still respecting limits
+		if end < totalItems {
+			time.Sleep(500 * time.Millisecond)
+		}
+	}
+
+	return nil
+}
+
+func getString(m map[string]interface{}, key string, defaultValue string) string {
+	if val, ok := m[key].(string); ok {
+		return val
+	}
+	return defaultValue
+}
