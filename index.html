@@ -3211,6 +3211,18 @@
         pointer-events: auto !important;
         z-index: 1000001 !important;
         position: relative !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        -webkit-touch-callout: none !important;
+        cursor: pointer !important;
+      }
+      
+      /* Ensure button is always on top and clickable */
+      #login-submit-btn {
+        position: relative !important;
+        z-index: 1000002 !important;
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
       }
       
       /* Ensure inputs are also clickable */
@@ -4338,15 +4350,15 @@
       <div id="login-success" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(0, 230, 214, 0.2); border: 1px solid rgba(0, 230, 214, 0.5);">
         <p style="color: #00e6d6; margin: 0; font-size: 14px;" id="login-success-text"></p>
       </div>
-      <div id="login-form">
-        <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" />
+      <form id="login-form" onsubmit="event.preventDefault(); return false;">
+        <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" autocomplete="email" />
+        <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" autocomplete="current-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button id="login-submit-btn" class="unlock-submit-btn">Login</button>
-          <button id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
-          <button id="login-cancel-btn" class="unlock-cancel-btn" style="display: none;">Cancel</button>
+          <button type="button" id="login-submit-btn" class="unlock-submit-btn">Login</button>
+          <button type="button" id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
+          <button type="button" id="login-cancel-btn" class="unlock-cancel-btn" style="display: none;">Cancel</button>
         </div>
-      </div>
+      </form>
       <div id="signup-form" style="display: none;">
         <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" />
         <input type="email" id="signup-email-input" placeholder="Your email (for verification)" class="unlock-input" style="margin-bottom: 12px;" />
@@ -5211,9 +5223,19 @@
             // Allow interactions only with unlock modal and top header
             const target = e.target;
             const isUnlockModal = target.closest('.unlock-modal-bg');
+            const isUnlockModalContent = target.closest('.unlock-modal');
             const isTopHeader = target.closest('.top-header');
+            const isLoginButton = target.id === 'login-submit-btn' || target.closest('#login-submit-btn');
+            const isSignupButton = target.id === 'signup-submit-btn' || target.closest('#signup-submit-btn');
+            const isModalInput = target.closest('.unlock-input');
+            const isModalButton = target.classList.contains('unlock-submit-btn') || target.classList.contains('unlock-cancel-btn');
             
-            if (!isUnlockModal && !isTopHeader) {
+            // Allow all interactions within unlock modal
+            if (isUnlockModal || isUnlockModalContent || isLoginButton || isSignupButton || isModalInput || isModalButton) {
+              return true; // Allow the interaction
+            }
+            
+            if (!isTopHeader) {
               e.preventDefault();
               e.stopPropagation();
               e.stopImmediatePropagation();
@@ -5239,9 +5261,11 @@
             }
           };
           
+          // Use capture phase but allow modal interactions
           document.addEventListener('mousedown', mouseHandler, true);
           document.addEventListener('click', mouseHandler, true);
           document.addEventListener('touchstart', touchHandler, true);
+          document.addEventListener('touchend', touchHandler, true);
           document.addEventListener('keydown', keyHandler, true);
           
           // Store handlers for cleanup
@@ -5249,6 +5273,7 @@
             { type: 'mousedown', handler: mouseHandler },
             { type: 'click', handler: mouseHandler },
             { type: 'touchstart', handler: touchHandler },
+            { type: 'touchend', handler: touchHandler },
             { type: 'keydown', handler: keyHandler }
           ];
           
@@ -5367,9 +5392,21 @@
           };
         }
         
-        // Login handler
+        // Login handler - Mobile-friendly with multiple event types
         if (loginSubmitBtn) {
-          loginSubmitBtn.onclick = async () => {
+          // Remove any existing handlers
+          loginSubmitBtn.onclick = null;
+          
+          // Create the login function
+          const handleLogin = async (e) => {
+            if (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+            }
+            
+            console.log('Login button clicked/touched');
+            
             const usernameOrEmail = loginUsernameInput ? loginUsernameInput.value.trim() : '';
             const password = loginPasswordInput ? loginPasswordInput.value : '';
             
@@ -5470,6 +5507,36 @@
               if (loginPasswordInput) loginPasswordInput.value = '';
             }
           };
+          
+          // Add multiple event listeners for maximum compatibility
+          loginSubmitBtn.addEventListener('click', handleLogin, { capture: true, passive: false });
+          loginSubmitBtn.addEventListener('touchend', handleLogin, { capture: true, passive: false });
+          loginSubmitBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleLogin(e);
+          }, { capture: true, passive: false });
+          
+          // Also handle form submission if form exists
+          const loginForm = document.getElementById('login-form');
+          if (loginForm) {
+            loginForm.addEventListener('submit', handleLogin, { capture: true, passive: false });
+          }
+          
+          // Make button directly callable - use onclick as fallback
+          loginSubmitBtn.onclick = handleLogin;
+          
+          // Store handler globally for direct access
+          window.handleLogin = handleLogin;
+          
+          // Add visual feedback on touch
+          loginSubmitBtn.addEventListener('touchstart', function() {
+            this.style.opacity = '0.7';
+          }, { passive: true });
+          
+          loginSubmitBtn.addEventListener('touchend', function() {
+            this.style.opacity = '';
+          }, { passive: true });
         }
         
         // Signup handler
