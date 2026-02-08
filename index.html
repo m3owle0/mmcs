@@ -1473,7 +1473,8 @@
     <div class="unlock-modal">
       <h3>Login</h3>
       <p style="color: #b0b0b0; margin-bottom: 20px;">
-        <strong style="color: #ff6b6b;">Donation Required:</strong> You must make a donation first, then create an account to access the site.
+        <strong style="color: #00e6d6;">✓ Free Access:</strong> Create an account to use the site for free!<br>
+        <strong style="color: #f7931a;">🔔 Notifications:</strong> Discord notifications require a $5/month donation.
       </p>
       <div id="login-error" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(255, 107, 107, 0.2); border: 1px solid rgba(255, 107, 107, 0.5);">
         <p style="color: #ff6b6b; margin: 0; font-size: 14px;" id="login-error-text"></p>
@@ -1492,7 +1493,7 @@
       </div>
       <div id="signup-form" style="display: none;">
         <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="email" id="signup-email-input" placeholder="Your email (for verification)" class="unlock-input" style="margin-bottom: 12px;" />
+        <input type="email" id="signup-email-input" placeholder="Your email" class="unlock-input" style="margin-bottom: 12px;" />
         <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
           <button id="signup-submit-btn" class="unlock-submit-btn">Create Account</button>
@@ -1500,7 +1501,9 @@
         </div>
       </div>
       <p style="color: #888; font-size: 12px; margin-top: 15px; line-height: 1.6;">
-        <strong>Step 1:</strong> Donate via 
+        <strong style="color: #00e6d6;">✓ Site Access:</strong> Free! Just create an account above.<br><br>
+        <strong style="color: #f7931a;">🔔 Discord Notifications ($5/month):</strong><br>
+        <strong>Step 1:</strong> Donate $5/month via 
         <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
            target="_blank" 
            rel="noopener noreferrer" 
@@ -1518,9 +1521,8 @@
            style="color: #f7931a;">
           Bitcoin
         </a><br>
-        <strong>Step 2:</strong> If using CashApp, write your email as a note/memo in the payment<br>
-        <strong>Step 3:</strong> If using Bitcoin, message <a href="https://www.instagram.com/bandagearchive" target="_blank" rel="noopener noreferrer" style="color: #e1306c;">@bandagearchive</a> on Instagram with your email after payment<br>
-        <strong>Step 4:</strong> Create an account above or login if you already have one<br>
+        <strong>Step 2:</strong> Include your email in the payment note/memo<br>
+        <strong>Step 3:</strong> After payment, notifications will be activated for your account<br>
         <strong style="color: #f7931a;">Bitcoin Address:</strong> <code style="background: rgba(247, 147, 26, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; cursor: pointer;" onclick="navigator.clipboard.writeText('bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); alert('Bitcoin address copied!');">bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn</code>
       </p>
     </div>
@@ -1864,7 +1866,8 @@
                   auth_user_id: user.id,
                   email: user.email,
                   username: user.user_metadata?.username || '',
-                  verified: false
+                  verified: true,  // Auto-verify new accounts
+                  notifications_subscription_active: false  // Notifications require $5/month donation
                 })
                 .select()
                 .single();
@@ -1876,9 +1879,10 @@
                 return true;
               }
               
-              // Record created but not verified - block access
-              console.log('User record created but not verified');
-              return false;
+              // Record created and auto-verified - allow access
+              console.log('User record created and auto-verified');
+              setCurrentUser(unlockedData?.username || user.user_metadata?.username || user.email || user.id);
+              return true;
             } catch (err) {
               console.error('Error creating unlocked_users record:', err);
               setCurrentUser(user.user_metadata?.username || user.email || user.id);
@@ -1886,25 +1890,8 @@
             }
           }
           
-          // Check if user is verified (handle various true formats)
-          const verifiedValue = unlockedData.verified;
-          const isVerified = verifiedValue === true || 
-                             verifiedValue === 'true' || 
-                             verifiedValue === 1 ||
-                             verifiedValue === '1' ||
-                             String(verifiedValue).toLowerCase() === 'true';
-          
-          console.log('Verification status:', {
-            email: user.email,
-            verifiedValue: verifiedValue,
-            verifiedType: typeof verifiedValue,
-            isVerified: isVerified
-          });
-          
-          if (!isVerified) {
-            console.log('User not verified:', user.email, 'verified status:', verifiedValue, 'type:', typeof verifiedValue);
-            return false; // User exists but not verified - block access
-          }
+          // All users are now auto-verified, so allow access
+          console.log('User verified:', user.email);
           
           // User is verified - allow access
           console.log('User verified, granting access:', user.email);
@@ -2315,29 +2302,13 @@
             { type: 'keydown', handler: keyHandler }
           ];
           
-          // Show modal if user is logged in but not verified, or if no user at all
+          // Show modal if no user is logged in
           if (!suppressModal) {
             // Check if user has a session (logged in)
             try {
               const { data: { session } } = await supabase.auth.getSession();
               
-              if (session && currentUser) {
-                // User is logged in but not verified - show modal with error message
-                if (unlockModalBg) {
-                  unlockModalBg.classList.add('show');
-                  unlockModalBg.style.display = 'flex';
-                }
-                // Show error message if not already showing
-                const loginErrorEl = document.getElementById('login-error');
-                const loginErrorTextEl = document.getElementById('login-error-text');
-                if (loginErrorEl && loginErrorTextEl) {
-                  loginErrorTextEl.textContent = 'Your account is not verified yet. Please wait for verification after donation.';
-                  loginErrorEl.style.display = 'block';
-                }
-                // Hide success message if showing
-                const loginSuccessEl = document.getElementById('login-success');
-                if (loginSuccessEl) loginSuccessEl.style.display = 'none';
-              } else if (!currentUser) {
+              if (!currentUser) {
                 // No user - show modal for login/signup
                 if (unlockModalBg) {
                   unlockModalBg.classList.add('show');
@@ -2466,17 +2437,16 @@
                   console.log('Site unlocked for verified user');
                 }, 800);
               } else {
-                // User logged in but not verified - show error, keep modal open
-                console.warn('User logged in but not verified');
+                // User logged in successfully - all users are now auto-verified
+                console.log('User logged in successfully');
                 if (loginSuccess) {
                   loginSuccess.style.display = 'none';
                 }
                 if (loginError) {
-                  loginErrorText.textContent = 'Your account is not verified yet. Please wait for verification after donation.';
-                  loginError.style.display = 'block';
+                  loginError.style.display = 'none';
                 }
-                // Keep modal open so they can see the message
-                // Don't call initUnlockSystem here - it will re-lock them
+                // Close modal and unlock site
+                await initUnlockSystem();
               }
             } else {
               if (loginError) {
@@ -2516,9 +2486,9 @@
             
             if (result.success) {
               if (result.needsEmailVerification) {
-                // Email confirmation required
+                // Email confirmation required (if enabled in Supabase)
                 if (loginSuccess) {
-                  loginSuccessText.textContent = result.message || 'Account created! Please check your email (' + email + ') to verify your account before logging in.';
+                  loginSuccessText.textContent = 'Account created! Please check your email (' + email + ') to confirm your email address.';
                   loginSuccess.style.display = 'block';
                 }
                 // Clear form
@@ -2531,9 +2501,9 @@
                   if (loginSuccess) loginSuccess.style.display = 'none';
                 }, 5000);
               } else {
-                // User is logged in immediately (email confirmation disabled)
+                // User is logged in immediately (email confirmation disabled, auto-verified)
                 if (loginSuccess) {
-                  loginSuccessText.textContent = 'Account created! Welcome!';
+                  loginSuccessText.textContent = 'Account created! Welcome! Your account is verified and ready to use.';
                   loginSuccess.style.display = 'block';
                 }
                 setTimeout(async () => {
@@ -3116,7 +3086,19 @@
       // Save webhook URL
       if (saveWebhookBtn) {
         saveWebhookBtn.addEventListener('click', async () => {
-          const webhookUrl = discordWebhookInput ? discordWebhookInput.value.trim() : '';
+          let webhookUrl = discordWebhookInput ? discordWebhookInput.value.trim() : '';
+          
+          // Fix corrupted URLs that might have JSON appended (prevent saving bad data)
+          if (webhookUrl.includes('[{') || webhookUrl.includes('{"')) {
+            const jsonStart = webhookUrl.indexOf('[{') > 0 ? webhookUrl.indexOf('[{') : webhookUrl.indexOf('{"');
+            if (jsonStart > 0) {
+              webhookUrl = webhookUrl.substring(0, jsonStart).trim();
+              if (discordWebhookInput) {
+                discordWebhookInput.value = webhookUrl; // Update input field
+              }
+            }
+          }
+          
           if (!webhookUrl) {
             if (webhookStatus) {
               webhookStatus.innerHTML = '<span style="color: #ff6b6b;">Please enter a webhook URL.</span>';
