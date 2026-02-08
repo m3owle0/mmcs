@@ -4354,7 +4354,7 @@
         <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" autocomplete="email" />
         <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" autocomplete="current-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button type="submit" id="login-submit-btn" class="unlock-submit-btn" onclick="if(window.handleLoginSubmit){window.handleLoginSubmit(event);} return false;">Login</button>
+          <button type="submit" id="login-submit-btn" class="unlock-submit-btn" onclick="console.log('Inline onclick fired'); if(window.handleLoginSubmit){console.log('Calling handleLoginSubmit'); window.handleLoginSubmit(event);} else {console.error('handleLoginSubmit not found'); alert('Login handler not ready. Please refresh the page.');} return false;">Login</button>
           <button type="button" id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
           <button type="button" id="login-cancel-btn" class="unlock-cancel-btn" style="display: none;">Cancel</button>
         </div>
@@ -4364,7 +4364,7 @@
         <input type="email" id="signup-email-input" placeholder="Your email (for verification)" class="unlock-input" style="margin-bottom: 12px;" autocomplete="email" />
         <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" autocomplete="new-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button type="submit" id="signup-submit-btn" class="unlock-submit-btn" onclick="if(window.handleSignupSubmit){window.handleSignupSubmit(event);} return false;">Create Account</button>
+          <button type="submit" id="signup-submit-btn" class="unlock-submit-btn" onclick="console.log('Inline onclick fired'); if(window.handleSignupSubmit){console.log('Calling handleSignupSubmit'); window.handleSignupSubmit(event);} else {console.error('handleSignupSubmit not found'); alert('Signup handler not ready. Please refresh the page.');} return false;">Create Account</button>
           <button type="button" id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
         </div>
       </form>
@@ -5415,39 +5415,55 @@
         
         // Login handler - Use form submission for maximum mobile compatibility
         const handleLoginSubmit = async (e) => {
-          if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-          }
+          console.log('=== handleLoginSubmit CALLED ===', e);
           
-          console.log('Login form submitted');
-          
-          const usernameOrEmail = loginUsernameInput ? loginUsernameInput.value.trim() : '';
-          const password = loginPasswordInput ? loginPasswordInput.value : '';
-          
-          if (!usernameOrEmail || !password) {
-            if (loginError) {
-              loginErrorText.textContent = 'Please enter both username/email and password.';
-              loginError.style.display = 'block';
+          try {
+            if (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
             }
-            return false;
-          }
-          
-          if (loginSubmitBtn) {
-            loginSubmitBtn.disabled = true;
-            loginSubmitBtn.textContent = 'Logging in...';
-          }
-          if (loginError) loginError.style.display = 'none';
-          
-          const result = await loginUser(usernameOrEmail, password);
-          
-          if (loginSubmitBtn) {
-            loginSubmitBtn.disabled = false;
-            loginSubmitBtn.textContent = 'Login';
-          }
-          
-            if (result.success) {
+            
+            console.log('Login form submitted');
+            
+            const usernameOrEmail = loginUsernameInput ? loginUsernameInput.value.trim() : '';
+            const password = loginPasswordInput ? loginPasswordInput.value : '';
+            
+            console.log('Username/Email:', usernameOrEmail ? '***' : 'EMPTY');
+            console.log('Password:', password ? '***' : 'EMPTY');
+            
+            if (!usernameOrEmail || !password) {
+              console.log('Validation failed - missing fields');
+              if (loginError) {
+                loginErrorText.textContent = 'Please enter both username/email and password.';
+                loginError.style.display = 'block';
+              }
+              return false;
+            }
+            
+            console.log('Calling loginUser function...');
+            
+            if (loginSubmitBtn) {
+              loginSubmitBtn.disabled = true;
+              loginSubmitBtn.textContent = 'Logging in...';
+            }
+            if (loginError) loginError.style.display = 'none';
+            
+            console.log('About to call loginUser...');
+            if (typeof loginUser !== 'function') {
+              console.error('loginUser function not found!');
+              throw new Error('loginUser function is not defined');
+            }
+            const result = await loginUser(usernameOrEmail, password);
+            console.log('Login result:', result);
+            
+            if (loginSubmitBtn) {
+              loginSubmitBtn.disabled = false;
+              loginSubmitBtn.textContent = 'Login';
+            }
+            
+            if (result && result.success) {
+              console.log('Login successful!');
               // Hide error message if showing
               if (loginError) loginError.style.display = 'none';
               
@@ -5511,148 +5527,265 @@
                 }
               }
             } else {
+              console.log('Login failed:', result);
               if (loginError) {
-                loginErrorText.textContent = result.error || 'Login failed. Please try again.';
+                loginErrorText.textContent = (result && result.error) || 'Login failed. Please try again.';
                 loginError.style.display = 'block';
-                console.error('Login failed:', result.error);
+                console.error('Login failed:', result ? result.error : 'Unknown error');
               }
               // Clear password field on error
               if (loginPasswordInput) loginPasswordInput.value = '';
             }
-            
-            return false;
-          };
-          
-          // Store globally for inline handler access
-          window.handleLoginSubmit = handleLoginSubmit;
-          
-          if (loginSubmitBtn) {
-            // Add ALL possible event types - use bubble phase (false) so it runs after blockers
-            loginSubmitBtn.addEventListener('click', handleLoginSubmit, false);
-            loginSubmitBtn.addEventListener('touchend', handleLoginSubmit, false);
-            loginSubmitBtn.addEventListener('touchstart', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              handleLoginSubmit(e);
-            }, false);
-            loginSubmitBtn.onclick = handleLoginSubmit;
-            
-            // Visual feedback
-            loginSubmitBtn.addEventListener('touchstart', function() {
-              this.style.opacity = '0.7';
-            }, { passive: true });
-            loginSubmitBtn.addEventListener('touchend', function() {
-              this.style.opacity = '';
-            }, { passive: true });
-          }
-          
-          // Form submission handler - use bubble phase
-          const loginForm = document.getElementById('login-form');
-          if (loginForm) {
-            loginForm.addEventListener('submit', handleLoginSubmit, false);
-          }
-        
-        // Signup handler - Use form submission for maximum mobile compatibility
-        const handleSignupSubmit = async (e) => {
-          if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-          }
-          
-          console.log('Signup form submitted');
-          
-          const username = signupUsernameInput ? signupUsernameInput.value.trim() : '';
-          const email = signupEmailInput ? signupEmailInput.value.trim() : '';
-          const password = signupPasswordInput ? signupPasswordInput.value : '';
-          
-          if (!username || !email || !password) {
-            if (loginError) {
-              loginErrorText.textContent = 'Please fill in all fields.';
-              loginError.style.display = 'block';
+          } catch (error) {
+            console.error('Error in handleLoginSubmit:', error);
+            if (loginSubmitBtn) {
+              loginSubmitBtn.disabled = false;
+              loginSubmitBtn.textContent = 'Login';
             }
-            return false;
-          }
-          
-          if (signupSubmitBtn) {
-            signupSubmitBtn.disabled = true;
-            signupSubmitBtn.textContent = 'Creating account...';
-          }
-          if (loginError) loginError.style.display = 'none';
-          
-          const result = await signUpUser(username, email, password);
-          
-          if (signupSubmitBtn) {
-            signupSubmitBtn.disabled = false;
-            signupSubmitBtn.textContent = 'Create Account';
-          }
-          
-          if (result.success) {
-            if (result.needsEmailVerification) {
-              // Email confirmation required
-              if (loginSuccess) {
-                loginSuccessText.textContent = result.message || 'Account created! Please check your email (' + email + ') to verify your account before logging in.';
-                loginSuccess.style.display = 'block';
-              }
-              // Clear form
-              if (signupUsernameInput) signupUsernameInput.value = '';
-              if (signupEmailInput) signupEmailInput.value = '';
-              if (signupPasswordInput) signupPasswordInput.value = '';
-              // Switch to login form after 3 seconds
-              setTimeout(() => {
-                if (loginToggleBtn) loginToggleBtn.click();
-                if (loginSuccess) loginSuccess.style.display = 'none';
-              }, 5000);
-            } else {
-              // User is logged in immediately (email confirmation disabled)
-              if (loginSuccess) {
-                loginSuccessText.textContent = 'Account created! Welcome!';
-                loginSuccess.style.display = 'block';
-              }
-              setTimeout(async () => {
-                await initUnlockSystem();
-              }, 500);
-            }
-          } else {
             if (loginError) {
-              // Show the actual error message from Supabase
-              const errorMsg = result.error || 'Account creation failed. Please try again.';
-              loginErrorText.textContent = errorMsg;
+              loginErrorText.textContent = 'An error occurred. Please try again.';
               loginError.style.display = 'block';
-              console.error('Signup error:', result.error);
             }
           }
           
           return false;
         };
         
-        // Store globally for inline handler access
-        window.handleSignupSubmit = handleSignupSubmit;
+        // Store globally for inline handler access - MUST be done immediately
+        window.handleLoginSubmit = handleLoginSubmit;
+        console.log('handleLoginSubmit stored globally:', typeof window.handleLoginSubmit);
         
-        if (signupSubmitBtn) {
-          // Add ALL possible event types - use bubble phase (false) so it runs after blockers
-          signupSubmitBtn.addEventListener('click', handleSignupSubmit, false);
-          signupSubmitBtn.addEventListener('touchend', handleSignupSubmit, false);
-          signupSubmitBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            handleSignupSubmit(e);
-          }, false);
-          signupSubmitBtn.onclick = handleSignupSubmit;
+        // Setup button handlers AFTER storing globally
+        if (loginSubmitBtn) {
+          // Clear any existing handlers by cloning
+          const newBtn = loginSubmitBtn.cloneNode(true);
+          loginSubmitBtn.parentNode.replaceChild(newBtn, loginSubmitBtn);
+          const freshLoginBtn = document.getElementById('login-submit-btn');
           
-          // Visual feedback
-          signupSubmitBtn.addEventListener('touchstart', function() {
-            this.style.opacity = '0.7';
-          }, { passive: true });
-          signupSubmitBtn.addEventListener('touchend', function() {
-            this.style.opacity = '';
-          }, { passive: true });
+          if (freshLoginBtn) {
+            // Direct onclick - most reliable for mobile
+            freshLoginBtn.onclick = function(e) {
+              console.log('Login button onclick triggered');
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.handleLoginSubmit) {
+                window.handleLoginSubmit(e);
+              } else {
+                console.error('handleLoginSubmit not available!');
+              }
+              return false;
+            };
+            
+            // Add event listeners as backup
+            freshLoginBtn.addEventListener('click', function(e) {
+              console.log('Login button clicked via addEventListener');
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.handleLoginSubmit) {
+                window.handleLoginSubmit(e);
+              }
+            }, false);
+            
+            freshLoginBtn.addEventListener('touchend', function(e) {
+              console.log('Login button touchend');
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.handleLoginSubmit) {
+                window.handleLoginSubmit(e);
+              }
+            }, false);
+            
+            // Visual feedback
+            freshLoginBtn.addEventListener('touchstart', function() {
+              this.style.opacity = '0.7';
+            }, { passive: true });
+            freshLoginBtn.addEventListener('touchend', function() {
+              this.style.opacity = '';
+            }, { passive: true });
+          }
         }
         
-        // Form submission handler - use bubble phase
+        // Form submission handler
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+          loginForm.addEventListener('submit', function(e) {
+            console.log('Login form submit event');
+            e.preventDefault();
+            if (window.handleLoginSubmit) {
+              window.handleLoginSubmit(e);
+            }
+            return false;
+          }, false);
+        }
+        
+        // Signup handler - Use form submission for maximum mobile compatibility
+        const handleSignupSubmit = async (e) => {
+          console.log('=== handleSignupSubmit CALLED ===', e);
+          
+          try {
+            if (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+            }
+            
+            console.log('Signup form submitted');
+            
+            const username = signupUsernameInput ? signupUsernameInput.value.trim() : '';
+            const email = signupEmailInput ? signupEmailInput.value.trim() : '';
+            const password = signupPasswordInput ? signupPasswordInput.value : '';
+            
+            console.log('Username:', username ? '***' : 'EMPTY');
+            console.log('Email:', email ? '***' : 'EMPTY');
+            console.log('Password:', password ? '***' : 'EMPTY');
+            
+            if (!username || !email || !password) {
+              console.log('Validation failed - missing fields');
+              if (loginError) {
+                loginErrorText.textContent = 'Please fill in all fields.';
+                loginError.style.display = 'block';
+              }
+              return false;
+            }
+            
+            if (signupSubmitBtn) {
+              signupSubmitBtn.disabled = true;
+              signupSubmitBtn.textContent = 'Creating account...';
+            }
+            if (loginError) loginError.style.display = 'none';
+            
+            console.log('About to call signUpUser...');
+            if (typeof signUpUser !== 'function') {
+              console.error('signUpUser function not found!');
+              throw new Error('signUpUser function is not defined');
+            }
+            const result = await signUpUser(username, email, password);
+            console.log('Signup result:', result);
+            
+            if (signupSubmitBtn) {
+              signupSubmitBtn.disabled = false;
+              signupSubmitBtn.textContent = 'Create Account';
+            }
+            
+            if (result && result.success) {
+              console.log('Signup successful!');
+              if (result.needsEmailVerification) {
+                // Email confirmation required
+                if (loginSuccess) {
+                  loginSuccessText.textContent = result.message || 'Account created! Please check your email (' + email + ') to verify your account before logging in.';
+                  loginSuccess.style.display = 'block';
+                }
+                // Clear form
+                if (signupUsernameInput) signupUsernameInput.value = '';
+                if (signupEmailInput) signupEmailInput.value = '';
+                if (signupPasswordInput) signupPasswordInput.value = '';
+                // Switch to login form after 3 seconds
+                setTimeout(() => {
+                  if (loginToggleBtn) loginToggleBtn.click();
+                  if (loginSuccess) loginSuccess.style.display = 'none';
+                }, 5000);
+              } else {
+                // User is logged in immediately (email confirmation disabled)
+                if (loginSuccess) {
+                  loginSuccessText.textContent = 'Account created! Welcome!';
+                  loginSuccess.style.display = 'block';
+                }
+                setTimeout(async () => {
+                  await initUnlockSystem();
+                }, 500);
+              }
+            } else {
+              console.log('Signup failed:', result);
+              if (loginError) {
+                // Show the actual error message from Supabase
+                const errorMsg = (result && result.error) || 'Account creation failed. Please try again.';
+                loginErrorText.textContent = errorMsg;
+                loginError.style.display = 'block';
+                console.error('Signup error:', result ? result.error : 'Unknown error');
+              }
+            }
+          } catch (error) {
+            console.error('Error in handleSignupSubmit:', error);
+            console.error('Error stack:', error.stack);
+            console.error('Error in handleSignupSubmit:', error);
+            if (signupSubmitBtn) {
+              signupSubmitBtn.disabled = false;
+              signupSubmitBtn.textContent = 'Create Account';
+            }
+            if (loginError) {
+              loginErrorText.textContent = 'An error occurred. Please try again.';
+              loginError.style.display = 'block';
+            }
+          }
+          
+          return false;
+        };
+        
+        // Store globally for inline handler access - MUST be done immediately
+        window.handleSignupSubmit = handleSignupSubmit;
+        console.log('handleSignupSubmit stored globally:', typeof window.handleSignupSubmit);
+        
+        // Setup button handlers AFTER storing globally
+        if (signupSubmitBtn) {
+          // Clear any existing handlers by cloning
+          const newBtn = signupSubmitBtn.cloneNode(true);
+          signupSubmitBtn.parentNode.replaceChild(newBtn, signupSubmitBtn);
+          const freshSignupBtn = document.getElementById('signup-submit-btn');
+          
+          if (freshSignupBtn) {
+            // Direct onclick - most reliable for mobile
+            freshSignupBtn.onclick = function(e) {
+              console.log('Signup button onclick triggered');
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.handleSignupSubmit) {
+                window.handleSignupSubmit(e);
+              } else {
+                console.error('handleSignupSubmit not available!');
+              }
+              return false;
+            };
+            
+            // Add event listeners as backup
+            freshSignupBtn.addEventListener('click', function(e) {
+              console.log('Signup button clicked via addEventListener');
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.handleSignupSubmit) {
+                window.handleSignupSubmit(e);
+              }
+            }, false);
+            
+            freshSignupBtn.addEventListener('touchend', function(e) {
+              console.log('Signup button touchend');
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.handleSignupSubmit) {
+                window.handleSignupSubmit(e);
+              }
+            }, false);
+            
+            // Visual feedback
+            freshSignupBtn.addEventListener('touchstart', function() {
+              this.style.opacity = '0.7';
+            }, { passive: true });
+            freshSignupBtn.addEventListener('touchend', function() {
+              this.style.opacity = '';
+            }, { passive: true });
+          }
+        }
+        
+        // Form submission handler
         const signupForm = document.getElementById('signup-form');
         if (signupForm) {
-          signupForm.addEventListener('submit', handleSignupSubmit, false);
+          signupForm.addEventListener('submit', function(e) {
+            console.log('Signup form submit event');
+            e.preventDefault();
+            if (window.handleSignupSubmit) {
+              window.handleSignupSubmit(e);
+            }
+            return false;
+          }, false);
         }
         
         // Cancel button
