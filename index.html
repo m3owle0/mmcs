@@ -4350,21 +4350,21 @@
       <div id="login-success" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(0, 230, 214, 0.2); border: 1px solid rgba(0, 230, 214, 0.5);">
         <p style="color: #00e6d6; margin: 0; font-size: 14px;" id="login-success-text"></p>
       </div>
-      <form id="login-form" onsubmit="if(window.handleLoginSubmit){window.handleLoginSubmit(event);} return false;" style="pointer-events: auto;">
+      <form id="login-form" style="pointer-events: auto;">
         <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" autocomplete="email" />
         <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" autocomplete="current-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button type="submit" id="login-submit-btn" class="unlock-submit-btn" onclick="console.log('Inline onclick fired'); if(window.handleLoginSubmit){console.log('Calling handleLoginSubmit'); window.handleLoginSubmit(event);} else {console.error('handleLoginSubmit not found'); alert('Login handler not ready. Please refresh the page.');} return false;">Login</button>
+          <button type="submit" id="login-submit-btn" class="unlock-submit-btn">Login</button>
           <button type="button" id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
           <button type="button" id="login-cancel-btn" class="unlock-cancel-btn" style="display: none;">Cancel</button>
         </div>
       </form>
-      <form id="signup-form" style="display: none; pointer-events: auto;" onsubmit="if(window.handleSignupSubmit){window.handleSignupSubmit(event);} return false;">
+      <form id="signup-form" style="display: none; pointer-events: auto;">
         <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" autocomplete="username" />
         <input type="email" id="signup-email-input" placeholder="Your email (for verification)" class="unlock-input" style="margin-bottom: 12px;" autocomplete="email" />
         <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" autocomplete="new-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button type="submit" id="signup-submit-btn" class="unlock-submit-btn" onclick="console.log('Inline onclick fired'); if(window.handleSignupSubmit){console.log('Calling handleSignupSubmit'); window.handleSignupSubmit(event);} else {console.error('handleSignupSubmit not found'); alert('Signup handler not ready. Please refresh the page.');} return false;">Create Account</button>
+          <button type="submit" id="signup-submit-btn" class="unlock-submit-btn">Create Account</button>
           <button type="button" id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
         </div>
       </form>
@@ -5098,6 +5098,110 @@
       
       // Initialize unlock system
       let isInitializing = false; // Prevent multiple simultaneous calls
+      
+      // Set up handlers immediately when DOM is ready - don't wait for async init
+      function setupLoginHandlersImmediately() {
+        const loginSubmitBtn = document.getElementById('login-submit-btn');
+        const signupSubmitBtn = document.getElementById('signup-submit-btn');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        
+        // Set up login button handler that waits for the real handler
+        if (loginSubmitBtn && !loginSubmitBtn.dataset.handlerSetup) {
+          loginSubmitBtn.dataset.handlerSetup = 'true';
+          
+          const loginHandler = function(e) {
+            console.log('Login button clicked - checking for handler...');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Wait for handler to be ready (poll up to 2 seconds)
+            let attempts = 0;
+            const maxAttempts = 40; // 2 seconds at 50ms intervals
+            const checkHandler = () => {
+              if (window.handleLoginSubmit && typeof window.handleLoginSubmit === 'function') {
+                console.log('Handler ready, calling it');
+                window.handleLoginSubmit(e);
+              } else if (attempts < maxAttempts) {
+                attempts++;
+                setTimeout(checkHandler, 50);
+              } else {
+                console.error('Handler not ready after waiting');
+                alert('Please wait a moment and try again.');
+              }
+            };
+            checkHandler();
+            return false;
+          };
+          
+          loginSubmitBtn.onclick = loginHandler;
+          loginSubmitBtn.addEventListener('click', loginHandler, false);
+          loginSubmitBtn.addEventListener('touchend', loginHandler, false);
+        }
+        
+        // Set up signup button handler that waits for the real handler
+        if (signupSubmitBtn && !signupSubmitBtn.dataset.handlerSetup) {
+          signupSubmitBtn.dataset.handlerSetup = 'true';
+          
+          const signupHandler = function(e) {
+            console.log('Signup button clicked - checking for handler...');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Wait for handler to be ready (poll up to 2 seconds)
+            let attempts = 0;
+            const maxAttempts = 40; // 2 seconds at 50ms intervals
+            const checkHandler = () => {
+              if (window.handleSignupSubmit && typeof window.handleSignupSubmit === 'function') {
+                console.log('Handler ready, calling it');
+                window.handleSignupSubmit(e);
+              } else if (attempts < maxAttempts) {
+                attempts++;
+                setTimeout(checkHandler, 50);
+              } else {
+                console.error('Handler not ready after waiting');
+                alert('Please wait a moment and try again.');
+              }
+            };
+            checkHandler();
+            return false;
+          };
+          
+          signupSubmitBtn.onclick = signupHandler;
+          signupSubmitBtn.addEventListener('click', signupHandler, false);
+          signupSubmitBtn.addEventListener('touchend', signupHandler, false);
+        }
+        
+        // Set up form handlers
+        if (loginForm && !loginForm.dataset.handlerSetup) {
+          loginForm.dataset.handlerSetup = 'true';
+          loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (loginSubmitBtn) loginSubmitBtn.click();
+            return false;
+          }, false);
+        }
+        
+        if (signupForm && !signupForm.dataset.handlerSetup) {
+          signupForm.dataset.handlerSetup = 'true';
+          signupForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (signupSubmitBtn) signupSubmitBtn.click();
+            return false;
+          }, false);
+        }
+      }
+      
+      // Call immediately when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupLoginHandlersImmediately);
+      } else {
+        setupLoginHandlersImmediately();
+      }
+      // Also try after a short delay in case elements aren't ready yet
+      setTimeout(setupLoginHandlersImmediately, 100);
+      setTimeout(setupLoginHandlersImmediately, 500);
+      
       async function initUnlockSystem(suppressModal = false) {
         // Prevent multiple simultaneous initialization calls
         if (isInitializing) {
@@ -5605,8 +5709,7 @@
           }
         }
         
-        // Form submission handler
-        const loginForm = document.getElementById('login-form');
+        // Form submission handler (reuse existing loginForm variable)
         if (loginForm) {
           loginForm.addEventListener('submit', function(e) {
             console.log('Login form submit event');
@@ -5775,8 +5878,7 @@
           }
         }
         
-        // Form submission handler
-        const signupForm = document.getElementById('signup-form');
+        // Form submission handler (reuse existing signupForm variable)
         if (signupForm) {
           signupForm.addEventListener('submit', function(e) {
             console.log('Signup form submit event');
