@@ -1397,6 +1397,120 @@
         width: 100%;
         max-height: 90vh;
       }
+      /* Mobile styles for notifications */
+      .notification-item {
+        padding: 12px;
+        margin-bottom: 10px;
+        background: rgba(35, 35, 35, 0.5);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .notification-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .notification-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .notification-actions {
+        display: flex;
+        gap: 5px;
+        flex-shrink: 0;
+      }
+      .notification-action-btn {
+        min-height: 36px;
+        padding: 8px 12px;
+        font-size: 13px;
+        touch-action: manipulation;
+        white-space: nowrap;
+      }
+      @media (max-width: 768px) {
+        #notifications-modal-bg .unlock-modal {
+          padding: 20px 15px;
+          max-height: 95vh;
+        }
+        #notification-edit-modal-bg .unlock-modal {
+          padding: 20px 15px;
+          max-height: 95vh;
+        }
+        .notification-content {
+          flex-direction: column;
+        }
+        .notification-actions {
+          width: 100%;
+          justify-content: stretch;
+        }
+        .notification-action-btn {
+          flex: 1;
+          min-height: 44px;
+        }
+        #notifications-list > div {
+          padding: 15px;
+        }
+        #notifications-list .notification-info {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+        #notifications-list .notification-info > div:first-child {
+          font-size: 15px;
+          margin-bottom: 8px;
+        }
+        #notifications-list .notification-info > div:last-child {
+          font-size: 11px;
+          word-break: break-word;
+        }
+        #notifications-modal-bg h3 {
+          font-size: 20px;
+        }
+        #notifications-modal-bg h4 {
+          font-size: 14px;
+        }
+        #notifications-modal-bg .unlock-input {
+          font-size: 16px;
+          min-height: 44px;
+        }
+        #add-notification-btn {
+          width: 100%;
+          min-height: 44px;
+          margin-top: 10px;
+        }
+        #notifications-modal-bg > div > div:first-of-type {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        #notifications-modal-bg > div > div:first-of-type h4 {
+          margin-bottom: 10px;
+        }
+        #notification-markets {
+          grid-template-columns: 1fr !important;
+          max-height: 300px;
+        }
+        #notification-markets label {
+          padding: 12px;
+          min-height: 44px;
+          display: flex;
+          align-items: center;
+        }
+        #notification-markets input[type="checkbox"] {
+          width: 20px;
+          height: 20px;
+          margin-right: 10px;
+        }
+        .webhook-buttons-row {
+          grid-template-columns: 1fr !important;
+        }
+        .webhook-buttons-row button {
+          width: 100%;
+        }
+        #discord-webhook-input {
+          font-size: 16px !important;
+          min-height: 44px;
+        }
+      }
       .unlock-input {
         min-height: 44px;
         font-size: 16px;
@@ -2060,9 +2174,9 @@
         </p>
         <input type="text" id="discord-webhook-input" placeholder="https://discord.com/api/webhooks/..." 
                class="unlock-input" style="margin-bottom: 10px; font-family: monospace; font-size: 12px;" />
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-          <button id="test-webhook-btn" class="unlock-cancel-btn" style="width: 100%;">🧪 Test Webhook</button>
-          <button id="save-webhook-btn" class="unlock-submit-btn" style="width: 100%;">Save Webhook URL</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;" class="webhook-buttons-row">
+          <button id="test-webhook-btn" class="unlock-cancel-btn" style="width: 100%; min-height: 44px;">🧪 Test Webhook</button>
+          <button id="save-webhook-btn" class="unlock-submit-btn" style="width: 100%; min-height: 44px;">Save Webhook URL</button>
         </div>
         <div id="webhook-status" style="margin-top: 10px; font-size: 12px;"></div>
       </div>
@@ -2075,9 +2189,9 @@
 
       <!-- Notifications List -->
       <div style="margin-bottom: 25px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
           <h4 style="color: #e3e3e3; margin: 0; font-size: 16px;">Your Notifications</h4>
-          <button id="add-notification-btn" class="unlock-submit-btn" style="padding: 8px 16px; font-size: 14px;">+ Add Notification</button>
+          <button id="add-notification-btn" class="unlock-submit-btn" style="padding: 8px 16px; font-size: 14px; min-height: 36px;">+ Add Notification</button>
         </div>
         <div id="notifications-list" style="min-height: 100px;">
           <p style="color: #888; text-align: center; padding: 20px;">No notifications configured yet.</p>
@@ -2107,7 +2221,7 @@
         <p style="color: #888; font-size: 12px; margin-bottom: 8px;">
           Only Japanese markets supported by Sendico API will send notifications. Leave empty to search all 5 markets.
         </p>
-        <div id="notification-markets" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px;">
+        <div id="notification-markets" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px; -webkit-overflow-scrolling: touch;">
           <!-- Markets will be populated by JavaScript -->
         </div>
       </div>
@@ -3163,14 +3277,23 @@
           'yahoo-auctions': 'Yahoo Auctions'
         };
         
-        notificationsList.innerHTML = currentNotifications.map((notif, index) => {
+        // Sort notifications A-Z by search term
+        // Create array with original indices before sorting
+        const notificationsWithIndex = currentNotifications.map((notif, idx) => ({ notif, originalIndex: idx }));
+        const sortedNotifications = notificationsWithIndex.sort((a, b) => {
+          const termA = (a.notif.searchTerm || 'Untitled').toLowerCase();
+          const termB = (b.notif.searchTerm || 'Untitled').toLowerCase();
+          return termA.localeCompare(termB);
+        });
+        
+        notificationsList.innerHTML = sortedNotifications.map(({ notif, originalIndex }) => {
           // Filter to only Sendico-supported markets
           const sendicoMarkets = ['mercari-jp', 'paypay-fleamarket', 'rakuma', 'rakuten-jp', 'yahoo-auctions'];
           const validMarkets = (notif.markets || []).filter(m => sendicoMarkets.includes(m));
           
-          // Update notification if it had invalid markets
+          // Update notification if it had invalid markets (update original array)
           if (validMarkets.length !== (notif.markets || []).length) {
-            notif.markets = validMarkets;
+            currentNotifications[originalIndex].markets = validMarkets;
             saveNotifications(); // Auto-save filtered markets
           }
           
@@ -3182,15 +3305,15 @@
           }
           
           return `
-            <div style="padding: 12px; margin-bottom: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
-              <div style="display: flex; justify-content: space-between; align-items: start;">
-                <div style="flex: 1;">
+            <div class="notification-item">
+              <div class="notification-content">
+                <div class="notification-info">
                   <div style="color: #e3e3e3; font-weight: bold; margin-bottom: 5px;">${escapeHtml(notif.searchTerm || 'Untitled')}</div>
                   <div style="color: #888; font-size: 12px;">Markets: ${escapeHtml(marketsText)}</div>
                 </div>
-                <div>
-                  <button class="unlock-cancel-btn" onclick="window.editNotification(${index})" style="padding: 5px 10px; margin-right: 5px; font-size: 12px;">Edit</button>
-                  <button class="unlock-cancel-btn" onclick="window.deleteNotification(${index})" style="padding: 5px 10px; font-size: 12px; background: rgba(255, 107, 107, 0.2); color: #ff6b6b;">Delete</button>
+                <div class="notification-actions">
+                  <button class="unlock-cancel-btn notification-action-btn" onclick="window.editNotification(${originalIndex})" style="padding: 5px 10px; margin-right: 5px; font-size: 12px;">Edit</button>
+                  <button class="unlock-cancel-btn notification-action-btn" onclick="window.deleteNotification(${originalIndex})" style="padding: 5px 10px; font-size: 12px; background: rgba(255, 107, 107, 0.2); color: #ff6b6b;">Delete</button>
                 </div>
               </div>
             </div>
