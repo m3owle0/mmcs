@@ -53,7 +53,8 @@ serve(async (req) => {
     }
 
     // Initialize Supabase admin client (bypasses RLS)
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    // Get Supabase URL from environment (set automatically by Supabase)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || Deno.env.get('SUPABASE_PROJECT_URL') || 'https://wbpfuuiznsmysbskywdx.supabase.co'
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
     if (!supabaseUrl || !supabaseServiceKey) {

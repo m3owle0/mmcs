@@ -36,9 +36,10 @@ jobs:
       - name: Set secrets
         run: |
           supabase secrets set STRIPE_SECRET_KEY="${{ secrets.STRIPE_SECRET_KEY }}"
-          supabase secrets set STRIPE_WEBHOOK_SECRET="${{ secrets.STRIPE_WEBHOOK_SECRET }}"
-          supabase secrets set SUPABASE_URL="${{ secrets.SUPABASE_URL }}"
           supabase secrets set SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
+          if [ -n "${{ secrets.STRIPE_WEBHOOK_SECRET }}" ]; then
+            supabase secrets set STRIPE_WEBHOOK_SECRET="${{ secrets.STRIPE_WEBHOOK_SECRET }}"
+          fi
 
       - name: Deploy Stripe Webhook Function
         run: supabase functions deploy stripe-webhook
@@ -46,4 +47,4 @@ jobs:
       - name: Verify deployment
         run: |
           echo "✅ Function deployed successfully!"
-          echo "Webhook URL: ${{ secrets.SUPABASE_URL }}/functions/v1/stripe-webhook"
+          echo "Webhook URL: https://wbpfuuiznsmysbskywdx.supabase.co/functions/v1/stripe-webhook"
