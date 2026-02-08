@@ -2892,6 +2892,7 @@
         left: 0;
         right: 0;
         padding: 10px 15px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
         background: rgba(15,15,15,0.95);
         backdrop-filter: blur(12px);
         border-top: 1px solid rgba(255,255,255,0.1);
@@ -2902,6 +2903,15 @@
         flex-wrap: wrap;
         gap: 8px;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        min-height: calc(60px + env(safe-area-inset-bottom));
+        box-sizing: border-box;
+      }
+      
+      @supports (padding-bottom: constant(safe-area-inset-bottom)) {
+        .top-header {
+          padding-bottom: calc(10px + constant(safe-area-inset-bottom)) !important;
+          min-height: calc(60px + constant(safe-area-inset-bottom));
+        }
       }
       
       .header-left {
@@ -2914,16 +2924,21 @@
       }
       
       .donation-link {
-        padding: 8px 12px;
+        padding: 10px 12px;
         font-size: 12px;
         border-radius: 8px;
         flex: 1;
         min-width: 0;
+        min-height: 44px !important; /* Minimum touch target */
+        display: flex;
+        align-items: center;
+        justify-content: center;
         text-align: center;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 150px;
+        box-sizing: border-box;
       }
       
       .donation-link.discord {
@@ -2960,7 +2975,7 @@
         margin: 0 !important;
         padding: 15px !important;
         padding-top: calc(15px + env(safe-area-inset-top)) !important;
-        padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+        padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
         border-radius: 0 !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
@@ -2972,6 +2987,12 @@
         box-sizing: border-box !important;
         /* Ensure scrolling works on iOS */
         -webkit-overflow-scrolling: touch !important;
+      }
+      
+      @supports (padding-bottom: constant(safe-area-inset-bottom)) {
+        .container {
+          padding-bottom: calc(90px + constant(safe-area-inset-bottom)) !important;
+        }
       }
       
       /* Ensure body is not scrollable on mobile - container handles scrolling */
@@ -3261,6 +3282,9 @@
         z-index: 2001;
         background: linear-gradient(135deg, rgba(32,34,36,0.95) 0%, rgba(20,22,24,0.95) 100%);
         border: 1px solid rgba(255,255,255,0.2);
+        min-height: 44px !important; /* Minimum touch target */
+        min-width: 44px !important;
+        box-sizing: border-box;
         color: #e3e3e3;
         width: 50px;
         height: 50px;
@@ -3305,9 +3329,10 @@
       /* Adjust for very small screens */
       @media (max-width: 480px) {
         .donation-link {
-          padding: 6px 8px;
+          padding: 8px 10px;
           font-size: 11px;
           max-width: 110px;
+          min-height: 44px !important; /* Maintain touch target */
         }
         
         .donation-link.discord {
@@ -3316,19 +3341,45 @@
         
         .top-header {
           padding: 8px 10px;
+          padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
           gap: 6px;
+          min-height: calc(55px + env(safe-area-inset-bottom));
+        }
+        
+        @supports (padding-bottom: constant(safe-area-inset-bottom)) {
+          .top-header {
+            padding-bottom: calc(8px + constant(safe-area-inset-bottom)) !important;
+            min-height: calc(55px + constant(safe-area-inset-bottom));
+          }
         }
         
         .container {
-          padding-bottom: 70px !important;
+          padding-bottom: calc(75px + env(safe-area-inset-bottom)) !important;
+        }
+        
+        @supports (padding-bottom: constant(safe-area-inset-bottom)) {
+          .container {
+            padding-bottom: calc(75px + constant(safe-area-inset-bottom)) !important;
+          }
+        }
+        
+        .mobile-sidebar {
+          padding-bottom: calc(95px + env(safe-area-inset-bottom)) !important;
+        }
+        
+        @supports (padding-bottom: constant(safe-area-inset-bottom)) {
+          .mobile-sidebar {
+            padding-bottom: calc(95px + constant(safe-area-inset-bottom)) !important;
+          }
         }
       }
       
       @media (max-width: 360px) {
         .donation-link {
           font-size: 10px;
-          padding: 5px 6px;
+          padding: 8px 8px;
           max-width: 90px;
+          min-height: 44px !important; /* Maintain touch target */
         }
         
         .donation-link.discord {
@@ -3337,7 +3388,16 @@
         
         .top-header {
           padding: 6px 8px;
+          padding-bottom: calc(6px + env(safe-area-inset-bottom)) !important;
           gap: 4px;
+          min-height: calc(50px + env(safe-area-inset-bottom));
+        }
+        
+        @supports (padding-bottom: constant(safe-area-inset-bottom)) {
+          .top-header {
+            padding-bottom: calc(6px + constant(safe-area-inset-bottom)) !important;
+            min-height: calc(50px + constant(safe-area-inset-bottom));
+          }
         }
       }
       
@@ -3349,9 +3409,10 @@
         width: 85vw !important;
         max-width: 400px !important;
         height: 100vh !important;
+        max-height: 100vh !important;
         background: linear-gradient(135deg, rgba(15,15,15,0.98) 0%, rgba(10,10,10,0.98) 100%) !important;
         z-index: 2000 !important;
-        padding: calc(70px + env(safe-area-inset-top)) 20px calc(80px + env(safe-area-inset-bottom)) 20px !important;
+        padding: calc(70px + env(safe-area-inset-top)) 20px calc(100px + env(safe-area-inset-bottom)) 20px !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
         transition: left 0.3s ease !important;
@@ -3360,8 +3421,15 @@
         visibility: visible !important;
         display: flex !important;
         flex-direction: column !important;
+        box-sizing: border-box !important;
         /* Ensure smooth scrolling on iOS */
         -webkit-overflow-scrolling: touch !important;
+      }
+      
+      @supports (padding-bottom: constant(safe-area-inset-bottom)) {
+        .mobile-sidebar {
+          padding-bottom: calc(100px + constant(safe-area-inset-bottom)) !important;
+        }
       }
       
       @supports (height: 100dvh) {
@@ -3377,13 +3445,13 @@
       /* Add safe area inset for modern iOS devices */
       @supports (padding-bottom: env(safe-area-inset-bottom)) {
         .mobile-sidebar {
-          padding-bottom: calc(80px + env(safe-area-inset-bottom));
+          padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
         }
       }
       
       @supports (padding-bottom: constant(safe-area-inset-bottom)) {
         .mobile-sidebar {
-          padding-bottom: calc(80px + constant(safe-area-inset-bottom));
+          padding-bottom: calc(100px + constant(safe-area-inset-bottom)) !important;
         }
       }
       
@@ -3395,21 +3463,17 @@
         min-height: 0;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-      }
-      
-      .mobile-sidebar > div:first-child {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
+        height: 100%;
+        box-sizing: border-box;
       }
       
       #mobile-searches-container {
         flex: 1;
-        min-height: 200px;
-        max-height: none;
+        min-height: 150px;
+        max-height: calc(100vh - 500px);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        box-sizing: border-box;
       }
       
       .mobile-sidebar {
@@ -3429,15 +3493,24 @@
       }
       
       .mobile-sidebar .sidebar-add-input {
-        padding: 10px 12px;
+        padding: 12px 14px;
         border-radius: 8px;
-        font-size: 15px;
+        font-size: 16px !important; /* Prevent iOS zoom */
+        min-height: 44px !important; /* Minimum touch target */
+        box-sizing: border-box;
+        -webkit-appearance: none;
+        appearance: none;
       }
       
       .mobile-sidebar .sidebar-add-btn {
         padding: 10px 16px;
         border-radius: 8px;
         font-size: 16px;
+        min-height: 44px !important; /* Minimum touch target */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
       }
       
       /* Mobile folder list - Updated for tabs */
@@ -3450,6 +3523,33 @@
         background: transparent;
       }
       
+      /* Mobile folder tabs container */
+      #mobile-folder-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 15px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        box-sizing: border-box;
+      }
+      
+      #mobile-folder-tabs::-webkit-scrollbar {
+        height: 4px;
+      }
+      
+      #mobile-folder-tabs::-webkit-scrollbar-track {
+        background: rgba(30,32,34,0.3);
+        border-radius: 2px;
+      }
+      
+      #mobile-folder-tabs::-webkit-scrollbar-thumb {
+        background: rgba(120,120,120,0.5);
+        border-radius: 2px;
+      }
+      
       /* Mobile import/export buttons */
       .mobile-sidebar .sidebar-exp-btn,
       .mobile-sidebar .sidebar-imp-btn {
@@ -3460,7 +3560,8 @@
         font-size: 14px;
         font-weight: bold;
         cursor: pointer;
-        padding: 10px 16px;
+        padding: 12px 16px;
+        min-height: 44px !important; /* Minimum touch target */
         transition: background .18s, box-shadow .18s, transform .13s;
         box-shadow: 0 1px 4px #2224;
         opacity: 0.93;
@@ -3468,6 +3569,23 @@
         flex: 1;
         text-align: center;
         margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1) !important;
+        touch-action: manipulation !important;
+        pointer-events: auto !important;
+      }
+      
+      /* Ensure import label button is properly sized */
+      .mobile-sidebar label.sidebar-imp-btn {
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 12px 16px !important;
+        box-sizing: border-box !important;
       }
       
       .mobile-sidebar .sidebar-exp-btn:hover,
@@ -3481,8 +3599,25 @@
         margin-bottom: 10px;
       }
       
+      /* Mobile sidebar bottom buttons - ensure proper sizing */
+      .mobile-sidebar .sidebar-randomize-btn,
+      .mobile-sidebar .sidebar-reset-btn {
+        min-height: 44px !important; /* Minimum touch target */
+        padding: 12px 16px !important;
+        font-size: 15px !important;
+        width: 100% !important;
+        margin-bottom: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1) !important;
+        touch-action: manipulation !important;
+        pointer-events: auto !important;
+      }
+      
       .mobile-folder-item {
-        padding: 8px 12px;
+        padding: 10px 12px;
         margin-bottom: 0;
         background: rgba(44,46,48,0.7);
         border-radius: 6px;
@@ -3492,6 +3627,10 @@
         border: 1px solid rgba(255,255,255,0.1);
         font-size: 14px;
         flex: 0 0 auto;
+        min-height: 44px !important; /* Minimum touch target */
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
       }
       
       .mobile-folder-item.active {
@@ -3506,12 +3645,25 @@
       
       /* Mobile searches container */
       #mobile-folders-container {
-        max-height: 500px;
+        max-height: calc(100vh - 450px);
+        min-height: 150px;
         overflow-y: auto;
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 8px;
         padding: 10px;
         background: rgba(30,32,34,0.5);
+        -webkit-overflow-scrolling: touch;
+        box-sizing: border-box;
+      }
+      
+      /* Mobile searches list container - ensure it doesn't overflow */
+      #mobile-searches-container {
+        flex: 1;
+        min-height: 150px;
+        max-height: calc(100vh - 500px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        box-sizing: border-box;
       }
       
       #mobile-folders-container::-webkit-scrollbar {
@@ -4138,7 +4290,7 @@
         <!-- Import/Export buttons moved here -->
         <div style="display: flex; gap: 8px; margin-bottom: 15px;">
           <button class="sidebar-exp-btn" id="mobile-export-btn" type="button" style="flex: 1;">Export</button>
-          <label class="sidebar-imp-btn" title="Import" style="flex: 1; text-align: center; cursor: pointer; padding: 7px 13px; background: #232323; color: #e3e3e3; border-radius: 5px; font-size: 13px; font-weight: bold;">
+          <label class="sidebar-imp-btn" title="Import" style="flex: 1; text-align: center; cursor: pointer; padding: 12px 16px; min-height: 44px; background: #232323; color: #e3e3e3; border-radius: 5px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
             Import
             <input type="file" id="mobile-import-input" accept=".json" style="display: none;">
           </label>
@@ -4165,9 +4317,9 @@
         </ul>
       </div>
       
-      <div style="flex-shrink: 0; margin-top: auto; padding-top: 20px; border-top: 1px solid #232323; padding-bottom: env(safe-area-inset-bottom);">
-        <button class="sidebar-randomize-btn" id="mobile-randomize-btn" style="width: 100%; margin-bottom: 10px;">Randomize Search</button>
-        <button class="sidebar-reset-btn" id="mobile-reset-highlights-btn" style="width: 100%; margin-bottom: 10px;">Reset Highlights</button>
+      <div style="flex-shrink: 0; margin-top: auto; padding-top: 20px; border-top: 1px solid #232323; padding-bottom: calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box;">
+        <button class="sidebar-randomize-btn" id="mobile-randomize-btn" style="width: 100%; margin-bottom: 10px; min-height: 44px; padding: 12px 16px; font-size: 15px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Randomize Search</button>
+        <button class="sidebar-reset-btn" id="mobile-reset-highlights-btn" style="width: 100%; margin-bottom: 0; min-height: 44px; padding: 12px 16px; font-size: 15px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">Reset Highlights</button>
       </div>
     </div>
   </div>
