@@ -4163,9 +4163,39 @@
         </div>
         
         <div style="margin-top: 20px;">
-          <div style="color: #e3e3e3; font-weight: bold; margin-bottom: 15px; font-size: 16px;">Change Plan</div>
+          <div style="color: #e3e3e3; font-weight: bold; margin-bottom: 15px; font-size: 16px;">Available Plans</div>
           <div class="subscription-tiers" id="subscription-management-tiers" style="grid-template-columns: repeat(3, 1fr);">
-            <!-- Tiers will be populated dynamically -->
+            <div class="subscription-tier">
+              <div class="subscription-tier-name">Free</div>
+              <div class="subscription-tier-price">$0</div>
+              <div class="subscription-tier-period">forever</div>
+              <div class="subscription-tier-features">
+                <div class="subscription-tier-feature">Unlimited searches</div>
+                <div class="subscription-tier-feature">All 5 Japanese markets</div>
+                <div class="subscription-tier-feature">Saved searches</div>
+              </div>
+            </div>
+            <div class="subscription-tier">
+              <div class="subscription-tier-name">Basic</div>
+              <div class="subscription-tier-price">$5</div>
+              <div class="subscription-tier-period">per month</div>
+              <div class="subscription-tier-features">
+                <div class="subscription-tier-feature">Everything in Free</div>
+                <div class="subscription-tier-feature">Premium badge</div>
+                <div class="subscription-tier-feature">Priority support</div>
+              </div>
+            </div>
+            <div class="subscription-tier recommended">
+              <div class="subscription-tier-name">Pro</div>
+              <div class="subscription-tier-price">$10</div>
+              <div class="subscription-tier-period">per month</div>
+              <div class="subscription-tier-features">
+                <div class="subscription-tier-feature">Everything in Basic</div>
+                <div class="subscription-tier-feature">Discord notifications</div>
+                <div class="subscription-tier-feature">Advanced filters</div>
+                <div class="subscription-tier-feature">Early access features</div>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -10597,6 +10627,40 @@
       // Stripe checkout link for Discord notifications ($10/month)
       const NOTIFICATIONS_STRIPE_LINK = 'https://buy.stripe.com/3cIbJ1e8Ng6Y1IQfoJcwg01';
       
+      // Get current subscription tier
+      async function getCurrentSubscriptionTier() {
+        if (!supabase) return 'free';
+        
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return 'free';
+          
+          const { data: userData } = await supabase
+            .from('unlocked_users')
+            .select('verified, notifications_subscription_active')
+            .eq('auth_user_id', user.id)
+            .maybeSingle();
+          
+          if (!userData) return 'free';
+          
+          // Check Discord notifications subscription first
+          const hasDiscordNotifications = userData.notifications_subscription_active === true || 
+                                         userData.notifications_subscription_active === 'true' ||
+                                         userData.notifications_subscription_active === 1;
+          
+          if (hasDiscordNotifications) {
+            return 'pro';
+          } else if (userData.verified === true || userData.verified === 'true' || userData.verified === 1) {
+            return 'basic';
+          } else {
+            return 'free';
+          }
+        } catch (err) {
+          console.error('Error getting subscription tier:', err);
+          return 'free';
+        }
+      }
+      
       // Check if user has active notifications subscription
       async function hasNotificationsSubscription() {
         if (!supabase) return false;
@@ -10617,18 +10681,20 @@
           if (!userData) return false;
           
           // Check if subscription is active
-          if (userData.notifications_subscription_active === true || userData.notifications_subscription_active === 'true') {
-            // Check if not expired
-            if (userData.notifications_subscription_expires_at) {
-              const expiresAt = new Date(userData.notifications_subscription_expires_at);
-              if (expiresAt < new Date()) {
-                return false; // Expired
-              }
-            }
-            return true;
-          }
+          const isActive = userData.notifications_subscription_active === true || 
+                          userData.notifications_subscription_active === 'true' ||
+                          userData.notifications_subscription_active === 1;
           
-          return false;
+          if (!isActive) return false;
+          
+          // Check if not expired
+          if (userData.notifications_subscription_expires_at) {
+            const expiresAt = new Date(userData.notifications_subscription_expires_at);
+            if (expiresAt < new Date()) {
+              return false; // Expired
+            }
+          }
+          return true;
         } catch (err) {
           console.error('Error checking notifications subscription:', err);
           return false;
@@ -10679,50 +10745,80 @@
       
       // Load subscription management data
       async function loadSubscriptionManagementData() {
-        const currentTier = await getCurrentSubscriptionTier();
-        const planEl = document.getElementById('current-subscription-plan');
-        const detailsEl = document.getElementById('current-subscription-details');
-        const statusBadgeEl = document.getElementById('subscription-status-badge-container');
-        const nextBillingEl = document.getElementById('next-billing-date');
-        const paymentMethodEl = document.getElementById('payment-method');
+        if (!supabase) return;
         
-        if (planEl) planEl.textContent = SUBSCRIPTION_TIERS[currentTier]?.name || 'Free Trial';
-        if (detailsEl) detailsEl.textContent = `$${SUBSCRIPTION_TIERS[currentTier]?.price || 0} ${SUBSCRIPTION_TIERS[currentTier]?.period || ''}`;
-        
-        if (statusBadgeEl) {
-          let badgeClass = 'subscription-status-badge ';
-          if (currentTier === 'trial') badgeClass += 'trial';
-          else if (currentTier === 'expired') badgeClass += 'expired';
-          else badgeClass += 'active';
-          statusBadgeEl.innerHTML = `<div class="${badgeClass}">${currentTier === 'trial' ? '🎁 Free Trial' : currentTier === 'expired' ? '⚠️ Expired' : '⭐ Active'}</div>`;
-        }
-        
-        // Load subscription expiry date
-        if (supabase) {
-          try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              const { data: userData } = await supabase
-                .from('unlocked_users')
-                .select('subscription_expires_at, payment_method, discord_subscription_expires_at')
-                .eq('auth_user_id', user.id)
-                .maybeSingle();
-              
-              if (userData) {
-                const expiryDate = userData.subscription_expires_at || userData.discord_subscription_expires_at;
-                if (expiryDate && nextBillingEl) {
-                  const expiry = new Date(expiryDate);
-                  nextBillingEl.textContent = expiry.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                }
-                
-                if (userData.payment_method && paymentMethodEl) {
-                  paymentMethodEl.textContent = userData.payment_method;
-                }
-              }
-            }
-          } catch (err) {
-            console.error('Error loading subscription data:', err);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          
+          const { data: userData } = await supabase
+            .from('unlocked_users')
+            .select('verified, subscription_active, subscription_expires_at, notifications_subscription_active, notifications_subscription_expires_at')
+            .eq('auth_user_id', user.id)
+            .maybeSingle();
+          
+          if (!userData) return;
+          
+          const planEl = document.getElementById('current-subscription-plan');
+          const detailsEl = document.getElementById('current-subscription-details');
+          const statusBadgeEl = document.getElementById('subscription-status-badge-container');
+          const nextBillingEl = document.getElementById('next-billing-date');
+          const paymentMethodEl = document.getElementById('payment-method');
+          
+          // Determine current tier
+          let currentTier = 'free';
+          let tierName = 'Free';
+          let tierDetails = 'Searching is free for everyone';
+          
+          // Check if user has Discord notifications subscription
+          const hasDiscordNotifications = userData.notifications_subscription_active === true || 
+                                         userData.notifications_subscription_active === 'true' ||
+                                         userData.notifications_subscription_active === 1;
+          
+          if (hasDiscordNotifications) {
+            currentTier = 'pro';
+            tierName = 'Pro';
+            tierDetails = 'Discord notifications enabled';
+          } else if (userData.verified === true || userData.verified === 'true' || userData.verified === 1) {
+            currentTier = 'basic';
+            tierName = 'Basic';
+            tierDetails = 'Verified user';
           }
+          
+          if (planEl) planEl.textContent = tierName;
+          if (detailsEl) detailsEl.textContent = tierDetails;
+          
+          if (statusBadgeEl) {
+            let badgeClass = 'subscription-status-badge ';
+            if (currentTier === 'free') badgeClass += 'trial';
+            else if (currentTier === 'basic') badgeClass += 'active';
+            else if (currentTier === 'pro') badgeClass += 'active';
+            statusBadgeEl.innerHTML = `<div class="${badgeClass}">${currentTier === 'free' ? '🎁 Free' : currentTier === 'basic' ? '⭐ Basic' : '⭐ Pro'}</div>`;
+          }
+          
+          // Show expiry date if available
+          if (nextBillingEl) {
+            let expiryDate = null;
+            if (hasDiscordNotifications && userData.notifications_subscription_expires_at) {
+              expiryDate = userData.notifications_subscription_expires_at;
+            } else if (userData.subscription_expires_at) {
+              expiryDate = userData.subscription_expires_at;
+            }
+            
+            if (expiryDate) {
+              const expiry = new Date(expiryDate);
+              nextBillingEl.textContent = expiry.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            } else {
+              nextBillingEl.textContent = 'N/A';
+            }
+          }
+          
+          if (paymentMethodEl) {
+            paymentMethodEl.textContent = 'Stripe';
+          }
+          
+        } catch (err) {
+          console.error('Error loading subscription data:', err);
         }
       }
       
