@@ -224,12 +224,17 @@
       margin-bottom: 2px;
       backdrop-filter: blur(2px);
       opacity: 0.93;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .section-openall-btn:hover {
       background: #444;
       color: #fff;
       box-shadow: 0 4px 16px #2226;
       transform: translateY(-2px) scale(1.04);
+    }
+    .section-openall-btn:active {
+      transform: translateY(0) scale(1);
     }
     .tip { font-size: 14px; color: #b0b0b0; margin-bottom: 20px; }
     .market-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
@@ -937,8 +942,11 @@
       box-shadow: 0 2px 8px #2224;
       opacity: 0.93;
       backdrop-filter: blur(1.5px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .custom-market-modal .modal-btn:hover { background: #444; box-shadow: 0 4px 16px #2226; transform: translateY(-1px) scale(1.04);}
+    .custom-market-modal .modal-btn:active { transform: translateY(0) scale(1); }
     .custom-market-modal .modal-cancel-btn {
       background: #232323;
       color: #e3e3e3;
@@ -951,8 +959,11 @@
       transition: background .14s, color .14s;
       opacity: 0.93;
       backdrop-filter: blur(1.5px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .custom-market-modal .modal-cancel-btn:hover { background: #2224; color: #fff; }
+    .custom-market-modal .modal-cancel-btn:active { transform: translateY(0); }
     .custom-market-modal .modal-tip {
       color: #b0b0b0;
       font-size: 13px;
@@ -992,8 +1003,11 @@
       box-shadow: 0 1px 4px #2224;
       opacity: 0.93;
       backdrop-filter: blur(2px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .add-market-btn:hover { background: #444; color: #fff; box-shadow: 0 4px 16px #2226; transform: translateY(-1px) scale(1.04);}
+    .add-market-btn:active { transform: translateY(0) scale(1); }
     /* Wishlist styles (dark mode) */
     .wishlist-section {
       position: fixed;
@@ -1371,6 +1385,132 @@
         width: calc(100% - 20px);
         max-height: 85vh;
         padding: 15px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .custom-market-modal input[type="text"] {
+        font-size: 16px !important;
+        min-height: 44px;
+        padding: 12px 15px;
+      }
+      .custom-market-modal .modal-btn-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .custom-market-modal .modal-btn,
+      .custom-market-modal .modal-cancel-btn {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: 15px;
+      }
+      .custom-market-modal h3 {
+        font-size: 18px;
+      }
+      .custom-market-modal label {
+        font-size: 14px;
+      }
+      .custom-market-modal .modal-tip {
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .custom-market-modal .drag-handle {
+        display: none;
+      }
+      .add-market-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .add-market-btn {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px;
+        font-size: 14px;
+      }
+      .sidebar-folder-btn,
+      .sidebar-add-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 10px;
+        font-size: 18px;
+      }
+      .sidebar-exp-btn,
+      .sidebar-imp-btn,
+      .sidebar-reset-btn,
+      .sidebar-multi-clear-btn,
+      .sidebar-randomize-btn {
+        min-height: 44px;
+        padding: 10px 15px;
+        font-size: 14px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .sidebar-import-export-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .sidebar-import-export-row button,
+      .sidebar-import-export-row label {
+        width: 100%;
+        margin-right: 0;
+      }
+      .sidebar-multi-search-row button {
+        width: 100%;
+        min-height: 44px;
+      }
+      .randomize-select {
+        font-size: 16px;
+        min-height: 44px;
+        padding: 12px 35px 12px 15px;
+      }
+      .saved-search-term,
+      .saved-folder-item {
+        min-height: 44px;
+        padding: 10px;
+        touch-action: manipulation;
+      }
+      .edit-btn,
+      .remove-btn,
+      .save-edit-btn,
+      .cancel-edit-btn,
+      .sidebar-folder-edit-btn,
+      .sidebar-folder-remove-btn {
+        min-width: 36px;
+        min-height: 36px;
+        padding: 6px;
+        font-size: 16px;
+        touch-action: manipulation;
+      }
+      .market-favorite-btn,
+      .market-remove-btn {
+        min-width: 36px;
+        min-height: 36px;
+      }
+      .section-openall-btn {
+        min-height: 44px;
+        padding: 10px 15px;
+        font-size: 14px;
+        touch-action: manipulation;
+      }
+      #open-all-btn {
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: 15px;
+      }
+      #toggle-all-checkbox {
+        width: 20px;
+        height: 20px;
+      }
+      .panel-close,
+      .minimized-panel-btn {
+        min-width: 36px;
+        min-height: 36px;
+        font-size: 18px;
+      }
+      .wishlist-section {
+        width: 100%;
+        max-width: 100%;
+        right: 0;
       }
       .unlock-modal {
         max-width: 95vw;
@@ -1738,6 +1878,24 @@
     width: min(400px, 90vw);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
     text-align: center;
+    -webkit-overflow-scrolling: touch;
+  }
+  @media (max-width: 768px) {
+    .unlock-modal {
+      padding: 20px 15px;
+      width: calc(100% - 20px);
+      max-width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .unlock-modal h3 {
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+    .unlock-modal p {
+      font-size: 13px;
+      line-height: 1.6;
+    }
   }
 
   .unlock-modal h3 {
@@ -1950,7 +2108,7 @@
   <div id="unlock-modal-bg" class="unlock-modal-bg" style="display: none;">
     <div class="unlock-modal">
       <h3>Login</h3>
-      <p style="color: #b0b0b0; margin-bottom: 20px;">
+      <p style="color: #b0b0b0; margin-bottom: 20px; line-height: 1.6;">
         <strong style="color: #00e6d6;">✓ Free Access:</strong> Create an account to use the site for free!<br>
         <strong style="color: #f7931a;">🔔 Notifications:</strong> Discord notifications require a $5/month donation.
       </p>
@@ -1978,7 +2136,7 @@
           <button id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
         </div>
       </div>
-      <p style="color: #888; font-size: 12px; margin-top: 15px; line-height: 1.6;">
+      <p style="color: #888; font-size: 12px; margin-top: 15px; line-height: 1.6; word-break: break-word;">
         <strong style="color: #00e6d6;">✓ Site Access:</strong> Free! Just create an account above.<br><br>
         <strong style="color: #f7931a;">🔔 Discord Notifications ($5/month):</strong><br>
         <strong>Step 1:</strong> Donate $5/month via 
@@ -2001,7 +2159,7 @@
         </a><br>
         <strong>Step 2:</strong> Include your email in the payment note/memo<br>
         <strong>Step 3:</strong> After payment, notifications will be activated for your account<br>
-        <strong style="color: #f7931a;">Bitcoin Address:</strong> <code style="background: rgba(247, 147, 26, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; cursor: pointer;" onclick="navigator.clipboard.writeText('bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); alert('Bitcoin address copied!');">bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn</code>
+        <strong style="color: #f7931a;">Bitcoin Address:</strong> <code style="background: rgba(247, 147, 26, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; cursor: pointer; word-break: break-all;" onclick="navigator.clipboard.writeText('bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); alert('Bitcoin address copied!');">bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn</code>
       </p>
     </div>
   </div>
