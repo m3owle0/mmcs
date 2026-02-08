@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <base href="/mmcs/">
   <title>Multi-Market Secondhand Clothing Search</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <link rel="icon" type="image/png" href="miku.png">
@@ -3958,9 +3959,9 @@
   <div id="discord-notifications-modal-bg" class="users-list-modal-bg" style="display: none;">
     <div class="users-list-modal" style="max-width: 600px;">
       <button class="users-list-modal-close" id="discord-notifications-modal-close">×</button>
-      <h3 class="users-list-modal-title">Discord Notifications (Pro Tier Required)</h3>
+      <h3 class="users-list-modal-title">Discord Notifications</h3>
       <div id="discord-subscription-status" style="padding: 0 20px 10px 20px; text-align: center;">
-        <div style="color: #00e6d6; font-weight: bold; margin-bottom: 5px;">Premium Feature - Requires Pro Tier ($10/month)</div>
+        <div style="color: #00e6d6; font-weight: bold; margin-bottom: 5px;">Subscription Required - $10/month</div>
         <div id="discord-subscription-info" style="color: #b0b0b0; font-size: 12px;"></div>
       </div>
       <div style="padding: 0 20px 20px 20px;">
@@ -3989,7 +3990,7 @@
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
           <button id="discord-subscribe-btn" 
                   style="background: #635BFF; color: white; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; font-size: 13px; font-weight: bold; display: none;">
-            💳 Subscribe to Pro - $10/month
+            💳 Subscribe - $10/month
           </button>
           <button id="discord-notifications-test-btn" 
                   style="background: #5865F2; color: white; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; font-size: 13px; font-weight: bold;">
@@ -4043,7 +4044,7 @@
       <h3>Login</h3>
       <div style="background: linear-gradient(135deg, rgba(0, 230, 214, 0.1) 0%, rgba(0, 184, 168, 0.1) 100%); border: 1px solid rgba(0, 230, 214, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
       <p style="color: #b0b0b0; margin: 0 0 10px 0;">
-        <strong style="color: #00e6d6;">⭐ Free Trial:</strong> New users get <strong style="color: #ffd700;">75 free searches</strong>! Create an account to start your trial.
+        <strong style="color: #00e6d6;">⭐ Free to Use:</strong> Searching is completely free! Create an account to get started.
       </p>
       <p style="color: #b0b0b0; margin: 0;">
         <strong style="color: #ffd700;">💎 Subscription Plans:</strong> After trial, choose from Basic ($5/mo) or Pro ($10/mo) plans. All subscriptions processed securely through Stripe.
@@ -4088,70 +4089,35 @@
     </div>
   </div>
 
-  <!-- Upgrade Modal -->
+  <!-- Upgrade Modal - Discord Notifications Subscription -->
   <div class="upgrade-modal-bg" id="upgrade-modal-bg">
     <div class="upgrade-modal">
       <button class="upgrade-modal-close" id="upgrade-modal-close">×</button>
       <div class="upgrade-modal-header">
-        <div class="upgrade-modal-title">💎 Choose Your Plan</div>
-        <div class="upgrade-modal-subtitle">Select a subscription tier that fits your needs</div>
-        <div id="current-subscription-badge" style="margin-top: 10px;"></div>
+        <div class="upgrade-modal-title">🔔 Discord Notifications</div>
+        <div class="upgrade-modal-subtitle">Get notified when new items match your saved searches</div>
       </div>
       
-      <div class="subscription-tiers" id="subscription-tiers">
-        <!-- Free Trial Tier -->
-        <div class="subscription-tier" data-tier="trial">
-          <div class="subscription-tier-name">Free Trial</div>
-          <div class="subscription-tier-price">$0</div>
-          <div class="subscription-tier-period">75 searches</div>
-          <div class="subscription-tier-features">
-            <div class="subscription-tier-feature">75 free searches</div>
-            <div class="subscription-tier-feature">Basic search features</div>
-            <div class="subscription-tier-feature">Community access</div>
-          </div>
+      <div style="background: rgba(0, 230, 214, 0.1); border: 2px solid rgba(0, 230, 214, 0.3); border-radius: 12px; padding: 25px; margin: 20px 0; text-align: center;">
+        <div style="font-size: 32px; font-weight: bold; color: #00e6d6; margin-bottom: 10px;">$10</div>
+        <div style="color: #b0b0b0; font-size: 14px; margin-bottom: 20px;">per month</div>
+        <div style="color: #e3e3e3; text-align: left; margin-bottom: 20px;">
+          <div style="margin-bottom: 10px;">✅ Real-time Discord notifications</div>
+          <div style="margin-bottom: 10px;">✅ Get alerts for all your saved searches</div>
+          <div style="margin-bottom: 10px;">✅ Never miss a deal</div>
+          <div>✅ Cancel anytime</div>
         </div>
-        
-        <!-- Basic Tier -->
-        <div class="subscription-tier" data-tier="basic">
-          <div class="subscription-tier-name">Basic</div>
-          <div class="subscription-tier-price">$5</div>
-          <div class="subscription-tier-period">per month</div>
-          <div class="subscription-tier-features">
-            <div class="subscription-tier-feature">Unlimited searches</div>
-            <div class="subscription-tier-feature">Premium badge</div>
-            <div class="subscription-tier-feature">Priority support</div>
-            <div class="subscription-tier-feature">All search features</div>
-          </div>
-          <div class="subscription-payment-methods">
-            <button class="subscription-payment-btn stripe" data-tier="basic" data-method="stripe">
-              💳 Subscribe with Stripe
-            </button>
-          </div>
-        </div>
-        
-        <!-- Pro Tier -->
-        <div class="subscription-tier recommended" data-tier="pro">
-          <div class="subscription-tier-name">Pro</div>
-          <div class="subscription-tier-price">$10</div>
-          <div class="subscription-tier-period">per month</div>
-          <div class="subscription-tier-features">
-            <div class="subscription-tier-feature">Everything in Basic</div>
-            <div class="subscription-tier-feature">Discord notifications</div>
-            <div class="subscription-tier-feature">Advanced filters</div>
-            <div class="subscription-tier-feature">Early access features</div>
-          </div>
-          <div class="subscription-payment-methods">
-            <button class="subscription-payment-btn stripe" data-tier="pro" data-method="stripe">
-              💳 Subscribe with Stripe
-            </button>
-          </div>
-        </div>
-        
+        <button class="subscription-payment-btn stripe" id="notifications-subscribe-btn" style="width: 100%; padding: 15px; font-size: 16px;">
+          💳 Subscribe for $10/month
+        </button>
       </div>
       
       <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
-        <div style="color: #888; font-size: 12px;">
-          <strong>Secure Payment:</strong> All subscriptions are processed securely through Stripe. Your payment information is never stored on our servers.
+        <div style="color: #888; font-size: 12px; margin-bottom: 15px;">
+          <strong>Note:</strong> Searching is completely free! This subscription is only for Discord notifications.
+        </div>
+        <div style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; padding: 12px; color: #ffd700; font-size: 13px; font-weight: bold;">
+          ⚠️ IMPORTANT: After completing your purchase, please contact us on Instagram (@m3owle0) with your email address to activate your subscription.
         </div>
       </div>
       
@@ -4286,7 +4252,7 @@
     <div class="premium-upgrade-banner" id="premium-upgrade-banner">
       <div class="premium-upgrade-content">
         <div class="premium-upgrade-title">⚡ Upgrade to Premium</div>
-        <div class="premium-upgrade-text">Your free trial is running low! Upgrade now for unlimited searches and premium features.</div>
+        <div class="premium-upgrade-text">Get Discord notifications for your saved searches! Subscribe for $10/month.</div>
       </div>
       <button class="premium-upgrade-btn" id="premium-upgrade-btn">Upgrade Now</button>
     </div>
@@ -4303,7 +4269,7 @@
           <span class="discord-feature-benefit">✓ Real-time alerts</span>
           <span class="discord-feature-benefit">✓ 5 Japanese markets</span>
           <span class="discord-feature-benefit">✓ Custom search terms</span>
-          <span class="discord-feature-benefit">✓ Only $10/month (Pro tier)</span>
+          <span class="discord-feature-benefit">✓ Only $10/month</span>
         </div>
         <button class="discord-feature-cta" id="main-discord-notifications-btn">Get Started →</button>
       </div>
@@ -4535,7 +4501,7 @@
           // Check if user is verified in unlocked_users table
           const { data: unlockedData, error: unlockedError } = await supabase
             .from('unlocked_users')
-            .select('verified, email, username, trial_searches_used')
+            .select('email, username')
             .eq('auth_user_id', user.id)
             .maybeSingle();
           
@@ -4564,8 +4530,6 @@
                   auth_user_id: user.id,
                   email: user.email,
                   username: user.user_metadata?.username || '',
-                  verified: false,
-                  trial_searches_used: 0
                 })
                 .select()
                 .single();
@@ -4577,16 +4541,9 @@
                 return true;
               }
               
-              // Record created but not verified - check trial
-              const trialSearchesUsed = newRecord.trial_searches_used || 0;
-              if (trialSearchesUsed < 75) {
-                console.log('New user on free trial:', user.email, 'searches used:', trialSearchesUsed);
-                setCurrentUser(newRecord.username || user.user_metadata?.username || user.email || user.id);
-                return true; // Allow access during trial
-              } else {
-                console.log('User trial exhausted:', user.email);
-                return false; // Trial exhausted, require donation
-              }
+              // Record created - searching is free!
+              setCurrentUser(newRecord.username || user.user_metadata?.username || user.email || user.id);
+              return true; // Allow access - searching is free
             } catch (err) {
               console.error('Error creating unlocked_users record:', err);
               setCurrentUser(user.user_metadata?.username || user.email || user.id);
@@ -4594,69 +4551,12 @@
             }
           }
           
-          // Check if user is verified (handle various true formats)
-          const verifiedValue = unlockedData.verified;
-          const isVerified = verifiedValue === true || 
-                             verifiedValue === 'true' || 
-                             verifiedValue === 1 ||
-                             verifiedValue === '1' ||
-                             String(verifiedValue).toLowerCase() === 'true';
-          
-          // Get trial searches used (default to 0 if null/undefined)
-          const trialSearchesUsed = unlockedData.trial_searches_used || 0;
-          const TRIAL_LIMIT = 75;
-          
-          console.log('Verification status:', {
-            email: user.email,
-            verifiedValue: verifiedValue,
-            verifiedType: typeof verifiedValue,
-            isVerified: isVerified,
-            trialSearchesUsed: trialSearchesUsed
-          });
-          
-          if (!isVerified) {
-            // Check if user has trial searches remaining
-            if (trialSearchesUsed < TRIAL_LIMIT) {
-              console.log('User on free trial:', user.email, 'searches used:', trialSearchesUsed, '/', TRIAL_LIMIT);
-              // Update current user in localStorage
-              const displayName = unlockedData.username || user.user_metadata?.username || user.email || user.id;
-              setCurrentUser(displayName);
-              
-              // Update last_active timestamp
-              try {
-                await supabase
-                  .from('unlocked_users')
-                  .update({ last_active: new Date().toISOString() })
-                  .eq('auth_user_id', user.id);
-              } catch (err) {
-                console.warn('Error updating last_active:', err);
-              }
-              
-              return true; // Allow access during trial
-            } else {
-              console.log('User trial exhausted:', user.email, 'searches used:', trialSearchesUsed);
-              return false; // Trial exhausted, require donation
-            }
-          }
-          
-          // User is verified - allow access
-          console.log('User verified, granting access:', user.email);
+          // Searching is free for everyone!
+          console.log('User logged in:', user.email);
           
           // Update current user in localStorage
           const displayName = unlockedData.username || user.user_metadata?.username || user.email || user.id;
           setCurrentUser(displayName);
-          
-          // Show premium badge for verified users
-          const premiumBadge = document.getElementById('premium-badge');
-          if (premiumBadge) {
-            premiumBadge.style.display = 'inline-flex';
-          }
-          
-          // Hide donation button for verified users
-          const donateBtn = document.getElementById('header-donate-btn');
-          if (donateBtn) {
-            donateBtn.style.display = 'none';
-          }
           
           // Update last_active timestamp
           try {
@@ -4668,163 +4568,16 @@
             console.warn('Error updating last_active:', err);
           }
           
-          return true;
+          return true; // Everyone has access - searching is free!
         } catch (err) {
           console.error('Error checking unlock status:', err);
           return false;
         }
       }
       
-      // Increment trial search count for unverified users
-      async function incrementTrialSearch() {
-        if (!supabase) return false;
-        
-        try {
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          if (sessionError || !session) return false;
-          
-          const { data: { user }, error: userError } = await supabase.auth.getUser();
-          if (userError || !user) return false;
-          
-          // Get current trial searches count
-          const { data: unlockedData, error: fetchError } = await supabase
-            .from('unlocked_users')
-            .select('verified, trial_searches_used')
-            .eq('auth_user_id', user.id)
-            .maybeSingle();
-          
-          if (fetchError || !unlockedData) return false;
-          
-          // Only increment if user is not verified
-          const verifiedValue = unlockedData.verified;
-          const isVerified = verifiedValue === true || 
-                             verifiedValue === 'true' || 
-                             verifiedValue === 1 ||
-                             verifiedValue === '1' ||
-                             String(verifiedValue).toLowerCase() === 'true';
-          
-          if (isVerified) return true; // Verified users don't need tracking
-          
-          // Increment trial searches
-          const currentCount = unlockedData.trial_searches_used || 0;
-          const { error: updateError } = await supabase
-            .from('unlocked_users')
-            .update({ trial_searches_used: currentCount + 1 })
-            .eq('auth_user_id', user.id);
-          
-          if (updateError) {
-            console.error('Error incrementing trial search:', updateError);
-            return false;
-          }
-          
-          console.log('Trial search incremented:', currentCount + 1, '/ 75');
-          
-          // Update trial searches display
-          updateTrialSearchesDisplay();
-          
-          return true;
-        } catch (err) {
-          console.error('Error incrementing trial search:', err);
-          return false;
-        }
-      }
+      // Trial search functions removed - searching is now free for everyone!
       
-      // Update trial searches display
-      async function updateTrialSearchesDisplay() {
-        const trialDisplay = document.getElementById('trial-searches-display');
-        if (!trialDisplay || !supabase) {
-          if (trialDisplay) trialDisplay.style.display = 'none';
-          return;
-        }
-        
-        try {
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          if (sessionError || !session) {
-            trialDisplay.style.display = 'none';
-            return;
-          }
-          
-          const { data: { user }, error: userError } = await supabase.auth.getUser();
-          if (userError || !user) {
-            trialDisplay.style.display = 'none';
-            return;
-          }
-          
-          // Get user verification and trial status
-          const { data: unlockedData, error: fetchError } = await supabase
-            .from('unlocked_users')
-            .select('verified, trial_searches_used')
-            .eq('auth_user_id', user.id)
-            .maybeSingle();
-          
-          if (fetchError || !unlockedData) {
-            trialDisplay.style.display = 'none';
-            return;
-          }
-          
-          // Check if verified
-          const verifiedValue = unlockedData.verified;
-          const isVerified = verifiedValue === true || 
-                             verifiedValue === 'true' || 
-                             verifiedValue === 1 ||
-                             verifiedValue === '1' ||
-                             String(verifiedValue).toLowerCase() === 'true';
-          
-          // Hide display if verified
-          if (isVerified) {
-            trialDisplay.style.display = 'none';
-            return;
-          }
-          
-          // Show trial status
-          const trialSearchesUsed = unlockedData.trial_searches_used || 0;
-          const TRIAL_LIMIT = 75;
-          const remaining = TRIAL_LIMIT - trialSearchesUsed;
-          
-          if (remaining <= 0) {
-            trialDisplay.style.display = 'none';
-            // Show upgrade banner if trial exhausted
-            const upgradeBanner = document.getElementById('premium-upgrade-banner');
-            if (upgradeBanner) {
-              upgradeBanner.classList.add('show');
-            }
-            return;
-          }
-          
-          // Update display
-          trialDisplay.textContent = `🎁 ${remaining} free search${remaining === 1 ? '' : 'es'} left`;
-          
-          // Add warning class if low on searches
-          if (remaining <= 5) {
-            trialDisplay.classList.add('warning');
-          } else {
-            trialDisplay.classList.remove('warning');
-          }
-          
-          trialDisplay.style.display = 'inline-block';
-          
-          // Show upgrade banner if trial is running low (10 or fewer searches)
-          const upgradeBanner = document.getElementById('premium-upgrade-banner');
-          if (upgradeBanner) {
-            if (remaining <= 10) {
-              upgradeBanner.classList.add('show');
-            } else {
-              upgradeBanner.classList.remove('show');
-            }
-          }
-          
-          // Show donation button for non-verified users
-          const donateBtn = document.getElementById('header-donate-btn');
-          if (donateBtn) {
-            donateBtn.style.display = 'inline-flex';
-          }
-        } catch (err) {
-          console.error('Error updating trial searches display:', err);
-          trialDisplay.style.display = 'none';
-        }
-      }
-      
-      // Check if user can perform searches (verified or has trial remaining)
+      // Check if user can perform searches (always allowed - searching is free!)
       async function canPerformSearch() {
         if (!supabase) return { allowed: false, reason: 'Database not configured' };
         
@@ -4839,48 +4592,8 @@
             return { allowed: false, reason: 'User not found' };
           }
           
-          // Get user verification and trial status
-          const { data: unlockedData, error: fetchError } = await supabase
-            .from('unlocked_users')
-            .select('verified, trial_searches_used')
-            .eq('auth_user_id', user.id)
-            .maybeSingle();
-          
-          if (fetchError || !unlockedData) {
-            return { allowed: false, reason: 'User record not found' };
-          }
-          
-          // Check if verified
-          const verifiedValue = unlockedData.verified;
-          const isVerified = verifiedValue === true || 
-                             verifiedValue === 'true' || 
-                             verifiedValue === 1 ||
-                             verifiedValue === '1' ||
-                             String(verifiedValue).toLowerCase() === 'true';
-          
-          if (isVerified) {
-            return { allowed: true, reason: 'verified' };
-          }
-          
-          // Check trial status
-          const trialSearchesUsed = unlockedData.trial_searches_used || 0;
-          const TRIAL_LIMIT = 75;
-          
-          if (trialSearchesUsed < TRIAL_LIMIT) {
-            const remaining = TRIAL_LIMIT - trialSearchesUsed;
-            return { 
-              allowed: true, 
-              reason: 'trial', 
-              remaining: remaining,
-              used: trialSearchesUsed 
-            };
-          } else {
-            return { 
-              allowed: false, 
-              reason: 'trial_exhausted',
-              used: trialSearchesUsed 
-            };
-          }
+          // Searching is free for everyone!
+          return { allowed: true, reason: 'free' };
         } catch (err) {
           console.error('Error checking search permission:', err);
           return { allowed: false, reason: 'Error checking permission' };
@@ -5177,8 +4890,7 @@
             userDisplay.style.display = 'inline';
           }
           
-          // Update trial searches display
-          updateTrialSearchesDisplay();
+          // Trial display removed - searching is free!
           // Start session heartbeat for active session
           startSessionHeartbeat();
           
@@ -5681,9 +5393,7 @@
       
       // Expose functions globally for search handlers
       window.canPerformSearch = canPerformSearch;
-      window.incrementTrialSearch = incrementTrialSearch;
       window.initUnlockSystem = initUnlockSystem;
-      window.updateTrialSearchesDisplay = updateTrialSearchesDisplay;
       
       // Initialize on page load
       if (document.readyState === 'loading') {
@@ -6549,41 +6259,26 @@
           } else if (window.initUnlockSystem) {
             window.initUnlockSystem();
           } else {
-            alert('Discord notifications require Pro tier ($10/month). Please sign up and subscribe to Pro to enable Discord notifications!');
+            alert('Discord notifications require a $10/month subscription. Please sign up and subscribe to enable Discord notifications!');
           }
           return;
         }
-        // Check if user has Pro tier, if not show upgrade modal
-        if (window.getCurrentSubscriptionTier) {
-          window.getCurrentSubscriptionTier().then(tier => {
-            if (tier === 'pro') {
-              // User has Pro, show Discord notifications modal
-              if (window.showDiscordNotificationsModal) {
-                window.showDiscordNotificationsModal();
-              }
-            } else {
-              // User doesn't have Pro, show upgrade modal highlighting Pro
-              if (window.showUpgradeModal) {
-                window.showUpgradeModal();
-                setTimeout(() => {
-                  const proTier = document.querySelector('.subscription-tier[data-tier="pro"]');
-                  if (proTier) {
-                    proTier.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    proTier.style.border = '2px solid #00e6d6';
-                    proTier.style.boxShadow = '0 0 20px rgba(0, 230, 214, 0.5)';
-                  }
-                }, 100);
-              } else {
-                alert('Discord notifications require Pro tier ($10/month). Please upgrade to Pro to enable Discord notifications!');
-              }
+        // Check if user has notifications subscription
+        hasNotificationsSubscription().then(hasSubscription => {
+          if (hasSubscription) {
+            // User has subscription, show Discord notifications modal
+            if (window.showDiscordNotificationsModal) {
+              window.showDiscordNotificationsModal();
             }
-          });
-        } else {
-          // Fallback: show Discord notifications modal (will check subscription inside)
-          if (window.showDiscordNotificationsModal) {
-            window.showDiscordNotificationsModal();
+          } else {
+            // User doesn't have subscription, show upgrade modal
+            if (window.showUpgradeModal) {
+              window.showUpgradeModal();
+            } else {
+              alert('Discord notifications require a $10/month subscription. Please subscribe to enable Discord notifications!');
+            }
           }
-        }
+        });
       }
       
       if (discordNotificationsBtn) {
@@ -6633,31 +6328,9 @@
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) return false;
           
-          // Check if user has Pro tier (Discord notifications require Pro)
-          const currentTier = await getCurrentSubscriptionTier();
-          if (currentTier !== 'pro') {
-            return false; // Discord notifications require Pro tier
-          }
-          
-          const { data: userData, error } = await supabase
-            .from('unlocked_users')
-            .select('subscription_tier, subscription_expires_at')
-            .eq('auth_user_id', user.id)
-            .maybeSingle();
-          
-          if (error || !userData) return false;
-          
-          // Verify Pro tier and check if subscription is not expired
-          if (userData.subscription_tier !== 'pro') return false;
-          
-          if (userData.subscription_expires_at) {
-            const expiresAt = new Date(userData.subscription_expires_at);
-            if (expiresAt < new Date()) {
-              return false; // Subscription expired
-            }
-          }
-          
-          return true;
+          // Check if user has active notifications subscription
+          const hasSubscription = await hasNotificationsSubscription();
+          return hasSubscription;
         } catch (err) {
           console.error('Error checking Discord subscription:', err);
           return false;
@@ -6692,7 +6365,7 @@
           
           if (!hasSubscription) {
             if (statusInfo) {
-              statusInfo.innerHTML = '<span style="color: #ff6b6b;">❌ Pro tier required</span><br><span style="font-size: 11px;">Discord notifications require Pro tier ($10/month). Subscribe to Pro to enable.</span>';
+              statusInfo.innerHTML = '<span style="color: #ff6b6b;">❌ Subscription required</span><br><span style="font-size: 11px;">Discord notifications require a $10/month subscription. Subscribe to enable.</span><br><span style="font-size: 11px; color: #ffd700; margin-top: 5px; display: block;">⚠️ After purchase, contact @m3owle0 on Instagram to activate.</span>';
             }
             // Show subscribe button, hide test/save
             if (subscribeBtn) subscribeBtn.style.display = 'inline-block';
@@ -6713,7 +6386,7 @@
           // Load subscription expiry info
           const { data: userData, error } = await supabase
             .from('unlocked_users')
-            .select('discord_webhook_url, discord_notifications, subscription_tier, subscription_expires_at')
+            .select('discord_webhook_url, discord_notifications, notifications_subscription_expires_at')
             .eq('auth_user_id', user.id)
             .maybeSingle();
           
@@ -6722,13 +6395,13 @@
             return;
           }
           
-          // Show subscription status (Pro tier)
-          if (statusInfo && userData?.subscription_expires_at) {
-            const expiresAt = new Date(userData.subscription_expires_at);
+          // Show subscription status
+          if (statusInfo && userData?.notifications_subscription_expires_at) {
+            const expiresAt = new Date(userData.notifications_subscription_expires_at);
             const daysLeft = Math.ceil((expiresAt - new Date()) / (1000 * 60 * 60 * 24));
-            statusInfo.innerHTML = `<span style="color: #00e6d6;">✅ Pro tier active</span><br><span style="font-size: 11px;">Expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}</span>`;
+            statusInfo.innerHTML = `<span style="color: #00e6d6;">✅ Subscription active</span><br><span style="font-size: 11px;">Expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}</span>`;
           } else if (statusInfo) {
-            statusInfo.innerHTML = '<span style="color: #00e6d6;">✅ Pro tier active</span>';
+            statusInfo.innerHTML = '<span style="color: #00e6d6;">✅ Subscription active</span>';
           }
           
           // Enable inputs (already declared above)
@@ -7058,14 +6731,13 @@
       const subscribeBtn = document.getElementById('discord-subscribe-btn');
       if (subscribeBtn) {
         subscribeBtn.addEventListener('click', function() {
-          // Discord notifications require Pro tier ($10)
-          const stripePaymentLink = STRIPE_CHECKOUT_LINKS.pro; // Use Pro tier link
-          
+          // Discord notifications subscription ($10)
+          const notificationsStripeLink = 'https://buy.stripe.com/3cIbJ1e8Ng6Y1IQfoJcwg01';
           // Open in new tab
-          window.open(stripePaymentLink, '_blank');
+          window.open(notificationsStripeLink, '_blank');
           
           // Show message
-          alert('Opening Stripe checkout for Pro tier ($10/month)...\n\nPro tier includes Discord notifications and all premium features.\n\nAfter payment, your subscription will be activated automatically.');
+          alert('Opening Stripe checkout for Discord Notifications ($10/month)...\n\n⚠️ IMPORTANT: After completing your purchase, please contact us on Instagram (@m3owle0) with your email address to activate your subscription.\n\nWe will activate it within 24 hours of receiving your message.');
         });
       }
     })();
@@ -8808,38 +8480,9 @@
             // Check if user can perform search and show upgrade prompt if trial is low
             if (window.canPerformSearch) {
               const searchPermission = await window.canPerformSearch();
-              if (searchPermission.allowed && searchPermission.reason === 'trial') {
-                const remaining = searchPermission.remaining || 0;
-                // Show upgrade banner if trial is running low (10 or fewer searches)
-                if (remaining <= 10) {
-                  const upgradeBanner = document.getElementById('premium-upgrade-banner');
-                  if (upgradeBanner) {
-                    upgradeBanner.classList.add('show');
-                  }
-                }
-              }
-            }
-            
-            if (window.canPerformSearch) {
-              const searchPermission = await window.canPerformSearch();
               if (!searchPermission.allowed) {
-                if (searchPermission.reason === 'trial_exhausted') {
-                  alert(`Your free trial of 75 searches has been exhausted. Please make a donation to continue using the site.`);
-                  if (window.initUnlockSystem) {
-                    window.initUnlockSystem();
-                  }
-                } else {
-                  alert('Please log in to perform searches.');
-                }
+                alert('Please log in to perform searches.');
                 return;
-              }
-              
-              // Increment trial search counter if on trial
-              if (searchPermission.reason === 'trial' && window.incrementTrialSearch) {
-                await window.incrementTrialSearch();
-                if (searchPermission.remaining <= 5) {
-                  alert(`Warning: You have ${searchPermission.remaining} free search${searchPermission.remaining === 1 ? '' : 'es'} remaining.`);
-                }
               }
             }
             
@@ -8865,23 +8508,8 @@
           if (window.canPerformSearch) {
             const searchPermission = await window.canPerformSearch();
             if (!searchPermission.allowed) {
-              if (searchPermission.reason === 'trial_exhausted') {
-                alert(`Your free trial of 75 searches has been exhausted. Please make a donation to continue using the site.`);
-                if (window.initUnlockSystem) {
-                  window.initUnlockSystem();
-                }
-              } else {
-                alert('Please log in to perform searches.');
-              }
+              alert('Please log in to perform searches.');
               return;
-            }
-            
-            // Increment trial search counter if on trial
-            if (searchPermission.reason === 'trial' && window.incrementTrialSearch) {
-              await window.incrementTrialSearch();
-              if (searchPermission.remaining <= 5) {
-                alert(`Warning: You have ${searchPermission.remaining} free search${searchPermission.remaining === 1 ? '' : 'es'} remaining.`);
-              }
             }
           }
           
@@ -8974,25 +8602,8 @@
       if (window.canPerformSearch) {
         const searchPermission = await window.canPerformSearch();
         if (!searchPermission.allowed) {
-          if (searchPermission.reason === 'trial_exhausted') {
-            alert(`Your free trial of 75 searches has been exhausted. Please make a donation to continue using the site.`);
-            // Show unlock modal
-            if (window.initUnlockSystem) {
-              window.initUnlockSystem();
-            }
-          } else {
-            alert('Please log in to perform searches.');
-          }
+          alert('Please log in to perform searches.');
           return;
-        }
-        
-        // Increment trial search counter if on trial
-        if (searchPermission.reason === 'trial' && window.incrementTrialSearch) {
-          await window.incrementTrialSearch();
-          // Show remaining searches notification
-          if (searchPermission.remaining <= 5) {
-            alert(`Warning: You have ${searchPermission.remaining} free search${searchPermission.remaining === 1 ? '' : 'es'} remaining. After your trial ends, a donation will be required.`);
-          }
         }
       }
       
@@ -10959,130 +10570,60 @@
         updatePremiumBadge();
       }
       
-      // ===== SMART SUBSCRIPTION SYSTEM =====
+      // ===== DISCORD NOTIFICATIONS SUBSCRIPTION SYSTEM =====
       
-      // Subscription tiers configuration
-      const SUBSCRIPTION_TIERS = {
-        trial: { name: 'Free Trial', price: 0, period: '75 searches', features: ['75 free searches', 'Basic search features', 'Community access'] },
-        basic: { name: 'Basic', price: 5, period: 'per month', features: ['Unlimited searches', 'Premium badge', 'Priority support', 'All search features'] },
-        pro: { name: 'Pro', price: 10, period: 'per month', features: ['Everything in Basic', 'Discord notifications', 'Advanced filters', 'Early access features'] }
-      };
+      // Stripe checkout link for Discord notifications ($10/month)
+      const NOTIFICATIONS_STRIPE_LINK = 'https://buy.stripe.com/3cIbJ1e8Ng6Y1IQfoJcwg01';
       
-      // Stripe checkout links
-      const STRIPE_CHECKOUT_LINKS = {
-        basic: 'https://buy.stripe.com/00w6oH2q5g6YdryekFcwg00', // MMCS Basic ($5)
-        pro: 'https://buy.stripe.com/3cIbJ1e8Ng6Y1IQfoJcwg01', // MMCS Pro ($10)
-        discord: 'https://buy.stripe.com/3cIbJ1e8Ng6Y1IQfoJcwg01' // Discord notifications requires Pro tier ($10)
-      };
-      
-      // Get current user subscription tier
-      async function getCurrentSubscriptionTier() {
-        if (!supabase) return 'trial';
+      // Check if user has active notifications subscription
+      async function hasNotificationsSubscription() {
+        if (!supabase) return false;
         
         try {
           const { data: { session } } = await supabase.auth.getSession();
-          if (!session) return 'trial';
+          if (!session) return false;
           
           const { data: { user } } = await supabase.auth.getUser();
-          if (!user) return 'trial';
+          if (!user) return false;
           
           const { data: userData } = await supabase
             .from('unlocked_users')
-            .select('verified, subscription_tier, subscription_expires_at, discord_subscription_active')
+            .select('notifications_subscription_active, notifications_subscription_expires_at')
             .eq('auth_user_id', user.id)
             .maybeSingle();
           
-          if (!userData) return 'trial';
+          if (!userData) return false;
           
-          // Check if verified (one-time payment = basic tier)
-          const isVerified = userData.verified === true || userData.verified === 'true' || userData.verified === 1;
-          
-          if (isVerified) {
-            // If has subscription_tier, use it, otherwise default to 'basic' for verified users
-            return userData.subscription_tier || 'basic';
+          // Check if subscription is active
+          if (userData.notifications_subscription_active === true || userData.notifications_subscription_active === 'true') {
+            // Check if not expired
+            if (userData.notifications_subscription_expires_at) {
+              const expiresAt = new Date(userData.notifications_subscription_expires_at);
+              if (expiresAt < new Date()) {
+                return false; // Expired
+              }
+            }
+            return true;
           }
           
-          // Check trial status
-          const trialSearchesUsed = userData.trial_searches_used || 0;
-          if (trialSearchesUsed < 75) {
-            return 'trial';
-          }
-          
-          return 'expired';
+          return false;
         } catch (err) {
-          console.error('Error getting subscription tier:', err);
-          return 'trial';
+          console.error('Error checking notifications subscription:', err);
+          return false;
         }
       }
       
-      // Update subscription tier display
-      async function updateSubscriptionDisplay() {
-        const currentTier = await getCurrentSubscriptionTier();
-        const badgeContainer = document.getElementById('current-subscription-badge');
-        
-        if (badgeContainer) {
-          let badgeClass = 'subscription-status-badge ';
-          let badgeText = '';
-          
-          if (currentTier === 'trial') {
-            badgeClass += 'trial';
-            badgeText = '🎁 Free Trial';
-          } else if (currentTier === 'expired') {
-            badgeClass += 'expired';
-            badgeText = '⚠️ Trial Expired';
-          } else {
-            badgeClass += 'active';
-            badgeText = `⭐ ${SUBSCRIPTION_TIERS[currentTier]?.name || 'Pro'}`;
-          }
-          
-          badgeContainer.innerHTML = `<div class="${badgeClass}">${badgeText}</div>`;
-        }
-        
-        // Update tier cards to show current tier
-        document.querySelectorAll('.subscription-tier').forEach(tier => {
-          const tierType = tier.getAttribute('data-tier');
-          tier.classList.remove('current');
-          if (tierType === currentTier) {
-            tier.classList.add('current');
-          }
-        });
+      // Handle notifications subscription payment
+      function handleNotificationsSubscription() {
+        window.open(NOTIFICATIONS_STRIPE_LINK, '_blank');
+        alert('Opening Stripe checkout for Discord Notifications ($10/month)...\n\n⚠️ IMPORTANT: After completing your purchase, please contact us on Instagram (@m3owle0) with your email address to activate your subscription.\n\nWe will activate it within 24 hours of receiving your message.');
       }
       
-      // Handle subscription payment (Stripe only)
-      function handleSubscriptionPayment(tier, method) {
-        if (method === 'stripe') {
-          // Stripe checkout
-          const stripeLink = STRIPE_CHECKOUT_LINKS[tier];
-          if (!stripeLink || stripeLink.includes('YOUR_')) {
-            alert('Stripe checkout links need to be configured. Please contact support.');
-            return;
-          }
-          window.open(stripeLink, '_blank');
-          alert(`Opening Stripe checkout for ${SUBSCRIPTION_TIERS[tier].name} plan ($${SUBSCRIPTION_TIERS[tier].price}/month)...\n\nAfter payment, your subscription will be activated automatically.`);
-        }
+      // Setup notifications subscribe button
+      const notificationsSubscribeBtn = document.getElementById('notifications-subscribe-btn');
+      if (notificationsSubscribeBtn) {
+        notificationsSubscribeBtn.addEventListener('click', handleNotificationsSubscription);
       }
-      
-      // Expose getCurrentSubscriptionTier globally
-      window.getCurrentSubscriptionTier = getCurrentSubscriptionTier;
-      
-      // Subscription payment button handlers
-      document.querySelectorAll('.subscription-payment-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const tier = this.getAttribute('data-tier');
-          const method = this.getAttribute('data-method');
-          handleSubscriptionPayment(tier, method);
-        });
-      });
-      
-      // Update subscription display on load
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', updateSubscriptionDisplay);
-      } else {
-        updateSubscriptionDisplay();
-      }
-      
-      // Update when user logs in
-      window.addEventListener('userLoggedIn', updateSubscriptionDisplay);
       
       // Subscription management modal
       const subscriptionManagementModal = document.getElementById('subscription-management-modal-bg');
