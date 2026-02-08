@@ -3949,7 +3949,7 @@
       <div class="profile-modal-info" id="profile-modal-joindate"></div>
       <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
         <button class="profile-description-edit-btn" id="manage-subscription-btn" style="display: block; width: 100%; margin-bottom: 10px;">💳 Manage Subscription</button>
-        <button class="profile-description-edit-btn" id="discord-notifications-btn" style="display: block; width: 100%;">🔔 Discord Notifications ($5/mo)</button>
+        <button class="profile-description-edit-btn" id="discord-notifications-btn" style="display: block; width: 100%;">🔔 Discord Notifications (Pro - $10/mo)</button>
       </div>
     </div>
   </div>
@@ -3958,9 +3958,9 @@
   <div id="discord-notifications-modal-bg" class="users-list-modal-bg" style="display: none;">
     <div class="users-list-modal" style="max-width: 600px;">
       <button class="users-list-modal-close" id="discord-notifications-modal-close">×</button>
-      <h3 class="users-list-modal-title">Discord Notifications</h3>
+      <h3 class="users-list-modal-title">Discord Notifications (Pro Tier Required)</h3>
       <div id="discord-subscription-status" style="padding: 0 20px 10px 20px; text-align: center;">
-        <div style="color: #00e6d6; font-weight: bold; margin-bottom: 5px;">Premium Feature - $5/month</div>
+        <div style="color: #00e6d6; font-weight: bold; margin-bottom: 5px;">Premium Feature - Requires Pro Tier ($10/month)</div>
         <div id="discord-subscription-info" style="color: #b0b0b0; font-size: 12px;"></div>
       </div>
       <div style="padding: 0 20px 20px 20px;">
@@ -3989,7 +3989,7 @@
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
           <button id="discord-subscribe-btn" 
                   style="background: #635BFF; color: white; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; font-size: 13px; font-weight: bold; display: none;">
-            💳 Subscribe - $5/month
+            💳 Subscribe to Pro - $10/month
           </button>
           <button id="discord-notifications-test-btn" 
                   style="background: #5865F2; color: white; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; font-size: 13px; font-weight: bold;">
@@ -4303,7 +4303,7 @@
           <span class="discord-feature-benefit">✓ Real-time alerts</span>
           <span class="discord-feature-benefit">✓ 5 Japanese markets</span>
           <span class="discord-feature-benefit">✓ Custom search terms</span>
-          <span class="discord-feature-benefit">✓ Only $5/month</span>
+          <span class="discord-feature-benefit">✓ Only $10/month (Pro tier)</span>
         </div>
         <button class="discord-feature-cta" id="main-discord-notifications-btn">Get Started →</button>
       </div>
@@ -6534,17 +6534,55 @@
       function handleDiscordNotificationsClick() {
         const currentUser = localStorage.getItem('mmcs_current_user');
         if (!currentUser) {
-          // If not logged in, show unlock modal to encourage signup
-          if (window.initUnlockSystem) {
+          // If not logged in, show upgrade modal highlighting Pro tier
+          if (window.showUpgradeModal) {
+            window.showUpgradeModal();
+            // Highlight Pro tier after modal opens
+            setTimeout(() => {
+              const proTier = document.querySelector('.subscription-tier[data-tier="pro"]');
+              if (proTier) {
+                proTier.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                proTier.style.border = '2px solid #00e6d6';
+                proTier.style.boxShadow = '0 0 20px rgba(0, 230, 214, 0.5)';
+              }
+            }, 100);
+          } else if (window.initUnlockSystem) {
             window.initUnlockSystem();
           } else {
-            alert('Please log in to set up Discord notifications. Sign up to get started!');
+            alert('Discord notifications require Pro tier ($10/month). Please sign up and subscribe to Pro to enable Discord notifications!');
           }
           return;
         }
-        // showDiscordNotificationsModal will check subscription
-        if (window.showDiscordNotificationsModal) {
-          window.showDiscordNotificationsModal();
+        // Check if user has Pro tier, if not show upgrade modal
+        if (window.getCurrentSubscriptionTier) {
+          window.getCurrentSubscriptionTier().then(tier => {
+            if (tier === 'pro') {
+              // User has Pro, show Discord notifications modal
+              if (window.showDiscordNotificationsModal) {
+                window.showDiscordNotificationsModal();
+              }
+            } else {
+              // User doesn't have Pro, show upgrade modal highlighting Pro
+              if (window.showUpgradeModal) {
+                window.showUpgradeModal();
+                setTimeout(() => {
+                  const proTier = document.querySelector('.subscription-tier[data-tier="pro"]');
+                  if (proTier) {
+                    proTier.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    proTier.style.border = '2px solid #00e6d6';
+                    proTier.style.boxShadow = '0 0 20px rgba(0, 230, 214, 0.5)';
+                  }
+                }, 100);
+              } else {
+                alert('Discord notifications require Pro tier ($10/month). Please upgrade to Pro to enable Discord notifications!');
+              }
+            }
+          });
+        } else {
+          // Fallback: show Discord notifications modal (will check subscription inside)
+          if (window.showDiscordNotificationsModal) {
+            window.showDiscordNotificationsModal();
+          }
         }
       }
       
@@ -6595,26 +6633,27 @@
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) return false;
           
+          // Check if user has Pro tier (Discord notifications require Pro)
+          const currentTier = await getCurrentSubscriptionTier();
+          if (currentTier !== 'pro') {
+            return false; // Discord notifications require Pro tier
+          }
+          
           const { data: userData, error } = await supabase
             .from('unlocked_users')
-            .select('discord_subscription_active, discord_subscription_expires_at')
+            .select('subscription_tier, subscription_expires_at')
             .eq('auth_user_id', user.id)
             .maybeSingle();
           
           if (error || !userData) return false;
           
-          // Check if subscription is active and not expired
-          if (!userData.discord_subscription_active) return false;
+          // Verify Pro tier and check if subscription is not expired
+          if (userData.subscription_tier !== 'pro') return false;
           
-          if (userData.discord_subscription_expires_at) {
-            const expiresAt = new Date(userData.discord_subscription_expires_at);
+          if (userData.subscription_expires_at) {
+            const expiresAt = new Date(userData.subscription_expires_at);
             if (expiresAt < new Date()) {
-              // Subscription expired, update status
-              await supabase
-                .from('unlocked_users')
-                .update({ discord_subscription_active: false })
-                .eq('auth_user_id', user.id);
-              return false;
+              return false; // Subscription expired
             }
           }
           
@@ -6653,7 +6692,7 @@
           
           if (!hasSubscription) {
             if (statusInfo) {
-              statusInfo.innerHTML = '<span style="color: #ff6b6b;">❌ No active subscription</span><br><span style="font-size: 11px;">Subscribe to enable Discord notifications</span>';
+              statusInfo.innerHTML = '<span style="color: #ff6b6b;">❌ Pro tier required</span><br><span style="font-size: 11px;">Discord notifications require Pro tier ($10/month). Subscribe to Pro to enable.</span>';
             }
             // Show subscribe button, hide test/save
             if (subscribeBtn) subscribeBtn.style.display = 'inline-block';
@@ -6674,7 +6713,7 @@
           // Load subscription expiry info
           const { data: userData, error } = await supabase
             .from('unlocked_users')
-            .select('discord_webhook_url, discord_notifications, discord_subscription_expires_at')
+            .select('discord_webhook_url, discord_notifications, subscription_tier, subscription_expires_at')
             .eq('auth_user_id', user.id)
             .maybeSingle();
           
@@ -6683,13 +6722,13 @@
             return;
           }
           
-          // Show subscription status
-          if (statusInfo && userData?.discord_subscription_expires_at) {
-            const expiresAt = new Date(userData.discord_subscription_expires_at);
+          // Show subscription status (Pro tier)
+          if (statusInfo && userData?.subscription_expires_at) {
+            const expiresAt = new Date(userData.subscription_expires_at);
             const daysLeft = Math.ceil((expiresAt - new Date()) / (1000 * 60 * 60 * 24));
-            statusInfo.innerHTML = `<span style="color: #00e6d6;">✅ Active subscription</span><br><span style="font-size: 11px;">Expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}</span>`;
+            statusInfo.innerHTML = `<span style="color: #00e6d6;">✅ Pro tier active</span><br><span style="font-size: 11px;">Expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}</span>`;
           } else if (statusInfo) {
-            statusInfo.innerHTML = '<span style="color: #00e6d6;">✅ Active subscription</span>';
+            statusInfo.innerHTML = '<span style="color: #00e6d6;">✅ Pro tier active</span>';
           }
           
           // Enable inputs (already declared above)
@@ -7019,14 +7058,14 @@
       const subscribeBtn = document.getElementById('discord-subscribe-btn');
       if (subscribeBtn) {
         subscribeBtn.addEventListener('click', function() {
-          // Redirect to Stripe Checkout payment link
-          const stripePaymentLink = 'https://buy.stripe.com/00w6oH2q5g6YdryekFcwg00';
+          // Discord notifications require Pro tier ($10)
+          const stripePaymentLink = STRIPE_CHECKOUT_LINKS.pro; // Use Pro tier link
           
           // Open in new tab
           window.open(stripePaymentLink, '_blank');
           
           // Show message
-          alert('Opening Stripe checkout...\n\nAfter payment, your subscription will be activated automatically.\n\nIf you need manual activation, contact support with your payment receipt.');
+          alert('Opening Stripe checkout for Pro tier ($10/month)...\n\nPro tier includes Discord notifications and all premium features.\n\nAfter payment, your subscription will be activated automatically.');
         });
       }
     })();
@@ -10928,9 +10967,9 @@
       
       // Stripe checkout links
       const STRIPE_CHECKOUT_LINKS = {
-        basic: 'https://buy.stripe.com/00w6oH2q5g6YdryekFcwg00', // MMCS Basic
-        pro: 'https://buy.stripe.com/3cIbJ1e8Ng6Y1IQfoJcwg01', // MMCS Pro
-        discord: 'https://buy.stripe.com/00w6oH2q5g6YdryekFcwg00' // Existing Discord notifications (uses Basic link)
+        basic: 'https://buy.stripe.com/00w6oH2q5g6YdryekFcwg00', // MMCS Basic ($5)
+        pro: 'https://buy.stripe.com/3cIbJ1e8Ng6Y1IQfoJcwg01', // MMCS Pro ($10)
+        discord: 'https://buy.stripe.com/3cIbJ1e8Ng6Y1IQfoJcwg01' // Discord notifications requires Pro tier ($10)
       };
       
       // Get current user subscription tier
@@ -11019,6 +11058,9 @@
           alert(`Opening Stripe checkout for ${SUBSCRIPTION_TIERS[tier].name} plan ($${SUBSCRIPTION_TIERS[tier].price}/month)...\n\nAfter payment, your subscription will be activated automatically.`);
         }
       }
+      
+      // Expose getCurrentSubscriptionTier globally
+      window.getCurrentSubscriptionTier = getCurrentSubscriptionTier;
       
       // Subscription payment button handlers
       document.querySelectorAll('.subscription-payment-btn').forEach(btn => {
