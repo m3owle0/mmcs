@@ -2946,6 +2946,34 @@
     gap: 15px;
   }
 
+  .trial-searches-display {
+    color: #ffe66d;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(255, 230, 109, 0.15);
+    border: 1px solid rgba(255, 230, 109, 0.3);
+    border-radius: 8px;
+    margin-right: 10px;
+    white-space: nowrap;
+  }
+
+  .trial-searches-display.warning {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.15);
+    border-color: rgba(255, 107, 107, 0.3);
+    animation: pulse-warning 2s infinite;
+  }
+
+  @keyframes pulse-warning {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
   .online-users-count {
     display: flex;
     align-items: center;
@@ -3291,6 +3319,7 @@
         <button class="header-minimize-btn" id="minimize-wishlist-btn" title="Minimize Wishlist" data-panel="wishlist">⭐</button>
       </div>
       <span id="user-display" style="display: none; color: #00e6d6; font-size: 14px; margin-right: 15px;"></span>
+      <span id="trial-searches-display" class="trial-searches-display" style="display: none;"></span>
       <button id="profile-picture-btn" class="profile-picture-btn" style="display: none;">📷 Profile</button>
       <button id="unlock-btn" class="unlock-btn" style="display: none;">Unlock Site</button>
     </div>
@@ -3338,7 +3367,9 @@
     <div class="unlock-modal">
       <h3>Login</h3>
       <p style="color: #b0b0b0; margin-bottom: 20px;">
-        <strong style="color: #ff6b6b;">Donation Required:</strong> You must make a donation first, then create an account to access the site.
+        <strong style="color: #00e6d6;">Free Trial:</strong> New users get 75 free searches! Create an account to start your trial.
+        <br><br>
+        <strong style="color: #ff6b6b;">After Trial:</strong> A donation is required to continue using the site after your 75 free searches.
       </p>
       <div id="login-error" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(255, 107, 107, 0.2); border: 1px solid rgba(255, 107, 107, 0.5);">
         <p style="color: #ff6b6b; margin: 0; font-size: 14px;" id="login-error-text"></p>
@@ -3664,7 +3695,7 @@
           // Check if user is verified in unlocked_users table
           const { data: unlockedData, error: unlockedError } = await supabase
             .from('unlocked_users')
-            .select('verified, email, username')
+            .select('verified, email, username, trial_searches_used')
             .eq('auth_user_id', user.id)
             .maybeSingle();
           
@@ -3693,7 +3724,8 @@
                   auth_user_id: user.id,
                   email: user.email,
                   username: user.user_metadata?.username || '',
-                  verified: false
+                  verified: false,
+                  trial_searches_used: 0
                 })
                 .select()
                 .single();
@@ -3705,9 +3737,16 @@
                 return true;
               }
               
-              // Record created but not verified - block access
-              console.log('User record created but not verified');
-              return false;
+              // Record created but not verified - check trial
+              const trialSearchesUsed = newRecord.trial_searches_used || 0;
+              if (trialSearchesUsed < 75) {
+                console.log('New user on free trial:', user.email, 'searches used:', trialSearchesUsed);
+                setCurrentUser(newRecord.username || user.user_metadata?.username || user.email || user.id);
+                return true; // Allow access during trial
+              } else {
+                console.log('User trial exhausted:', user.email);
+                return false; // Trial exhausted, require donation
+              }
             } catch (err) {
               console.error('Error creating unlocked_users record:', err);
               setCurrentUser(user.user_metadata?.username || user.email || user.id);
@@ -3723,16 +3762,41 @@
                              verifiedValue === '1' ||
                              String(verifiedValue).toLowerCase() === 'true';
           
+          // Get trial searches used (default to 0 if null/undefined)
+          const trialSearchesUsed = unlockedData.trial_searches_used || 0;
+          const TRIAL_LIMIT = 75;
+          
           console.log('Verification status:', {
             email: user.email,
             verifiedValue: verifiedValue,
             verifiedType: typeof verifiedValue,
-            isVerified: isVerified
+            isVerified: isVerified,
+            trialSearchesUsed: trialSearchesUsed
           });
           
           if (!isVerified) {
-            console.log('User not verified:', user.email, 'verified status:', verifiedValue, 'type:', typeof verifiedValue);
-            return false; // User exists but not verified - block access
+            // Check if user has trial searches remaining
+            if (trialSearchesUsed < TRIAL_LIMIT) {
+              console.log('User on free trial:', user.email, 'searches used:', trialSearchesUsed, '/', TRIAL_LIMIT);
+              // Update current user in localStorage
+              const displayName = unlockedData.username || user.user_metadata?.username || user.email || user.id;
+              setCurrentUser(displayName);
+              
+              // Update last_active timestamp
+              try {
+                await supabase
+                  .from('unlocked_users')
+                  .update({ last_active: new Date().toISOString() })
+                  .eq('auth_user_id', user.id);
+              } catch (err) {
+                console.warn('Error updating last_active:', err);
+              }
+              
+              return true; // Allow access during trial
+            } else {
+              console.log('User trial exhausted:', user.email, 'searches used:', trialSearchesUsed);
+              return false; // Trial exhausted, require donation
+            }
           }
           
           // User is verified - allow access
@@ -3756,6 +3820,197 @@
         } catch (err) {
           console.error('Error checking unlock status:', err);
           return false;
+        }
+      }
+      
+      // Increment trial search count for unverified users
+      async function incrementTrialSearch() {
+        if (!supabase) return false;
+        
+        try {
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError || !session) return false;
+          
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError || !user) return false;
+          
+          // Get current trial searches count
+          const { data: unlockedData, error: fetchError } = await supabase
+            .from('unlocked_users')
+            .select('verified, trial_searches_used')
+            .eq('auth_user_id', user.id)
+            .maybeSingle();
+          
+          if (fetchError || !unlockedData) return false;
+          
+          // Only increment if user is not verified
+          const verifiedValue = unlockedData.verified;
+          const isVerified = verifiedValue === true || 
+                             verifiedValue === 'true' || 
+                             verifiedValue === 1 ||
+                             verifiedValue === '1' ||
+                             String(verifiedValue).toLowerCase() === 'true';
+          
+          if (isVerified) return true; // Verified users don't need tracking
+          
+          // Increment trial searches
+          const currentCount = unlockedData.trial_searches_used || 0;
+          const { error: updateError } = await supabase
+            .from('unlocked_users')
+            .update({ trial_searches_used: currentCount + 1 })
+            .eq('auth_user_id', user.id);
+          
+          if (updateError) {
+            console.error('Error incrementing trial search:', updateError);
+            return false;
+          }
+          
+          console.log('Trial search incremented:', currentCount + 1, '/ 75');
+          
+          // Update trial searches display
+          updateTrialSearchesDisplay();
+          
+          return true;
+        } catch (err) {
+          console.error('Error incrementing trial search:', err);
+          return false;
+        }
+      }
+      
+      // Update trial searches display
+      async function updateTrialSearchesDisplay() {
+        const trialDisplay = document.getElementById('trial-searches-display');
+        if (!trialDisplay || !supabase) {
+          if (trialDisplay) trialDisplay.style.display = 'none';
+          return;
+        }
+        
+        try {
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError || !session) {
+            trialDisplay.style.display = 'none';
+            return;
+          }
+          
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError || !user) {
+            trialDisplay.style.display = 'none';
+            return;
+          }
+          
+          // Get user verification and trial status
+          const { data: unlockedData, error: fetchError } = await supabase
+            .from('unlocked_users')
+            .select('verified, trial_searches_used')
+            .eq('auth_user_id', user.id)
+            .maybeSingle();
+          
+          if (fetchError || !unlockedData) {
+            trialDisplay.style.display = 'none';
+            return;
+          }
+          
+          // Check if verified
+          const verifiedValue = unlockedData.verified;
+          const isVerified = verifiedValue === true || 
+                             verifiedValue === 'true' || 
+                             verifiedValue === 1 ||
+                             verifiedValue === '1' ||
+                             String(verifiedValue).toLowerCase() === 'true';
+          
+          // Hide display if verified
+          if (isVerified) {
+            trialDisplay.style.display = 'none';
+            return;
+          }
+          
+          // Show trial status
+          const trialSearchesUsed = unlockedData.trial_searches_used || 0;
+          const TRIAL_LIMIT = 75;
+          const remaining = TRIAL_LIMIT - trialSearchesUsed;
+          
+          if (remaining <= 0) {
+            trialDisplay.style.display = 'none';
+            return;
+          }
+          
+          // Update display
+          trialDisplay.textContent = `🎁 ${remaining} free search${remaining === 1 ? '' : 'es'} left`;
+          
+          // Add warning class if low on searches
+          if (remaining <= 5) {
+            trialDisplay.classList.add('warning');
+          } else {
+            trialDisplay.classList.remove('warning');
+          }
+          
+          trialDisplay.style.display = 'inline-block';
+        } catch (err) {
+          console.error('Error updating trial searches display:', err);
+          trialDisplay.style.display = 'none';
+        }
+      }
+      
+      // Check if user can perform searches (verified or has trial remaining)
+      async function canPerformSearch() {
+        if (!supabase) return { allowed: false, reason: 'Database not configured' };
+        
+        try {
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError || !session) {
+            return { allowed: false, reason: 'Not logged in' };
+          }
+          
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError || !user) {
+            return { allowed: false, reason: 'User not found' };
+          }
+          
+          // Get user verification and trial status
+          const { data: unlockedData, error: fetchError } = await supabase
+            .from('unlocked_users')
+            .select('verified, trial_searches_used')
+            .eq('auth_user_id', user.id)
+            .maybeSingle();
+          
+          if (fetchError || !unlockedData) {
+            return { allowed: false, reason: 'User record not found' };
+          }
+          
+          // Check if verified
+          const verifiedValue = unlockedData.verified;
+          const isVerified = verifiedValue === true || 
+                             verifiedValue === 'true' || 
+                             verifiedValue === 1 ||
+                             verifiedValue === '1' ||
+                             String(verifiedValue).toLowerCase() === 'true';
+          
+          if (isVerified) {
+            return { allowed: true, reason: 'verified' };
+          }
+          
+          // Check trial status
+          const trialSearchesUsed = unlockedData.trial_searches_used || 0;
+          const TRIAL_LIMIT = 75;
+          
+          if (trialSearchesUsed < TRIAL_LIMIT) {
+            const remaining = TRIAL_LIMIT - trialSearchesUsed;
+            return { 
+              allowed: true, 
+              reason: 'trial', 
+              remaining: remaining,
+              used: trialSearchesUsed 
+            };
+          } else {
+            return { 
+              allowed: false, 
+              reason: 'trial_exhausted',
+              used: trialSearchesUsed 
+            };
+          }
+        } catch (err) {
+          console.error('Error checking search permission:', err);
+          return { allowed: false, reason: 'Error checking permission' };
         }
       }
       
@@ -4048,6 +4303,9 @@
             userDisplay.textContent = `Welcome, ${currentUser}`;
             userDisplay.style.display = 'inline';
           }
+          
+          // Update trial searches display
+          updateTrialSearchesDisplay();
           // Start session heartbeat for active session
           startSessionHeartbeat();
           
@@ -4273,6 +4531,9 @@
                   userDisplay.textContent = `Welcome, ${currentUser || result.user?.email || 'User'}`;
                   userDisplay.style.display = 'inline';
                 }
+                
+                // Update trial searches display
+                updateTrialSearchesDisplay();
                 
                 // Start session heartbeat
                 startSessionHeartbeat();
@@ -4529,6 +4790,9 @@
               }
               if (unlockBtn) unlockBtn.style.display = 'none';
               
+              // Update trial searches display
+              updateTrialSearchesDisplay();
+              
               // Start session heartbeat
               startSessionHeartbeat();
               
@@ -4541,6 +4805,12 @@
           console.error('Error in restoreSession:', err);
         }
       }
+      
+      // Expose functions globally for search handlers
+      window.canPerformSearch = canPerformSearch;
+      window.incrementTrialSearch = incrementTrialSearch;
+      window.initUnlockSystem = initUnlockSystem;
+      window.updateTrialSearchesDisplay = updateTrialSearchesDisplay;
       
       // Initialize on page load
       if (document.readyState === 'loading') {
@@ -6852,40 +7122,126 @@
             document.getElementById('query').focus();
             return;
           }
-          const market = marketBtn.getAttribute('data-market');
-          const section = marketBtn.getAttribute('data-section');
-          if (market.startsWith("custom-")) {
-            const parts = market.split("-");
-            const customId = parts.slice(2).join("-");
-            const url = getCustomMarketUrl(section, customId, query);
-            if (url) tabQueue.add(url);
-          } else if (marketUrls[market]) {
-            tabQueue.add(marketUrls[market](query));
-          }
+          
+          // Check if user can perform searches
+          (async function() {
+            if (window.canPerformSearch) {
+              const searchPermission = await window.canPerformSearch();
+              if (!searchPermission.allowed) {
+                if (searchPermission.reason === 'trial_exhausted') {
+                  alert(`Your free trial of 75 searches has been exhausted. Please make a donation to continue using the site.`);
+                  if (window.initUnlockSystem) {
+                    window.initUnlockSystem();
+                  }
+                } else {
+                  alert('Please log in to perform searches.');
+                }
+                return;
+              }
+              
+              // Increment trial search counter if on trial
+              if (searchPermission.reason === 'trial' && window.incrementTrialSearch) {
+                await window.incrementTrialSearch();
+                if (searchPermission.remaining <= 5) {
+                  alert(`Warning: You have ${searchPermission.remaining} free search${searchPermission.remaining === 1 ? '' : 'es'} remaining.`);
+                }
+              }
+            }
+            
+            const market = marketBtn.getAttribute('data-market');
+            const section = marketBtn.getAttribute('data-section');
+            if (market.startsWith("custom-")) {
+              const parts = market.split("-");
+              const customId = parts.slice(2).join("-");
+              const url = getCustomMarketUrl(section, customId, query);
+              if (url) tabQueue.add(url);
+            } else if (marketUrls[market]) {
+              tabQueue.add(marketUrls[market](query));
+            }
+          })();
         }
       }
       // Sectional Open All
       if (e.target.classList.contains('section-openall-btn')) {
-        // Check if any search terms are selected
-        const selectedTerms = getSelectedSearchTerms();
-        
-        if (selectedTerms.length > 0) {
-          // Mark each term as clicked
-          selectedTerms.forEach(term => {
-            clickedSearches[term] = { 
-              clicked: true, 
-              category: determineSearchCategory(term) 
-            };
-          });
-          localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+        // Check if user can perform searches
+        (async function() {
+          if (window.canPerformSearch) {
+            const searchPermission = await window.canPerformSearch();
+            if (!searchPermission.allowed) {
+              if (searchPermission.reason === 'trial_exhausted') {
+                alert(`Your free trial of 75 searches has been exhausted. Please make a donation to continue using the site.`);
+                if (window.initUnlockSystem) {
+                  window.initUnlockSystem();
+                }
+              } else {
+                alert('Please log in to perform searches.');
+              }
+              return;
+            }
+            
+            // Increment trial search counter if on trial
+            if (searchPermission.reason === 'trial' && window.incrementTrialSearch) {
+              await window.incrementTrialSearch();
+              if (searchPermission.remaining <= 5) {
+                alert(`Warning: You have ${searchPermission.remaining} free search${searchPermission.remaining === 1 ? '' : 'es'} remaining.`);
+              }
+            }
+          }
           
-          // Open each selected term in separate tabs for all markets in this section
-          const section = e.target.getAttribute('data-section');
+          // Check if any search terms are selected
+          const selectedTerms = getSelectedSearchTerms();
           
-          openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
+          if (selectedTerms.length > 0) {
+            // Mark each term as clicked
+            selectedTerms.forEach(term => {
+              clickedSearches[term] = { 
+                clicked: true, 
+                category: determineSearchCategory(term) 
+              };
+            });
+            localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+            
+            // Open each selected term in separate tabs for all markets in this section
+            const section = e.target.getAttribute('data-section');
+            
+            openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
+              let marketArr = getMarkets(section);
+              
+              // Open all URLs immediately without delays
+              marketArr.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
+                // Skip if this market is toggled off
+                if (!loadMarketToggleState(market.key)) return;
+                
+                if (market.custom) {
+                  const parts = market.key.split("-");
+                  const customId = parts.slice(2).join("-");
+                  const url = getCustomMarketUrl(section, customId, term);
+                  if (url) tabQueue.add(url);
+                } else if (marketUrls[market.key]) {
+                  tabQueue.add(marketUrls[market.key](term));
+                }
+              });
+            });
+            
+            // Clear selection
+            selectedSearchTerms = {};
+            localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+            
+            // Update UI
+            renderSavedSearches();
+            updateUnhighlightedCount();
+          } else {
+            // Use the current search query
+            const query = document.getElementById('query').value.trim();
+            if (!query) {
+              document.getElementById('query').focus();
+              return;
+            }
+            const section = e.target.getAttribute('data-section');
             let marketArr = getMarkets(section);
             
-            // Open all URLs immediately without delays
+            // Collect all URLs first (only enabled markets)
+            const urls = [];
             marketArr.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
               // Skip if this market is toggled off
               if (!loadMarketToggleState(market.key)) return;
@@ -6893,50 +7249,17 @@
               if (market.custom) {
                 const parts = market.key.split("-");
                 const customId = parts.slice(2).join("-");
-                const url = getCustomMarketUrl(section, customId, term);
-                if (url) tabQueue.add(url);
+                const url = getCustomMarketUrl(section, customId, query);
+                if (url) urls.push(url);
               } else if (marketUrls[market.key]) {
-                tabQueue.add(marketUrls[market.key](term));
+                urls.push(marketUrls[market.key](query));
               }
             });
-          });
-          
-          // Clear selection
-          selectedSearchTerms = {};
-          localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
-          
-          // Update UI
-          renderSavedSearches();
-          updateUnhighlightedCount();
-        } else {
-          // Use the current search query
-          const query = document.getElementById('query').value.trim();
-          if (!query) {
-            document.getElementById('query').focus();
-            return;
-          }
-          const section = e.target.getAttribute('data-section');
-          let marketArr = getMarkets(section);
-          
-          // Collect all URLs first (only enabled markets)
-          const urls = [];
-          marketArr.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
-            // Skip if this market is toggled off
-            if (!loadMarketToggleState(market.key)) return;
             
-            if (market.custom) {
-              const parts = market.key.split("-");
-              const customId = parts.slice(2).join("-");
-              const url = getCustomMarketUrl(section, customId, query);
-              if (url) urls.push(url);
-            } else if (marketUrls[market.key]) {
-              urls.push(marketUrls[market.key](query));
-            }
-          });
-          
-          // Process URLs with queue
-          urls.forEach(url => tabQueue.add(url));
-        }
+            // Process URLs with queue
+            urls.forEach(url => tabQueue.add(url));
+          }
+        })();
       }
       // --- Add Custom Market Button ---
       if (e.target.classList.contains('add-market-btn')) {
@@ -6945,7 +7268,33 @@
       }
     });
 
-    document.getElementById('open-all-btn').addEventListener('click', function() {
+    document.getElementById('open-all-btn').addEventListener('click', async function() {
+      // Check if user can perform searches
+      if (window.canPerformSearch) {
+        const searchPermission = await window.canPerformSearch();
+        if (!searchPermission.allowed) {
+          if (searchPermission.reason === 'trial_exhausted') {
+            alert(`Your free trial of 75 searches has been exhausted. Please make a donation to continue using the site.`);
+            // Show unlock modal
+            if (window.initUnlockSystem) {
+              window.initUnlockSystem();
+            }
+          } else {
+            alert('Please log in to perform searches.');
+          }
+          return;
+        }
+        
+        // Increment trial search counter if on trial
+        if (searchPermission.reason === 'trial' && window.incrementTrialSearch) {
+          await window.incrementTrialSearch();
+          // Show remaining searches notification
+          if (searchPermission.remaining <= 5) {
+            alert(`Warning: You have ${searchPermission.remaining} free search${searchPermission.remaining === 1 ? '' : 'es'} remaining. After your trial ends, a donation will be required.`);
+          }
+        }
+      }
+      
       // Check if any search terms are selected
       const selectedTerms = getSelectedSearchTerms();
       
