@@ -10860,6 +10860,9 @@
         }
       }
       
+      // Expose globally
+      window.showUpgradeModal = showUpgradeModal;
+      
       // Close upgrade modal
       if (upgradeModalClose) {
         upgradeModalClose.addEventListener('click', hideUpgradeModal);

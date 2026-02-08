@@ -46,6 +46,6 @@ build/
 *.temp
 .cache/
 
-# Files with secrets (optional - uncomment if you want to exclude these)
-# SETUP_WEBHOOK_NOW.md
-# *.md files with keys (be careful - this might exclude important docs)
+# Aider history files
+.aider.chat.history.md
+.aider.input.history
