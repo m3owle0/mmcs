@@ -5165,51 +5165,101 @@
               if (loginPasswordInput) loginPasswordInput.value = '';
               if (loginUsernameInput) loginUsernameInput.value = '';
               
-              // Check unlock status
-              if (typeof isUnlocked === 'function') {
-                const unlocked = await isUnlocked();
-                console.log('Unlock status:', unlocked);
-                
-                if (unlocked) {
-                  // Unlock site
-                  document.body.classList.remove('site-locked');
-                  
-                  // Hide modal
-                  if (unlockModalBg) {
-                    unlockModalBg.classList.remove('show');
-                    unlockModalBg.style.display = 'none';
-                  }
-                  
-                  // Update UI
-                  const userDisplay = document.getElementById('user-display');
-                  if (userDisplay) {
-                    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-                    userDisplay.textContent = `Welcome, ${currentUser || usernameOrEmail}`;
-                    userDisplay.style.display = 'inline';
-                  }
-                  
-                  // Start session heartbeat
-                  if (typeof startSessionHeartbeat === 'function') {
-                    startSessionHeartbeat();
-                  }
-                  
-                  // Initialize chat if available
-                  if (window.initChat) {
-                    setTimeout(() => window.initChat(), 500);
-                  }
-                  
-                  // Reinitialize unlock system
-                  if (window.initUnlockSystem) {
-                    setTimeout(() => window.initUnlockSystem(), 100);
-                  }
-                } else {
-                  // User logged in but not in unlocked_users
-                  if (loginError && loginErrorText) {
-                    loginErrorText.textContent = 'Account not found. Please contact support.';
-                    loginError.style.display = 'block';
-                  }
-                }
+              // IMMEDIATELY unlock site and hide modal after successful login
+              // Searching is free for all logged-in users
+              console.log('Unlocking site immediately after login...');
+              
+              // CRITICAL: Remove site-locked class FIRST - this removes CSS that forces modal to show
+              document.body.classList.remove('site-locked');
+              
+              // Force remove class multiple times to ensure it sticks
+              setTimeout(() => {
+                document.body.classList.remove('site-locked');
+              }, 10);
+              setTimeout(() => {
+                document.body.classList.remove('site-locked');
+              }, 50);
+              
+              // Remove all interaction blockers
+              if (window._lockBlockers && Array.isArray(window._lockBlockers)) {
+                window._lockBlockers.forEach(({ type, handler }) => {
+                  document.removeEventListener(type, handler, true);
+                });
+                window._lockBlockers = [];
               }
+              
+              // Hide modal immediately - use multiple methods to ensure it works
+              if (unlockModalBg) {
+                // Remove show class
+                unlockModalBg.classList.remove('show');
+                
+                // Force hide with !important via style attribute (overrides CSS)
+                unlockModalBg.setAttribute('style', 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; z-index: -1 !important; position: fixed !important;');
+                
+                // Also set individual styles as backup
+                unlockModalBg.style.setProperty('display', 'none', 'important');
+                unlockModalBg.style.setProperty('visibility', 'hidden', 'important');
+                unlockModalBg.style.setProperty('opacity', '0', 'important');
+                unlockModalBg.style.setProperty('pointer-events', 'none', 'important');
+                unlockModalBg.style.setProperty('z-index', '-1', 'important');
+                
+                // Also hide the modal content
+                const unlockModal = unlockModalBg.querySelector('.unlock-modal');
+                if (unlockModal) {
+                  unlockModal.style.setProperty('display', 'none', 'important');
+                  unlockModal.style.setProperty('visibility', 'hidden', 'important');
+                }
+                
+                // Force hide again after a brief delay to override any CSS that might re-show it
+                setTimeout(() => {
+                  if (unlockModalBg) {
+                    unlockModalBg.style.setProperty('display', 'none', 'important');
+                    unlockModalBg.classList.remove('show');
+                  }
+                }, 100);
+              }
+              
+              // Also ensure body doesn't have site-locked class
+              setTimeout(() => {
+                document.body.classList.remove('site-locked');
+              }, 200);
+              
+              // Hide success/error messages
+              if (loginSuccess) loginSuccess.style.display = 'none';
+              if (loginError) loginError.style.display = 'none';
+              
+              // Update UI elements
+              const userDisplay = document.getElementById('user-display');
+              const unlockBtn = document.getElementById('unlock-btn');
+              
+              if (userDisplay) {
+                const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+                userDisplay.textContent = `Welcome, ${currentUser || result.user?.email || usernameOrEmail}`;
+                userDisplay.style.display = 'inline';
+              }
+              
+              if (unlockBtn) {
+                unlockBtn.style.display = 'none';
+              }
+              
+              // Start session heartbeat
+              if (typeof startSessionHeartbeat === 'function') {
+                startSessionHeartbeat();
+              }
+              
+              // Initialize chat if available
+              if (window.initChat) {
+                setTimeout(() => window.initChat(), 500);
+              }
+              
+              // Reinitialize unlock system to sync state
+              if (window.initUnlockSystem) {
+                setTimeout(() => {
+                  window.initUnlockSystem(true); // Suppress modal since we're already unlocked
+                }, 100);
+              }
+              
+              console.log('Site unlocked successfully after login!');
             } else {
               // Login failed
               if (loginError && loginErrorText) {
