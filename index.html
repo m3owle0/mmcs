@@ -8106,47 +8106,29 @@
       toggle.checked = true;
       toggle.addEventListener('change', function(e) {
         e.stopPropagation();
-        e.stopImmediatePropagation();
         const isChecked = toggle.checked;
-        saveMarketToggleState(market.key, isChecked);
+        btn.classList.toggle('disabled', !isChecked);
+        // Save state without blocking UI
+        setTimeout(() => saveMarketToggleState(market.key, isChecked), 0);
         
-        if (!isChecked) {
-          // Remove the button from DOM when unchecked
-          btn.remove();
-          // Update site list modal if open
-          const siteListContainer = document.getElementById(`site-list-${sectionName}`);
-          if (siteListContainer) {
-            const siteListCheckbox = siteListContainer.querySelector(`input[type="checkbox"][data-market-key="${market.key}"]`);
-            if (siteListCheckbox) {
-              siteListCheckbox.checked = false;
-              const siteListItem = siteListCheckbox.closest('.site-list-item');
-              if (siteListItem) siteListItem.classList.add('disabled');
-            }
-          }
-        } else {
-          // If checked, button should already be visible
-          // Update site list modal if open
-          const siteListContainer = document.getElementById(`site-list-${sectionName}`);
-          if (siteListContainer) {
-            const siteListCheckbox = siteListContainer.querySelector(`input[type="checkbox"][data-market-key="${market.key}"]`);
-            if (siteListCheckbox) {
-              siteListCheckbox.checked = true;
-              const siteListItem = siteListCheckbox.closest('.site-list-item');
-              if (siteListItem) siteListItem.classList.remove('disabled');
+        // Update site list modal if open
+        const siteListContainer = document.getElementById(`site-list-${sectionName}`);
+        if (siteListContainer) {
+          const siteListCheckbox = siteListContainer.querySelector(`input[type="checkbox"][data-market-key="${market.key}"]`);
+          if (siteListCheckbox) {
+            siteListCheckbox.checked = isChecked;
+            const siteListItem = siteListCheckbox.closest('.site-list-item');
+            if (siteListItem) {
+              siteListItem.classList.toggle('disabled', !isChecked);
             }
           }
         }
-      }, { passive: false });
-      
-      // Prevent toggle clicks from bubbling to button click handler
-      toggle.addEventListener('click', function(e) {
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-      }, { capture: true });
+      }, { passive: true });
       
       // Set initial state
       const isEnabled = loadMarketToggleState(market.key);
       toggle.checked = isEnabled;
+      if (!isEnabled) btn.classList.add('disabled');
       
       btn.appendChild(toggle);
       const label = document.createElement('span');
@@ -8178,12 +8160,8 @@
       const container = document.getElementById(sectionId);
       container.innerHTML = '';
       markets.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
-        // Only create buttons for enabled markets
-        const isEnabled = loadMarketToggleState(market.key);
-        if (isEnabled) {
-          const btn = createSingleMarketButton(market, sectionName);
-          container.appendChild(btn);
-        }
+        const btn = createSingleMarketButton(market, sectionName);
+        container.appendChild(btn);
       });
     }
     function refreshAllMarketButtons() {
@@ -9747,33 +9725,13 @@
             // Find existing button
             const marketBtn = container.querySelector(`.market-btn[data-market="${market.key}"]`);
             
-            if (enabled) {
-              // Add button if it doesn't exist
-              if (!marketBtn) {
-                const btn = createSingleMarketButton(market, section);
-                // Find correct position to maintain alphabetical order
-                const markets = getMarkets(section);
-                const sortedMarkets = markets.slice().sort((a, b) => a.label.localeCompare(b.label));
-                const currentIndex = sortedMarkets.findIndex(m => m.key === market.key);
-                
-                // Find the button that should come after this one
-                let insertBefore = null;
-                if (currentIndex < sortedMarkets.length - 1) {
-                  const nextMarket = sortedMarkets[currentIndex + 1];
-                  const nextBtn = container.querySelector(`.market-btn[data-market="${nextMarket.key}"]`);
-                  if (nextBtn) insertBefore = nextBtn;
-                }
-                
-                if (insertBefore) {
-                  container.insertBefore(btn, insertBefore);
-                } else {
-                  container.appendChild(btn);
-                }
-              }
-            } else {
-              // Remove button from DOM
-              if (marketBtn) {
-                marketBtn.remove();
+            if (marketBtn) {
+              // Update button disabled state
+              marketBtn.classList.toggle('disabled', !enabled);
+              // Update toggle checkbox state
+              const toggle = marketBtn.querySelector('.market-toggle');
+              if (toggle) {
+                toggle.checked = enabled;
               }
             }
           });
@@ -10797,57 +10755,74 @@
       }
       
       // Make sure market buttons work on mobile
-      function handleMarketButtonClick(e) {
+      document.addEventListener('click', function(e) {
+        // --- Market button logic (support custom) ---
         const marketBtn = e.target.closest('.market-btn');
-        if (!marketBtn || marketBtn.classList.contains('disabled')) return;
-        
-        // Don't trigger if clicking directly on toggle checkbox or its label
-        if (e.target.classList.contains('market-toggle') || 
-            e.target.type === 'checkbox' ||
-            e.target.closest('.market-toggle')) {
-          return;
+        // Only proceed if clicking the button (not checkbox) and not disabled
+        if (marketBtn && !marketBtn.classList.contains('disabled') && !e.target.classList.contains('market-toggle')) {
+          // Check if any search terms are selected
+          const selectedTerms = getSelectedSearchTerms();
+          
+          if (selectedTerms.length > 0) {
+            // Mark each term as clicked
+            selectedTerms.forEach(term => {
+              clickedSearches[term] = { 
+                clicked: true, 
+                category: determineSearchCategory(term) 
+              };
+            });
+            localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+            
+            // Open each selected term in separate tabs for this specific market
+            const market = marketBtn.getAttribute('data-market');
+            const section = marketBtn.getAttribute('data-section');
+            
+            selectedTerms.forEach(term => {
+              let url;
+              if (market.startsWith("custom-")) {
+                const parts = market.split("-");
+                const customId = parts.slice(2).join("-");
+                url = getCustomMarketUrl(section, customId, term);
+              } else if (marketUrls[market]) {
+                url = marketUrls[market](term);
+              }
+              if (url) {
+                // On mobile, open in new tab
+                window.open(url, '_blank');
+              }
+            });
+            
+            // Clear selection
+            selectedSearchTerms = {};
+            localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+            
+            // Update UI
+            renderSavedSearches();
+            updateUnhighlightedCount();
+          } else {
+            // Use the current search query
+            const query = document.getElementById('query').value.trim();
+            if (!query) {
+              document.getElementById('query').focus();
+              return;
+            }
+            const market = marketBtn.getAttribute('data-market');
+            const section = marketBtn.getAttribute('data-section');
+            let url;
+            if (market.startsWith("custom-")) {
+              const parts = market.split("-");
+              const customId = parts.slice(2).join("-");
+              url = getCustomMarketUrl(section, customId, query);
+            } else if (marketUrls[market]) {
+              url = marketUrls[market](query);
+            }
+            if (url) {
+              // On mobile, open in new tab
+              window.open(url, '_blank');
+            }
+          }
         }
-        
-        // Don't trigger if clicking on remove button
-        if (e.target.classList.contains('market-remove-btn') || 
-            e.target.closest('.market-remove-btn')) {
-          return;
-        }
-        
-        const query = document.getElementById('query').value.trim();
-        if (!query) {
-          document.getElementById('query').focus();
-          return;
-        }
-        
-        const market = marketBtn.getAttribute('data-market');
-        const section = marketBtn.getAttribute('data-section');
-        
-        let url;
-        if (market && market.startsWith("custom-")) {
-          // Extract market ID: key format is "custom-{section}-{id}"
-          // Since we have the section, remove "custom-{section}-" prefix
-          const prefix = `custom-${section}-`;
-          const customId = market.startsWith(prefix) ? market.substring(prefix.length) : market.split("-").slice(2).join("-");
-          url = getCustomMarketUrl(section, customId, query);
-        } else if (market && marketUrls[market]) {
-          url = marketUrls[market](query);
-        }
-        
-        if (url) {
-          // On mobile, open in new tab
-          window.open(url, '_blank');
-        }
-      }
-      
-      // Add both click and touchstart handlers for mobile compatibility
-      document.addEventListener('click', handleMarketButtonClick, false);
-      document.addEventListener('touchend', function(e) {
-        // Only handle if it's not a click event (prevents double-firing)
-        if (e.cancelable) {
-          handleMarketButtonClick(e);
-        }
-      }, { passive: true });
+      });
       
       // Improve mobile experience by adjusting some styles dynamically
       setTimeout(() => {
