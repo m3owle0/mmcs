@@ -1,0 +1,51 @@
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.secret
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+supabase/.config/
+
+# Node modules (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Build outputs
+dist/
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Files with secrets (optional - uncomment if you want to exclude these)
+# SETUP_WEBHOOK_NOW.md
+# *.md files with keys (be careful - this might exclude important docs)
