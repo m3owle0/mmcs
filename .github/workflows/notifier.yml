@@ -10,7 +10,7 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
-    timeout-minutes: 5  # Prevent long-running jobs
+    timeout-minutes: 4
     
     steps:
       - name: Checkout code
@@ -20,6 +20,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.23'
+          cache-dependencies: true
       
       - name: Download dependencies
         working-directory: ./notifier
@@ -29,11 +30,11 @@ jobs:
         working-directory: ./notifier
         run: go build -o notifier
       
-      - name: Run notifier
+      - name: Run notifier (single cycle)
         working-directory: ./notifier
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        run: timeout 240 ./notifier || true
-        # Timeout after 4 minutes (allows one full cycle + buffer)
-        # || true prevents failure if timeout triggers
+        run: |
+          # Run notifier for one cycle (about 1-2 minutes), then exit
+          timeout 180 ./notifier || exit 0
