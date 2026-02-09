@@ -36,6 +36,10 @@
       -webkit-overflow-scrolling: touch;
       position: relative;
     }
+    /* Prevent background from blocking modal interactions */
+    body.site-locked {
+      background-attachment: scroll; /* Change from fixed to prevent blocking */
+    }
     @media (max-width: 768px) {
       html, body {
         overflow-y: auto;
@@ -1665,6 +1669,7 @@
         align-items: flex-start;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        pointer-events: auto !important;
       }
       .notifications-modal-bg, .notification-edit-modal-bg {
         padding: 10px;
@@ -1846,6 +1851,13 @@
       .section-header-row h2 {
         font-size: 1em;
       }
+      .unlock-modal-bg {
+        padding: 10px;
+        align-items: flex-start;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        pointer-events: auto !important;
+      }
       .unlock-modal {
         padding: 20px 15px;
         width: calc(100% - 20px);
@@ -1853,6 +1865,11 @@
         max-height: 90vh;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        position: relative;
+        z-index: 100000;
+        pointer-events: auto !important;
+        margin-top: 20px;
+        margin-bottom: 20px;
       }
       .unlock-modal h3 {
         font-size: 20px;
@@ -1867,6 +1884,10 @@
         font-size: 16px !important; /* Prevent zoom on iOS */
         min-height: 44px;
         padding: 12px 15px;
+        pointer-events: auto !important;
+        touch-action: manipulation;
+        -webkit-appearance: none;
+        appearance: none;
       }
       .unlock-btn-row {
         flex-direction: column;
@@ -1876,6 +1897,9 @@
         width: 100%;
         min-height: 44px;
         font-size: 16px;
+        pointer-events: auto !important;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
       }
       #signup-form {
         display: flex;
@@ -1884,6 +1908,10 @@
       #login-form {
         display: flex;
         flex-direction: column;
+      }
+      /* Ensure all modal elements are interactive on mobile */
+      .unlock-modal * {
+        pointer-events: auto !important;
       }
       .donation-link {
         padding: 8px 12px;
@@ -2054,10 +2082,43 @@
     align-items: center;
     justify-content: center;
     z-index: 99999; /* Above lock overlay */
+    pointer-events: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
   }
 
   .unlock-modal-bg.show {
     display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Ensure modal is visible on mobile */
+  @media (max-width: 768px) {
+    .unlock-modal-bg.show {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: 100000 !important;
+    }
+    .unlock-modal-bg {
+      z-index: 100000 !important;
+    }
+    .unlock-modal {
+      visibility: visible !important;
+      opacity: 1 !important;
+      display: block !important;
+      position: relative !important;
+      z-index: 100001 !important;
+    }
+    /* Ensure unlock button is visible on mobile */
+    #unlock-btn {
+      display: inline-block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: 100002 !important;
+      position: relative !important;
+    }
   }
 
   .unlock-modal {
@@ -2069,6 +2130,9 @@
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
     text-align: center;
     -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 100000;
+    pointer-events: auto !important;
   }
   @media (max-width: 768px) {
     .unlock-modal {
@@ -2252,6 +2316,22 @@
   body.site-locked .top-header,
   body.site-locked .top-header * {
     pointer-events: auto !important;
+  }
+  
+  /* Ensure modal inputs and buttons work on mobile */
+  body.site-locked .unlock-modal input,
+  body.site-locked .unlock-modal button,
+  body.site-locked .unlock-modal a,
+  body.site-locked .unlock-modal label {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2) !important;
+  }
+  
+  /* Prevent background images from blocking interactions */
+  body.site-locked .unlock-modal-bg::before,
+  body.site-locked .unlock-modal-bg::after {
+    pointer-events: none !important;
   }
   
   /* Global button fixes for iOS */
@@ -3172,15 +3252,21 @@
           const blockInteractions = (e) => {
             // Allow interactions only with unlock modal and top header
             const target = e.target;
-            const isUnlockModal = target.closest('.unlock-modal-bg');
+            const isUnlockModal = target.closest('.unlock-modal-bg') || target.closest('.unlock-modal');
             const isTopHeader = target.closest('.top-header');
+            const isModalInput = target.matches('.unlock-input, .unlock-submit-btn, .unlock-cancel-btn');
+            const isModalButton = target.closest('.unlock-modal') !== null;
             
-            if (!isUnlockModal && !isTopHeader) {
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-              return false;
+            // Allow all interactions within the modal
+            if (isUnlockModal || isTopHeader || isModalInput || isModalButton) {
+              return true; // Allow the interaction
             }
+            
+            // Block everything else
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
           };
           
           // Store blocker function reference for cleanup
@@ -3239,6 +3325,8 @@
               if (!currentUser && unlockModalBg) {
                 unlockModalBg.classList.add('show');
                 unlockModalBg.style.display = 'flex';
+                unlockModalBg.style.visibility = 'visible';
+                unlockModalBg.style.opacity = '1';
               }
             }
           } else {
@@ -3249,8 +3337,20 @@
             }
           }
           
-          if (unlockBtn) unlockBtn.style.display = 'inline-block';
+          if (unlockBtn) {
+            unlockBtn.style.display = 'inline-block';
+            unlockBtn.style.visibility = 'visible';
+            unlockBtn.style.opacity = '1';
+          }
           if (userDisplay) userDisplay.style.display = 'none';
+          
+          // Auto-show modal on mobile when site is locked
+          if (window.innerWidth <= 768 && unlockModalBg) {
+            unlockModalBg.classList.add('show');
+            unlockModalBg.style.display = 'flex';
+            unlockModalBg.style.visibility = 'visible';
+            unlockModalBg.style.opacity = '1';
+          }
         }
         
         isInitializing = false;
@@ -3261,6 +3361,15 @@
             if (unlockModalBg) {
               unlockModalBg.classList.add('show');
               unlockModalBg.style.display = 'flex';
+              unlockModalBg.style.visibility = 'visible';
+              unlockModalBg.style.opacity = '1';
+              // Ensure modal is visible on mobile
+              const modal = unlockModalBg.querySelector('.unlock-modal');
+              if (modal) {
+                modal.style.display = 'block';
+                modal.style.visibility = 'visible';
+                modal.style.opacity = '1';
+              }
             }
             // Show login form by default
             if (loginForm) loginForm.style.display = 'block';
