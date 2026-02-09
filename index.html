@@ -2093,13 +2093,35 @@
     opacity: 1 !important;
   }
   
-  /* Ensure modal is visible on mobile */
+  /* Ensure modal is visible on mobile and iOS */
   @media (max-width: 768px) {
+    /* Force modal background to be visible - override inline styles */
+    #unlock-modal-bg.show,
     .unlock-modal-bg.show {
       display: flex !important;
       visibility: visible !important;
       opacity: 1 !important;
       z-index: 100000 !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+    }
+    /* Even without .show class, if display is flex, make it visible */
+    #unlock-modal-bg[style*="display: flex"],
+    #unlock-modal-bg[style*="display:flex"],
+    .unlock-modal-bg[style*="display: flex"],
+    .unlock-modal-bg[style*="display:flex"] {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: 100000 !important;
+    }
+    /* Override inline display:none on mobile */
+    #unlock-modal-bg.show {
+      display: flex !important;
+      visibility: visible !important;
     }
     .unlock-modal-bg {
       z-index: 100000 !important;
@@ -2110,6 +2132,7 @@
       display: block !important;
       position: relative !important;
       z-index: 100001 !important;
+      transform: none !important;
     }
     /* Ensure unlock button is visible on mobile */
     #unlock-btn {
@@ -2118,6 +2141,38 @@
       opacity: 1 !important;
       z-index: 100002 !important;
       position: relative !important;
+    }
+  }
+  
+  /* iOS Safari specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    .unlock-modal-bg.show,
+    .unlock-modal-bg[style*="display: flex"],
+    .unlock-modal-bg[style*="display:flex"] {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 100000 !important;
+    }
+    /* Override inline display:none on iOS */
+    #unlock-modal-bg.show {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+    .unlock-modal {
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
   }
 
@@ -2466,7 +2521,7 @@
   </div>
 
   <!-- Login Modal -->
-  <div id="unlock-modal-bg" class="unlock-modal-bg" style="display: none;">
+  <div id="unlock-modal-bg" class="unlock-modal-bg" style="display: none; visibility: hidden;">
     <div class="unlock-modal">
       <h3>Login</h3>
       <p style="color: #b0b0b0; margin-bottom: 20px; line-height: 1.6;">
@@ -3311,6 +3366,28 @@
                 if (unlockModalBg) {
                   unlockModalBg.classList.add('show');
                   unlockModalBg.style.display = 'flex';
+                  unlockModalBg.style.visibility = 'visible';
+                  unlockModalBg.style.opacity = '1';
+                  
+                  // iOS-specific: Force show with all properties
+                  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                  if (isIOS || window.innerWidth <= 768) {
+                    unlockModalBg.style.position = 'fixed';
+                    unlockModalBg.style.top = '0';
+                    unlockModalBg.style.left = '0';
+                    unlockModalBg.style.width = '100vw';
+                    unlockModalBg.style.height = '100vh';
+                    unlockModalBg.style.zIndex = '100000';
+                    
+                    // Force modal content visibility
+                    const modal = unlockModalBg.querySelector('.unlock-modal');
+                    if (modal) {
+                      modal.style.display = 'block';
+                      modal.style.visibility = 'visible';
+                      modal.style.opacity = '1';
+                    }
+                  }
                 }
               } else {
                 // Hide modal, show button instead
@@ -3327,13 +3404,38 @@
                 unlockModalBg.style.display = 'flex';
                 unlockModalBg.style.visibility = 'visible';
                 unlockModalBg.style.opacity = '1';
+                
+                // iOS-specific: Force show with all properties
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                if (isIOS) {
+                  unlockModalBg.style.position = 'fixed';
+                  unlockModalBg.style.top = '0';
+                  unlockModalBg.style.left = '0';
+                  unlockModalBg.style.width = '100vw';
+                  unlockModalBg.style.height = '100vh';
+                  unlockModalBg.style.zIndex = '100000';
+                }
               }
             }
           } else {
-            // Modal suppressed - hide it
+            // Modal suppressed - but show on mobile/iOS anyway
+            const isMobile = window.innerWidth <= 768;
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            
             if (unlockModalBg) {
-              unlockModalBg.classList.remove('show');
-              unlockModalBg.style.display = 'none';
+              if (isMobile || isIOS) {
+                // Force show on mobile/iOS even if suppressed
+                unlockModalBg.classList.add('show');
+                unlockModalBg.style.display = 'flex';
+                unlockModalBg.style.visibility = 'visible';
+                unlockModalBg.style.opacity = '1';
+              } else {
+                // Hide on desktop if suppressed
+                unlockModalBg.classList.remove('show');
+                unlockModalBg.style.display = 'none';
+              }
             }
           }
           
@@ -3344,12 +3446,37 @@
           }
           if (userDisplay) userDisplay.style.display = 'none';
           
-          // Auto-show modal on mobile when site is locked
-          if (window.innerWidth <= 768 && unlockModalBg) {
+          // Auto-show modal on mobile/iOS when site is locked (override suppressModal)
+          const isMobile = window.innerWidth <= 768;
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+          
+          if ((isMobile || isIOS) && unlockModalBg && !unlocked) {
+            // Force show modal on mobile/iOS
             unlockModalBg.classList.add('show');
             unlockModalBg.style.display = 'flex';
             unlockModalBg.style.visibility = 'visible';
             unlockModalBg.style.opacity = '1';
+            unlockModalBg.style.position = 'fixed';
+            unlockModalBg.style.top = '0';
+            unlockModalBg.style.left = '0';
+            unlockModalBg.style.width = '100vw';
+            unlockModalBg.style.height = '100vh';
+            unlockModalBg.style.zIndex = '100000';
+            
+            // Force modal content to be visible
+            const modal = unlockModalBg.querySelector('.unlock-modal');
+            if (modal) {
+              modal.style.display = 'block';
+              modal.style.visibility = 'visible';
+              modal.style.opacity = '1';
+              modal.style.position = 'relative';
+              modal.style.zIndex = '100001';
+            }
+            
+            // Ensure forms are visible
+            if (loginForm) loginForm.style.display = 'block';
+            if (signupForm) signupForm.style.display = 'none';
           }
         }
         
@@ -3614,6 +3741,37 @@
             const currentUser = getCurrentUser();
             if (currentUser) {
               startSessionHeartbeat();
+            }
+            
+            // iOS-specific: Force check and show modal if locked
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (isIOS || window.innerWidth <= 768) {
+              setTimeout(() => {
+                const unlockModalBg = document.getElementById('unlock-modal-bg');
+                const isLocked = document.body.classList.contains('site-locked');
+                const hasUser = getCurrentUser();
+                
+                if (isLocked && !hasUser && unlockModalBg) {
+                  unlockModalBg.classList.add('show');
+                  unlockModalBg.style.display = 'flex';
+                  unlockModalBg.style.visibility = 'visible';
+                  unlockModalBg.style.opacity = '1';
+                  unlockModalBg.style.position = 'fixed';
+                  unlockModalBg.style.top = '0';
+                  unlockModalBg.style.left = '0';
+                  unlockModalBg.style.width = '100vw';
+                  unlockModalBg.style.height = '100vh';
+                  unlockModalBg.style.zIndex = '100000';
+                  
+                  const modal = unlockModalBg.querySelector('.unlock-modal');
+                  if (modal) {
+                    modal.style.display = 'block';
+                    modal.style.visibility = 'visible';
+                    modal.style.opacity = '1';
+                  }
+                }
+              }, 500);
             }
           });
         });
