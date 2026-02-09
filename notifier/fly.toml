@@ -1,0 +1,22 @@
+# Fly.io configuration for MMCS Notifier
+# To deploy: fly launch (then edit this file and fly deploy)
+
+app = "mmcs-notifier"
+primary_region = "iad"  # Change to closest region: iad, ord, dfw, sea, lax, etc.
+
+[build]
+  builder = "paketobuildpacks/builder:base"
+
+[env]
+  # Set these via: fly secrets set SUPABASE_SERVICE_ROLE_KEY=your-key
+  # SUPABASE_SERVICE_ROLE_KEY = "set-via-secrets"
+
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+  
+  # Notifier doesn't need external HTTP, but Fly requires a service
+  # This keeps the app running continuously
+  [[services.ports]]
+    port = 8080
+    handlers = ["http"]
