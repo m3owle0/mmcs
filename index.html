@@ -1847,7 +1847,43 @@
         font-size: 1em;
       }
       .unlock-modal {
-        padding: 15px 10px;
+        padding: 20px 15px;
+        max-height: 95vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      #signup-form {
+        display: flex;
+        flex-direction: column;
+      }
+      #signup-form .unlock-input {
+        width: 100%;
+        margin-bottom: 12px;
+        font-size: 16px !important; /* Prevent zoom on iOS */
+        min-height: 44px;
+        padding: 12px 15px;
+        -webkit-appearance: none;
+        appearance: none;
+        touch-action: manipulation;
+        box-sizing: border-box;
+      }
+      #signup-form .unlock-btn-row {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 15px;
+        width: 100%;
+      }
+      #signup-form .unlock-btn-row button {
+        width: 100%;
+        min-height: 44px;
+        font-size: 16px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+        pointer-events: auto;
+      }
+      #login-form .unlock-input {
+        font-size: 16px !important; /* Prevent zoom on iOS */
+        min-height: 44px;
       }
       .donation-link {
         padding: 8px 12px;
@@ -2373,12 +2409,12 @@
         </div>
       </div>
       <div id="signup-form" style="display: none;">
-        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="email" id="signup-email-input" placeholder="Your email" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" />
+        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" autocomplete="username" style="margin-bottom: 12px;" />
+        <input type="email" id="signup-email-input" placeholder="Your email" class="unlock-input" autocomplete="email" inputmode="email" style="margin-bottom: 12px;" />
+        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" autocomplete="new-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button id="signup-submit-btn" class="unlock-submit-btn">Create Account</button>
-          <button id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
+          <button id="signup-submit-btn" class="unlock-submit-btn" type="button">Create Account</button>
+          <button id="login-toggle-btn" class="unlock-cancel-btn" type="button">Back to Login</button>
         </div>
       </div>
       <p style="color: #888; font-size: 12px; margin-top: 15px; line-height: 1.6; word-break: break-word;">
@@ -3237,25 +3273,40 @@
         
         // Toggle between login and signup forms
         if (signupToggleBtn) {
-          signupToggleBtn.onclick = () => {
+          signupToggleBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             if (loginForm) loginForm.style.display = 'none';
-            if (signupForm) signupForm.style.display = 'block';
+            if (signupForm) {
+              signupForm.style.display = 'flex';
+              signupForm.style.flexDirection = 'column';
+            }
             if (loginError) loginError.style.display = 'none';
             if (loginSuccess) loginSuccess.style.display = 'none';
             if (signupUsernameInput) {
-              setTimeout(() => signupUsernameInput.focus(), 100);
+              setTimeout(() => {
+                signupUsernameInput.focus();
+                // Scroll input into view on mobile
+                signupUsernameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 100);
             }
           };
         }
         
         if (loginToggleBtn) {
-          loginToggleBtn.onclick = () => {
+          loginToggleBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             if (loginForm) loginForm.style.display = 'block';
             if (signupForm) signupForm.style.display = 'none';
             if (loginError) loginError.style.display = 'none';
             if (loginSuccess) loginSuccess.style.display = 'none';
             if (loginUsernameInput) {
-              setTimeout(() => loginUsernameInput.focus(), 100);
+              setTimeout(() => {
+                loginUsernameInput.focus();
+                // Scroll input into view on mobile
+                loginUsernameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 100);
             }
           };
         }
@@ -3338,7 +3389,10 @@
         
         // Signup handler
         if (signupSubmitBtn) {
-          signupSubmitBtn.onclick = async () => {
+          signupSubmitBtn.onclick = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const username = signupUsernameInput ? signupUsernameInput.value.trim() : '';
             const email = signupEmailInput ? signupEmailInput.value.trim() : '';
             const password = signupPasswordInput ? signupPasswordInput.value : '';
@@ -3347,6 +3401,8 @@
               if (loginError) {
                 loginErrorText.textContent = 'Please fill in all fields.';
                 loginError.style.display = 'block';
+                // Scroll error into view on mobile
+                loginError.scrollIntoView({ behavior: 'smooth', block: 'center' });
               }
               return;
             }
@@ -3354,6 +3410,11 @@
             signupSubmitBtn.disabled = true;
             signupSubmitBtn.textContent = 'Creating account...';
             if (loginError) loginError.style.display = 'none';
+            
+            // Blur inputs to dismiss mobile keyboard
+            if (signupUsernameInput) signupUsernameInput.blur();
+            if (signupEmailInput) signupEmailInput.blur();
+            if (signupPasswordInput) signupPasswordInput.blur();
             
             const result = await signUpUser(username, email, password);
             
