@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Multi-Market Secondhand Clothing Search</title>
-  <meta name="viewport" content="width=1920, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <link rel="icon" type="image/svg+xml" href="miku.svg">
   <style>
     :root {
@@ -24,14 +24,26 @@
 
     /* Main Styles */
     html, body {
-      height: 100%;
+      min-height: 100vh;
+      height: auto;
       background: var(--theme-bg) var(--theme-bg-image);
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
       color: var(--theme-text);
-      min-height: 100vh;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+    @media (max-width: 768px) {
+      html, body {
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        height: auto;
+        min-height: 100vh;
+      }
     }
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
@@ -65,6 +77,33 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 1000px) {
+      .container {
+        position: relative;
+        left: 0;
+        top: 0;
+        transform: none;
+        margin-top: 60px;
+        max-height: none;
+        border-radius: 0;
+        width: 100%;
+        max-width: 100%;
+        padding: 15px 10px;
+        min-height: auto;
+      }
+    }
+    @media (max-width: 768px) {
+      .container {
+        margin-top: 70px;
+        padding: 12px 8px;
+        overflow-y: visible;
+      }
+      body {
+        overflow-y: auto !important;
+        height: auto !important;
+      }
     }
 
     .container::-webkit-scrollbar {
@@ -204,6 +243,12 @@
       margin-bottom: 2px;
       backdrop-filter: blur(2px);
       opacity: 0.93;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .section-openall-btn:hover {
       background: #444;
@@ -211,12 +256,17 @@
       box-shadow: 0 4px 16px #2226;
       transform: translateY(-2px) scale(1.04);
     }
+    .section-openall-btn:active {
+      transform: translateY(0) scale(1);
+    }
     .tip { font-size: 14px; color: #b0b0b0; margin-bottom: 20px; }
     .market-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
     input[type="text"] {
       font-size: 18px;
       padding: 12px 14px;
       border-radius: 7px;
+      -webkit-appearance: none;
+      appearance: none;
       border: 1.5px solid #2a2d2f;
       outline: none;
       background: rgba(30,32,34,0.93);
@@ -228,6 +278,13 @@
       backdrop-filter: blur(1.5px);
     }
     input[type="text"]:focus { border: 1.5px solid #888; background: rgba(40,42,44,0.98);}
+    @media (max-width: 768px) {
+      input[type="text"] {
+        font-size: 16px;
+        min-height: 44px;
+        padding: 12px 15px;
+      }
+    }
     #clear-search:hover { color: #fff; }
     .markets { 
       display: flex; 
@@ -264,6 +321,11 @@
       backdrop-filter: blur(2px);
       opacity: 0.93;
       border: 1px solid rgba(255,255,255,0.1);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
     }
     .market-btn.disabled {
       opacity: 0.5;
@@ -289,6 +351,15 @@
       opacity: 1;
       transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
     }
+    .market-btn:active, #open-all-btn:active {
+      transform: translateY(0) scale(1);
+    }
+    @media (max-width: 768px) {
+      .market-btn, #open-all-btn, .section-openall-btn, button {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+    }
     .market-remove-btn {
       position: absolute;
       right: 6px;
@@ -305,6 +376,33 @@
       box-shadow: 0 1px 4px #0002;
     }
     .market-remove-btn:hover { color: #fff; background: #444; }
+    .market-favorite-btn {
+      position: absolute;
+      right: 6px;
+      top: 6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: transparent;
+      border: none;
+      color: #ffd700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 0.15s;
+      padding: 0;
+      line-height: 1;
+    }
+    .market-favorite-btn:hover { 
+      transform: scale(1.2);
+      filter: brightness(1.2);
+    }
+    .market-btn:has(.market-remove-btn) .market-favorite-btn {
+      right: 28px;
+    }
     .special-group {
       margin-top: 30px;
       margin-bottom: 18px;
@@ -330,6 +428,12 @@
       border: none;
       border-radius: 10px;
       font-size: 17px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
       font-weight: bold;
       padding: 13px 28px;
       margin: 0 0 25px 0;
@@ -502,6 +606,15 @@
       transition: border .15s, background .14s;
       background: rgba(30,32,34,0.93);
       color: #e3e3e3;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    @media (max-width: 768px) {
+      .sidebar-folder-input {
+        font-size: 16px;
+        min-height: 44px;
+        padding: 10px 12px;
+      }
     }
     .sidebar-folder-input:focus { border: 1.5px solid #888; background: rgba(40,42,44,0.98);}
     .sidebar-folder-btn {
@@ -518,8 +631,15 @@
       box-shadow: 0 2px 8px #2224;
       opacity: 0.93;
       backdrop-filter: blur(1.5px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .sidebar-folder-btn:hover { background: #444; box-shadow: 0 4px 16px #2226; transform: translateY(-1px) scale(1.04);}
+    .sidebar-folder-btn:active { transform: translateY(0) scale(1); }
     .saved-folder-list {
       list-style: none;
       padding: 0;
@@ -591,6 +711,12 @@
       box-shadow: 0 1px 4px #2224;
       opacity: 0.93;
       backdrop-filter: blur(2px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .randomize-section {
       margin-bottom: 15px;
@@ -648,6 +774,12 @@
       box-shadow: 0 1px 4px #2224;
       opacity: 0.93;
       backdrop-filter: blur(2px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .sidebar-randomize-btn:hover,
     .sidebar-multi-search-btn:hover,
@@ -669,6 +801,12 @@
       box-shadow: 0 1px 4px #2224;
       opacity: 0.93;
       backdrop-filter: blur(2px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .randomize-select:focus { 
       border: 1.5px solid #888; 
@@ -694,8 +832,49 @@
       box-shadow: 0 1px 4px #2224;
       opacity: 0.93;
       backdrop-filter: blur(2px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .sidebar-imp-btn input[type="file"] { display: none; }
+    .sidebar-add-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .sidebar-add-btn {
+      background: #232323;
+      color: #e3e3e3;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.08em;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 4.5px 13px;
+      transition: background .15s, box-shadow .15s, transform .13s;
+      box-shadow: 0 2px 8px #2224;
+      opacity: 0.93;
+      backdrop-filter: blur(1.5px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-add-btn:hover {
+      background: #444;
+      box-shadow: 0 4px 16px #2226;
+      transform: translateY(-1px) scale(1.04);
+    }
+    .sidebar-add-btn:active {
+      transform: translateY(0) scale(1);
+    }
     .sidebar-divider {
       border: none;
       border-top: 1.5px solid #232323;
@@ -863,8 +1042,15 @@
       box-shadow: 0 2px 8px #2224;
       opacity: 0.93;
       backdrop-filter: blur(1.5px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .custom-market-modal .modal-btn:hover { background: #444; box-shadow: 0 4px 16px #2226; transform: translateY(-1px) scale(1.04);}
+    .custom-market-modal .modal-btn:active { transform: translateY(0) scale(1); }
     .custom-market-modal .modal-cancel-btn {
       background: #232323;
       color: #e3e3e3;
@@ -877,8 +1063,15 @@
       transition: background .14s, color .14s;
       opacity: 0.93;
       backdrop-filter: blur(1.5px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .custom-market-modal .modal-cancel-btn:hover { background: #2224; color: #fff; }
+    .custom-market-modal .modal-cancel-btn:active { transform: translateY(0); }
     .custom-market-modal .modal-tip {
       color: #b0b0b0;
       font-size: 13px;
@@ -891,6 +1084,34 @@
       margin-bottom: 8px;
       margin-top: 2px;
       font-weight: bold;
+    }
+    /* Notification market buttons */
+    .notification-market-btn {
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 2px solid #444;
+      background: rgba(35, 35, 35, 0.8);
+      color: #e3e3e3;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      min-height: 44px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      font-weight: 500;
+    }
+    .notification-market-btn:hover {
+      background: rgba(50, 50, 50, 0.9);
+      border-color: #666;
+    }
+    .notification-market-btn.selected {
+      border-color: #00e6d6;
+      background: rgba(0, 230, 214, 0.2);
+      color: #00e6d6;
+    }
+    .notification-market-btn.selected:hover {
+      background: rgba(0, 230, 214, 0.3);
     }
     /* Add website buttons */
     .add-market-row {
@@ -918,8 +1139,15 @@
       box-shadow: 0 1px 4px #2224;
       opacity: 0.93;
       backdrop-filter: blur(2px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
     }
     .add-market-btn:hover { background: #444; color: #fff; box-shadow: 0 4px 16px #2226; transform: translateY(-1px) scale(1.04);}
+    .add-market-btn:active { transform: translateY(0) scale(1); }
     /* Wishlist styles (dark mode) */
     .wishlist-section {
       position: fixed;
@@ -1164,13 +1392,25 @@
     }
     @media (max-width: 1200px) {
       .wishlist-section { display: none; }
-      .container { margin-right: 0; }
+      .container { 
+        margin-right: 0; 
+        margin-left: 0;
+        left: 0;
+        top: 0;
+        transform: none;
+        position: relative;
+        max-width: 100%;
+        width: 100%;
+        margin-top: 60px;
+        border-radius: 0;
+        max-height: none;
+      }
       .custom-market-modal-bg { justify-content: center; align-items: center; }
       .custom-market-modal { margin: auto; }
     }
     @media (max-width: 1000px) {
       .sidebar {
-        position: static;
+        position: relative;
         width: 100%;
         height: auto;
         box-shadow: none;
@@ -1179,21 +1419,531 @@
         padding: 13px 8px 7px 8px;
         margin-bottom: 18px;
         max-width: 100vw;
+        overflow-x: hidden;
       }
-      .container { max-width: 98vw; margin: 0.5em; }
-      .custom-market-modal-bg { justify-content: center !important; align-items: center !important; }
-      .custom-market-modal { margin: auto !important; }
+      .container { 
+        max-width: 100vw; 
+        width: 100%;
+        margin: 0;
+        padding: 15px 10px;
+        border-radius: 0;
+        position: relative;
+        left: 0;
+        top: 0;
+        transform: none;
+        margin-top: 60px;
+      }
+      .custom-market-modal-bg { 
+        justify-content: center !important; 
+        align-items: flex-start !important;
+        padding: 20px 10px;
+        overflow-y: auto;
+      }
+      .custom-market-modal { 
+        margin: auto !important;
+        max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .top-header {
+        padding: 10px 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .header-left, .header-right {
+        gap: 8px;
+        flex-wrap: wrap;
+      }
     }
-    @media (max-width: 700px) {
-      .market-row, .markets { flex-direction: column; gap: 8px; }
-      .market-btn { min-width: 0; width: 100%; }
-      .add-market-btn { min-width: 0; width: 100%; }
-      input[type="text"] { min-width: 0; }
-      .special-group { padding: 10px 4px 6px 4px; }
-      #open-all-btn { max-width: 100%; }
-      .sidebar { padding: 9px 3px 7px 6px; font-size: 0.97em; }
-      .custom-market-modal-bg { justify-content: center !important; align-items: center !important; }
-      .custom-market-modal { margin: auto !important; }
+    @media (max-width: 768px) {
+      html, body {
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .container {
+        padding: 12px 8px;
+        margin-top: 70px;
+      }
+      .top-header {
+        padding: 8px 10px;
+        font-size: 0.9em;
+      }
+      .header-left, .header-right {
+        gap: 6px;
+      }
+      .market-row, .markets { 
+        flex-direction: column; 
+        gap: 8px; 
+      }
+      .market-btn { 
+        min-width: 0; 
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+      .add-market-btn { 
+        min-width: 0; 
+        width: 100%;
+        min-height: 44px;
+        padding: 10px;
+      }
+      input[type="text"], input[type="email"], input[type="password"] { 
+        min-width: 0;
+        min-height: 44px;
+        font-size: 16px;
+        padding: 10px 12px;
+      }
+      .special-group { 
+        padding: 10px 4px 6px 4px; 
+      }
+      #open-all-btn, .section-openall-btn, .sidebar-randomize-btn { 
+        max-width: 100%;
+        min-height: 44px;
+        padding: 10px 15px;
+        font-size: 14px;
+      }
+      .sidebar { 
+        padding: 10px 8px;
+        font-size: 0.95em; 
+      }
+      .section-header-row {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .section-header-row h2 {
+        font-size: 1.1em;
+      }
+      .custom-market-modal-bg { 
+        justify-content: center !important; 
+        align-items: flex-start !important;
+        padding: 10px;
+      }
+      .custom-market-modal { 
+        margin: auto !important;
+        max-width: 100vw;
+        width: calc(100% - 20px);
+        max-height: 85vh;
+        padding: 15px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .custom-market-modal input[type="text"] {
+        font-size: 16px !important;
+        min-height: 44px;
+        padding: 12px 15px;
+      }
+      .custom-market-modal .modal-btn-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .custom-market-modal .modal-btn,
+      .custom-market-modal .modal-cancel-btn {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: 15px;
+      }
+      .custom-market-modal h3 {
+        font-size: 18px;
+      }
+      .custom-market-modal label {
+        font-size: 14px;
+      }
+      .custom-market-modal .modal-tip {
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .custom-market-modal .drag-handle {
+        display: none;
+      }
+      .add-market-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .add-market-btn {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px;
+        font-size: 14px;
+      }
+      .sidebar-folder-btn,
+      .sidebar-add-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 10px;
+        font-size: 18px;
+      }
+      .sidebar-exp-btn,
+      .sidebar-imp-btn,
+      .sidebar-reset-btn,
+      .sidebar-multi-clear-btn,
+      .sidebar-randomize-btn {
+        min-height: 44px;
+        padding: 10px 15px;
+        font-size: 14px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .sidebar-import-export-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .sidebar-import-export-row button,
+      .sidebar-import-export-row label {
+        width: 100%;
+        margin-right: 0;
+      }
+      .sidebar-multi-search-row button {
+        width: 100%;
+        min-height: 44px;
+      }
+      .randomize-select {
+        font-size: 16px;
+        min-height: 44px;
+        padding: 12px 35px 12px 15px;
+      }
+      .saved-search-term,
+      .saved-folder-item {
+        min-height: 44px;
+        padding: 10px;
+        touch-action: manipulation;
+      }
+      .edit-btn,
+      .remove-btn,
+      .save-edit-btn,
+      .cancel-edit-btn,
+      .sidebar-folder-edit-btn,
+      .sidebar-folder-remove-btn {
+        min-width: 36px;
+        min-height: 36px;
+        padding: 6px;
+        font-size: 16px;
+        touch-action: manipulation;
+      }
+      .market-favorite-btn,
+      .market-remove-btn {
+        min-width: 36px;
+        min-height: 36px;
+      }
+      .section-openall-btn {
+        min-height: 44px;
+        padding: 10px 15px;
+        font-size: 14px;
+        touch-action: manipulation;
+      }
+      #open-all-btn {
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: 15px;
+      }
+      #toggle-all-checkbox {
+        width: 20px;
+        height: 20px;
+      }
+      .panel-close,
+      .minimized-panel-btn {
+        min-width: 36px;
+        min-height: 36px;
+        font-size: 18px;
+      }
+      .wishlist-section {
+        width: 100%;
+        max-width: 100%;
+        right: 0;
+      }
+      .unlock-modal {
+        max-width: 95vw;
+        width: calc(100% - 20px);
+        padding: 20px 15px;
+        max-height: 85vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .unlock-modal-bg {
+        padding: 10px;
+        align-items: flex-start;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .notifications-modal-bg, .notification-edit-modal-bg {
+        padding: 10px;
+        align-items: flex-start;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      #notifications-modal-bg .unlock-modal, #notification-edit-modal-bg .unlock-modal {
+        max-width: 100%;
+        width: 100%;
+        max-height: 90vh;
+      }
+      /* Mobile styles for notifications */
+      .notification-item {
+        padding: 12px;
+        margin-bottom: 10px;
+        background: rgba(35, 35, 35, 0.5);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .notification-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .notification-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .notification-actions {
+        display: flex;
+        gap: 5px;
+        flex-shrink: 0;
+      }
+      .notification-action-btn {
+        min-height: 36px;
+        padding: 8px 12px;
+        font-size: 13px;
+        touch-action: manipulation;
+        white-space: nowrap;
+      }
+      @media (max-width: 768px) {
+        #notifications-modal-bg .unlock-modal {
+          padding: 20px 15px;
+          max-height: 95vh;
+        }
+        #notification-edit-modal-bg .unlock-modal {
+          padding: 20px 15px;
+          max-height: 95vh;
+        }
+        .notification-content {
+          flex-direction: column;
+        }
+        .notification-actions {
+          width: 100%;
+          justify-content: stretch;
+        }
+        .notification-action-btn {
+          flex: 1;
+          min-height: 44px;
+        }
+        #notifications-list > div {
+          padding: 15px;
+        }
+        #notifications-list .notification-info {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+        #notifications-list .notification-info > div:first-child {
+          font-size: 15px;
+          margin-bottom: 8px;
+        }
+        #notifications-list .notification-info > div:last-child {
+          font-size: 11px;
+          word-break: break-word;
+        }
+        #notifications-modal-bg h3 {
+          font-size: 20px;
+        }
+        #notifications-modal-bg h4 {
+          font-size: 14px;
+        }
+        #notifications-modal-bg .unlock-input {
+          font-size: 16px;
+          min-height: 44px;
+        }
+        #add-notification-btn {
+          width: 100%;
+          min-height: 44px;
+          margin-top: 10px;
+        }
+        #notifications-modal-bg > div > div:first-of-type {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        #notifications-modal-bg > div > div:first-of-type h4 {
+          margin-bottom: 10px;
+        }
+        #notification-markets {
+          grid-template-columns: 1fr !important;
+          max-height: 400px;
+          gap: 10px;
+        }
+        .notification-market-btn {
+          width: 100% !important;
+          min-height: 48px !important;
+          padding: 14px 16px !important;
+          font-size: 15px !important;
+        }
+        .notification-market-btn:active {
+          transform: scale(0.98);
+          opacity: 0.8;
+        }
+        .notification-market-btn.selected {
+          border-color: #00e6d6 !important;
+          background: rgba(0, 230, 214, 0.2) !important;
+        }
+        .webhook-buttons-row {
+          grid-template-columns: 1fr !important;
+        }
+        .webhook-buttons-row button {
+          width: 100%;
+        }
+        #discord-webhook-input {
+          font-size: 16px !important;
+          min-height: 44px;
+        }
+      }
+      .unlock-input {
+        min-height: 44px;
+        font-size: 16px;
+        padding: 12px 15px;
+      }
+      .unlock-submit-btn, .unlock-cancel-btn {
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: 15px;
+        touch-action: manipulation;
+      }
+      .unlock-btn-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .unlock-btn-row button {
+        width: 100%;
+      }
+      .market-favorite-btn, .market-remove-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+      .market-btn:has(.market-remove-btn) .market-favorite-btn {
+        right: 36px;
+      }
+      button {
+        min-height: 44px;
+        touch-action: manipulation;
+      }
+    }
+    @media (max-width: 480px) {
+      .container {
+        padding: 10px 6px;
+        margin-top: 65px;
+      }
+      .top-header {
+        padding: 6px 8px;
+        font-size: 0.85em;
+      }
+      .sidebar {
+        padding: 8px 6px;
+        font-size: 0.9em;
+      }
+      .market-btn {
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+      .section-header-row h2 {
+        font-size: 1em;
+      }
+      .unlock-modal {
+        padding: 20px 15px;
+        width: calc(100% - 20px);
+        max-width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .unlock-modal h3 {
+        font-size: 20px;
+        margin-bottom: 15px;
+      }
+      .unlock-modal p {
+        font-size: 13px;
+        line-height: 1.6;
+        word-break: break-word;
+      }
+      .unlock-input {
+        font-size: 16px !important; /* Prevent zoom on iOS */
+        min-height: 44px;
+        padding: 12px 15px;
+      }
+      .unlock-btn-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .unlock-btn-row button {
+        width: 100%;
+        min-height: 44px;
+        font-size: 16px;
+      }
+      #signup-form {
+        display: flex;
+        flex-direction: column;
+      }
+      #login-form {
+        display: flex;
+        flex-direction: column;
+      }
+      .donation-link {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-height: 36px;
+        touch-action: manipulation;
+      }
+      .top-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 8px;
+        position: relative;
+      }
+      .header-left, .header-right {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .header-right {
+        margin-top: 8px;
+      }
+      #user-display {
+        display: block;
+        text-align: center;
+        margin: 5px 0;
+        width: 100%;
+      }
+      #notifications-btn, #unlock-btn {
+        width: 100%;
+        margin: 5px 0;
+        min-height: 40px;
+        touch-action: manipulation;
+      }
+      #query {
+        font-size: 16px !important;
+        min-height: 44px;
+        padding: 12px 15px;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      #searchForm {
+        margin-bottom: 15px;
+      }
+      input[type="text"], input[type="email"], input[type="password"], textarea, select {
+        font-size: 16px !important;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      .sidebar-add-input {
+        font-size: 16px !important;
+        min-height: 44px;
+        padding: 10px 12px;
+      }
+      /* Prevent iOS zoom on input focus - must be 16px or larger */
+      @supports (-webkit-touch-callout: none) {
+        input[type="text"], input[type="email"], input[type="password"], textarea, select {
+          font-size: 16px !important;
+        }
+      }
     }
     @media (min-width: 1200px) {
   .container {
@@ -1274,11 +2024,21 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+    -webkit-appearance: none;
+    appearance: none;
+    user-select: none;
+    pointer-events: auto;
   }
 
   .unlock-btn:hover {
     background: rgba(0, 230, 214, 0.3);
     transform: translateY(-1px);
+  }
+  
+  .unlock-btn:active {
+    transform: translateY(0);
   }
 
   /* Unlock Modal Styles */
@@ -1308,6 +2068,24 @@
     width: min(400px, 90vw);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
     text-align: center;
+    -webkit-overflow-scrolling: touch;
+  }
+  @media (max-width: 768px) {
+    .unlock-modal {
+      padding: 20px 15px;
+      width: calc(100% - 20px);
+      max-width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .unlock-modal h3 {
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+    .unlock-modal p {
+      font-size: 13px;
+      line-height: 1.6;
+    }
   }
 
   .unlock-modal h3 {
@@ -1327,8 +2105,16 @@
     outline: none;
     margin-bottom: 20px;
     box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
   }
-
+  @media (max-width: 768px) {
+    .unlock-input {
+      font-size: 16px;
+      min-height: 44px;
+      padding: 12px 15px;
+    }
+  }
   .unlock-input:focus {
     border-color: rgba(0, 230, 214, 0.55);
     background: rgba(40, 42, 44, 0.98);
@@ -1350,11 +2136,26 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 230, 214, 0.3);
+    -webkit-appearance: none;
+    appearance: none;
+    user-select: none;
+    pointer-events: auto;
   }
-
+  @media (max-width: 768px) {
+    .unlock-submit-btn {
+      min-height: 44px;
+      font-size: 15px;
+      padding: 12px 20px;
+    }
+  }
   .unlock-submit-btn:hover {
     background: #00d4c4;
     transform: translateY(-1px);
+  }
+  .unlock-submit-btn:active {
+    transform: translateY(0);
   }
 
   .unlock-cancel-btn {
@@ -1367,15 +2168,32 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
-
+  @media (max-width: 768px) {
+    .unlock-cancel-btn {
+      min-height: 44px;
+      font-size: 15px;
+      padding: 12px 20px;
+    }
+  }
   .unlock-cancel-btn:hover {
     background: rgba(80, 80, 80, 0.9);
+  }
+  .unlock-cancel-btn:active {
+    background: rgba(70, 70, 70, 0.9);
   }
 
   /* Adjust body padding for top header */
   body {
     padding-top: 60px;
+  }
+  @media (max-width: 1000px) {
+    body {
+      padding-top: 0;
+    }
+  }
   }
 
   /* Ensure main content doesn't overlap with header */
@@ -1391,6 +2209,18 @@
   .wishlist-section {
     top: 60px; /* Start below header */
     height: calc(100vh - 60px); /* Adjust height for header */
+  }
+  @media (max-width: 1000px) {
+    .sidebar {
+      top: 0;
+      height: auto;
+      position: relative;
+    }
+    .wishlist-section {
+      top: 0;
+      height: auto;
+      position: relative;
+    }
   }
 
   /* Lock overlay when site is locked - covers ENTIRE viewport */
@@ -1422,6 +2252,93 @@
   body.site-locked .top-header,
   body.site-locked .top-header * {
     pointer-events: auto !important;
+  }
+  
+  /* Global button fixes for iOS */
+  button {
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    user-select: none;
+    pointer-events: auto;
+  }
+  button:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  
+  /* Ensure buttons work on iOS */
+  @media (max-width: 768px) {
+    button, a, input, select, textarea, label {
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.3);
+      cursor: pointer;
+    }
+    button:not(:disabled), a:not(:disabled) {
+      pointer-events: auto !important;
+      touch-action: manipulation;
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+    }
+    /* Fix iOS button click issues */
+    button {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    /* Ensure all interactive elements are tappable */
+    .market-btn, .add-market-btn, .section-openall-btn, 
+    .sidebar-add-btn, .sidebar-folder-btn, .sidebar-exp-btn,
+    .sidebar-imp-btn, .sidebar-reset-btn, .sidebar-multi-clear-btn,
+    .sidebar-randomize-btn, .unlock-btn, .unlock-submit-btn,
+    .unlock-cancel-btn, .modal-btn, .modal-cancel-btn,
+    .notification-market-btn, .notification-action-btn {
+      pointer-events: auto !important;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+    }
+    /* Fix iOS scrolling */
+    html {
+      -webkit-overflow-scrolling: touch;
+      overflow-y: auto;
+      height: auto;
+      position: relative;
+    }
+    body {
+      -webkit-overflow-scrolling: touch;
+      overflow-y: auto !important;
+      height: auto !important;
+      min-height: 100vh;
+      position: relative;
+    }
+    /* Prevent fixed positioning from blocking scroll on iOS */
+    .container {
+      position: relative !important;
+      transform: none !important;
+      left: auto !important;
+      top: auto !important;
+    }
+    /* Ensure content can scroll */
+    .container, .sidebar, #notifications-list, .unlock-modal {
+      -webkit-overflow-scrolling: touch;
+      overflow-y: auto;
+    }
+  }
+  
+  /* iOS-specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    /* iOS Safari specific */
+    html, body {
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    button, a, [role="button"] {
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.3);
+      touch-action: manipulation;
+    }
   }
 
   /* Visual feedback for locked content */
@@ -1472,7 +2389,7 @@
   <div id="unlock-modal-bg" class="unlock-modal-bg" style="display: none;">
     <div class="unlock-modal">
       <h3>Login</h3>
-      <p style="color: #b0b0b0; margin-bottom: 20px;">
+      <p style="color: #b0b0b0; margin-bottom: 20px; line-height: 1.6;">
         <strong style="color: #00e6d6;">✓ Free Access:</strong> Create an account to use the site for free!<br>
         <strong style="color: #f7931a;">🔔 Notifications:</strong> Discord notifications require a $5/month donation.
       </p>
@@ -1483,8 +2400,8 @@
         <p style="color: #00e6d6; margin: 0; font-size: 14px;" id="login-success-text"></p>
       </div>
       <div id="login-form">
-        <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" />
+        <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" autocomplete="email" inputmode="email" style="margin-bottom: 12px;" />
+        <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" autocomplete="current-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
           <button id="login-submit-btn" class="unlock-submit-btn">Login</button>
           <button id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
@@ -1492,15 +2409,15 @@
         </div>
       </div>
       <div id="signup-form" style="display: none;">
-        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="email" id="signup-email-input" placeholder="Your email" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" />
+        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" autocomplete="username" style="margin-bottom: 12px;" />
+        <input type="email" id="signup-email-input" placeholder="Your email" class="unlock-input" autocomplete="email" inputmode="email" style="margin-bottom: 12px;" />
+        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" autocomplete="new-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
           <button id="signup-submit-btn" class="unlock-submit-btn">Create Account</button>
           <button id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
         </div>
       </div>
-      <p style="color: #888; font-size: 12px; margin-top: 15px; line-height: 1.6;">
+      <p style="color: #888; font-size: 12px; margin-top: 15px; line-height: 1.6; word-break: break-word;">
         <strong style="color: #00e6d6;">✓ Site Access:</strong> Free! Just create an account above.<br><br>
         <strong style="color: #f7931a;">🔔 Discord Notifications ($5/month):</strong><br>
         <strong>Step 1:</strong> Donate $5/month via 
@@ -1523,7 +2440,7 @@
         </a><br>
         <strong>Step 2:</strong> Include your email in the payment note/memo<br>
         <strong>Step 3:</strong> After payment, notifications will be activated for your account<br>
-        <strong style="color: #f7931a;">Bitcoin Address:</strong> <code style="background: rgba(247, 147, 26, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; cursor: pointer;" onclick="navigator.clipboard.writeText('bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); alert('Bitcoin address copied!');">bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn</code>
+        <strong style="color: #f7931a;">Bitcoin Address:</strong> <code style="background: rgba(247, 147, 26, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px; cursor: pointer; word-break: break-all;" onclick="navigator.clipboard.writeText('bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn'); alert('Bitcoin address copied!');">bc1qxer8y9dkwmswl7gxsvhxfrkqzpp7tuzzvz2txn</code>
       </p>
     </div>
   </div>
@@ -1612,24 +2529,19 @@
           <span style="font-size: 14px; color: #e3e3e3;">Toggle All</span>
         </label>
         <div class="randomize-section" style="display: flex; align-items: center; gap: 8px;">
-          <div style="position: relative; flex: 1;">
-            <select id="randomize-category-select" class="randomize-select">
-              <option value="all">All Categories</option>
-              <option value="asia">Asia</option>
-              <option value="international">International</option>
-              <option value="special">Designer</option>
-            </select>
-            <div id="randomize-color-indicator" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; border-radius: 50%;"></div>
-          </div>
           <button class="sidebar-randomize-btn" id="sidebar-randomize-btn" type="button" style="background: #232323; color: #e3e3e3; border: none; border-radius: 5px; font-size: 13px; font-weight: bold; padding: 7px 13px; cursor: pointer; box-shadow: 0 1px 4px #2224; opacity: 0.93; backdrop-filter: blur(2px);">Randomize</button>
         </div>
-        <button type="button" id="theme-editor-btn" style="background: #232323; color: #e3e3e3; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; padding: 7px 18px 8px 18px; cursor: pointer; letter-spacing: .01em; box-shadow: 0 2px 8px #2224; transition: background .18s, box-shadow .18s, transform .13s; margin-left: 0; margin-bottom: 2px; backdrop-filter: blur(2px); opacity: 0.93;">Theme Editor</button>
       </div>
       <div class="add-market-row">
         <button type="button" class="add-market-btn" data-section="asia">+ Add Website to Asia</button>
         <button type="button" class="add-market-btn" data-section="international">+ Add Website to International</button>
         <button type="button" class="add-market-btn" data-section="special">+ Add Website to Designer</button>
       </div>
+      <div class="section-header-row" style="margin-top: 0;">
+        <h2>⭐ Favorites</h2>
+        <button type="button" class="section-openall-btn" data-section="favorites">Open All Favorites</button>
+      </div>
+      <div class="markets" id="favorites-markets"></div>
       <div class="section-header-row">
         <h2>Asia</h2>
         <button type="button" class="section-openall-btn" data-section="asia">Open All Asia</button>
@@ -1701,9 +2613,9 @@
         </p>
         <input type="text" id="discord-webhook-input" placeholder="https://discord.com/api/webhooks/..." 
                class="unlock-input" style="margin-bottom: 10px; font-family: monospace; font-size: 12px;" />
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-          <button id="test-webhook-btn" class="unlock-cancel-btn" style="width: 100%;">🧪 Test Webhook</button>
-          <button id="save-webhook-btn" class="unlock-submit-btn" style="width: 100%;">Save Webhook URL</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;" class="webhook-buttons-row">
+          <button id="test-webhook-btn" class="unlock-cancel-btn" style="width: 100%; min-height: 44px;">🧪 Test Webhook</button>
+          <button id="save-webhook-btn" class="unlock-submit-btn" style="width: 100%; min-height: 44px;">Save Webhook URL</button>
         </div>
         <div id="webhook-status" style="margin-top: 10px; font-size: 12px;"></div>
       </div>
@@ -1716,9 +2628,9 @@
 
       <!-- Notifications List -->
       <div style="margin-bottom: 25px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
           <h4 style="color: #e3e3e3; margin: 0; font-size: 16px;">Your Notifications</h4>
-          <button id="add-notification-btn" class="unlock-submit-btn" style="padding: 8px 16px; font-size: 14px;">+ Add Notification</button>
+          <button id="add-notification-btn" class="unlock-submit-btn" style="padding: 8px 16px; font-size: 14px; min-height: 36px;">+ Add Notification</button>
         </div>
         <div id="notifications-list" style="min-height: 100px;">
           <p style="color: #888; text-align: center; padding: 20px;">No notifications configured yet.</p>
@@ -1748,7 +2660,7 @@
         <p style="color: #888; font-size: 12px; margin-bottom: 8px;">
           Only Japanese markets supported by Sendico API will send notifications. Leave empty to search all 5 markets.
         </p>
-        <div id="notification-markets" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px;">
+        <div id="notification-markets" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 300px; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px; -webkit-overflow-scrolling: touch;">
           <!-- Markets will be populated by JavaScript -->
         </div>
       </div>
@@ -2804,14 +3716,23 @@
           'yahoo-auctions': 'Yahoo Auctions'
         };
         
-        notificationsList.innerHTML = currentNotifications.map((notif, index) => {
+        // Sort notifications A-Z by search term
+        // Create array with original indices before sorting
+        const notificationsWithIndex = currentNotifications.map((notif, idx) => ({ notif, originalIndex: idx }));
+        const sortedNotifications = notificationsWithIndex.sort((a, b) => {
+          const termA = (a.notif.searchTerm || 'Untitled').toLowerCase();
+          const termB = (b.notif.searchTerm || 'Untitled').toLowerCase();
+          return termA.localeCompare(termB);
+        });
+        
+        notificationsList.innerHTML = sortedNotifications.map(({ notif, originalIndex }) => {
           // Filter to only Sendico-supported markets
           const sendicoMarkets = ['mercari-jp', 'paypay-fleamarket', 'rakuma', 'rakuten-jp', 'yahoo-auctions'];
           const validMarkets = (notif.markets || []).filter(m => sendicoMarkets.includes(m));
           
-          // Update notification if it had invalid markets
+          // Update notification if it had invalid markets (update original array)
           if (validMarkets.length !== (notif.markets || []).length) {
-            notif.markets = validMarkets;
+            currentNotifications[originalIndex].markets = validMarkets;
             saveNotifications(); // Auto-save filtered markets
           }
           
@@ -2823,15 +3744,15 @@
           }
           
           return `
-            <div style="padding: 12px; margin-bottom: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
-              <div style="display: flex; justify-content: space-between; align-items: start;">
-                <div style="flex: 1;">
+            <div class="notification-item">
+              <div class="notification-content">
+                <div class="notification-info">
                   <div style="color: #e3e3e3; font-weight: bold; margin-bottom: 5px;">${escapeHtml(notif.searchTerm || 'Untitled')}</div>
                   <div style="color: #888; font-size: 12px;">Markets: ${escapeHtml(marketsText)}</div>
                 </div>
-                <div>
-                  <button class="unlock-cancel-btn" onclick="window.editNotification(${index})" style="padding: 5px 10px; margin-right: 5px; font-size: 12px;">Edit</button>
-                  <button class="unlock-cancel-btn" onclick="window.deleteNotification(${index})" style="padding: 5px 10px; font-size: 12px; background: rgba(255, 107, 107, 0.2); color: #ff6b6b;">Delete</button>
+                <div class="notification-actions">
+                  <button class="unlock-cancel-btn notification-action-btn" onclick="window.editNotification(${originalIndex})" style="padding: 5px 10px; margin-right: 5px; font-size: 12px;">Edit</button>
+                  <button class="unlock-cancel-btn notification-action-btn" onclick="window.deleteNotification(${originalIndex})" style="padding: 5px 10px; font-size: 12px; background: rgba(255, 107, 107, 0.2); color: #ff6b6b;">Delete</button>
                 </div>
               </div>
             </div>
@@ -2871,14 +3792,33 @@
         ];
 
         notificationMarkets.innerHTML = sendicoSupportedMarkets.map(market => {
-          const checked = selectedMarkets.includes(market.key) ? 'checked' : '';
+          const isSelected = selectedMarkets.includes(market.key);
           return `
-            <label style="display: flex; align-items: center; color: #e3e3e3; font-size: 13px; cursor: pointer;">
-              <input type="checkbox" value="${market.key}" ${checked} style="margin-right: 8px;">
-              ${market.label}
-            </label>
+            <button type="button" class="notification-market-btn ${isSelected ? 'selected' : ''}" 
+                    data-market="${market.key}">
+              ${isSelected ? '✓ ' : ''}${market.label}
+            </button>
           `;
         }).join('');
+        
+        // Add click handlers for toggle buttons
+        notificationMarkets.querySelectorAll('.notification-market-btn').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const isSelected = this.classList.contains('selected');
+            const label = this.textContent.replace('✓ ', '').trim();
+            
+            // Toggle selected state
+            if (isSelected) {
+              this.classList.remove('selected');
+              this.textContent = label;
+            } else {
+              this.classList.add('selected');
+              this.textContent = '✓ ' + label;
+            }
+          }, { passive: false });
+        });
         
         // Add info message about Sendico-only support
         const infoDiv = document.createElement('div');
@@ -2911,8 +3851,8 @@
           // Only allow Sendico-supported markets
           const sendicoMarkets = ['mercari-jp', 'paypay-fleamarket', 'rakuma', 'rakuten-jp', 'yahoo-auctions'];
           if (notificationMarkets) {
-            notificationMarkets.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-              const market = cb.value;
+            notificationMarkets.querySelectorAll('.notification-market-btn.selected').forEach(btn => {
+              const market = btn.getAttribute('data-market');
               // Only add if it's a Sendico-supported market
               if (sendicoMarkets.includes(market)) {
                 selectedMarkets.push(market);
@@ -3253,25 +4193,10 @@
         { key: "paypay-fleamarket", label: "Yahoo PayPay Flea" },
         { key: "rakuma", label: "Rakuten Rakuma" },
         { key: "rakuten-jp", label: "Rakuten Japan" },
-        { key: "xianyu", label: "Xianyu (闲鱼)" },
         { key: "yahoo-auctions", label: "Yahoo Japan Auctions" }
       ],
-      international: [
-        { key: "depop", label: "Depop" },
-        { key: "ebay", label: "eBay Global" },
-        { key: "facebook", label: "Facebook Marketplace" },
-        { key: "gem", label: "Gem" },
-        { key: "grailed", label: "Grailed" },
-        { key: "mercari-us", label: "Mercari US" },
-        { key: "poshmark", label: "Poshmark" },
-        { key: "shopgoodwill", label: "ShopGoodwill" },
-        { key: "vinted", label: "Vinted" }
-      ],
-      special: [
-        { key: "secondstreet", label: "2nd STREET" },
-        { key: "therealreal", label: "The RealReal" },
-        { key: "vestiaire", label: "Vestiaire Collective" }
-      ]
+      international: [],
+      special: []
     };
     // Market toggle state storage
     const MARKET_TOGGLE_KEY = 'marketToggleStates';
@@ -3288,9 +4213,51 @@
       });
     }
 
+    // Favorites storage
+    const FAVORITES_KEY = 'favoriteMarkets';
+    let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+    function saveFavorites() {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+      renderFavorites();
+    }
+    function isFavorite(marketKey) {
+      return favorites.includes(marketKey);
+    }
+    function toggleFavorite(marketKey) {
+      const index = favorites.indexOf(marketKey);
+      if (index > -1) {
+        favorites.splice(index, 1);
+      } else {
+        favorites.push(marketKey);
+      }
+      saveFavorites();
+    }
+    function getFavoriteMarkets() {
+      const allMarkets = [
+        ...getMarkets('asia'),
+        ...getMarkets('international'),
+        ...getMarkets('special')
+      ];
+      return allMarkets.filter(m => favorites.includes(m.key));
+    }
+    function renderFavorites() {
+      const favoriteMarkets = getFavoriteMarkets();
+      if (favoriteMarkets.length === 0) {
+        const container = document.getElementById('favorites-markets');
+        if (container) {
+          container.innerHTML = '<p style="color: #888; font-size: 12px; padding: 10px; text-align: center;">No favorites yet. Click the ⭐ on any site to add it to favorites.</p>';
+        }
+      } else {
+        createMarketButtons(favoriteMarkets, "favorites-markets", "favorites");
+      }
+    }
+
     // Combined Market Data + Custom
     function getMarkets(section) {
-      const orig = marketDataInitial[section].slice();
+      if (section === 'favorites') {
+        return getFavoriteMarkets();
+      }
+      const orig = marketDataInitial[section] ? marketDataInitial[section].slice() : [];
       const custom = (customMarkets[section] || []).map(m => ({
         key: "custom-" + section + "-" + m.id,
         label: m.title,
@@ -3332,6 +4299,32 @@
         const label = document.createElement('span');
         label.textContent = market.label + (market.custom ? " ★" : "");
         btn.appendChild(label);
+        
+        // Add favorite star button
+        const favoriteBtn = document.createElement('button');
+        favoriteBtn.className = 'market-favorite-btn';
+        favoriteBtn.title = isFavorite(market.key) ? 'Remove from favorites' : 'Add to favorites';
+        favoriteBtn.innerHTML = isFavorite(market.key) ? '⭐' : '☆';
+        favoriteBtn.onclick = function(e) {
+          e.stopPropagation();
+          toggleFavorite(market.key);
+          favoriteBtn.innerHTML = isFavorite(market.key) ? '⭐' : '☆';
+          favoriteBtn.title = isFavorite(market.key) ? 'Remove from favorites' : 'Add to favorites';
+          // Update star in favorites section if it exists there
+          const favContainer = document.getElementById('favorites-markets');
+          if (favContainer) {
+            const favBtn = favContainer.querySelector(`[data-market="${market.key}"]`);
+            if (favBtn) {
+              const favStarBtn = favBtn.querySelector('.market-favorite-btn');
+              if (favStarBtn) {
+                favStarBtn.innerHTML = isFavorite(market.key) ? '⭐' : '☆';
+                favStarBtn.title = isFavorite(market.key) ? 'Remove from favorites' : 'Add to favorites';
+              }
+            }
+          }
+        };
+        btn.appendChild(favoriteBtn);
+        
         container.appendChild(btn);
 
         // Custom market remove button
@@ -3352,6 +4345,7 @@
       createMarketButtons(getMarkets('asia'), "asia-markets", "asia");
       createMarketButtons(getMarkets('international'), "international-markets", "international");
       createMarketButtons(getMarkets('special'), "special-markets", "special");
+      renderFavorites();
     }
     refreshAllMarketButtons();
 
@@ -4151,6 +5145,12 @@
       "rakuten-jp":      q => `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(q)}/?s=4&st=O`,
       "xianyu":          q => `https://2.taobao.com/search?word=${encodeURIComponent(q)}&spm=a2170.xianyu_tbpc_search.0.0`,
       "yahoo-auctions":  q => `https://auctions.yahoo.co.jp/search/search?p=${encodeURIComponent(q)}&s1=new&o1=d`,
+      "carousell-sg":    q => `https://www.carousell.sg/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-hk":    q => `https://www.carousell.com.hk/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-id":    q => `https://www.carousell.co.id/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-my":    q => `https://www.carousell.com.my/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-ph":    q => `https://www.carousell.com.ph/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-tw":    q => `https://www.carousell.com.tw/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
       "depop":           q => `https://www.depop.com/search/?q=${encodeURIComponent(q)}&sort=newlyListed`,
       "ebay":            q => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}&_sop=10`,
       "facebook":        q => `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(q)}`,
@@ -4160,9 +5160,29 @@
       "poshmark":        q => `https://poshmark.com/search?query=${encodeURIComponent(q)}&sort_by=added_desc`,
       "shopgoodwill":    q => `https://shopgoodwill.com/categories/listing?st=${encodeURIComponent(q)}&sg=Keyword&c=&s=&lp=0&hp=999999&sbn=&spo=false&snpo=false&socs=false&sd=false&sca=false&caed=${encodeURIComponent(getShopGoodwillDate())}&cadb=7&scs=false&sis=false&col=1&p=1&ps=40&desc=true&ss=0&UseBuyerPrefs=true&sus=false&cln=1&catIds=&pn=&wc=false&mci=false&hmt=false&layout=grid&ihp=`,
       "vinted":          q => `https://www.vinted.com/catalog?search_text=${encodeURIComponent(q)}&time=${getVintedTime()}&order=newest_first&page=1`,
+      "avito":           q => `https://www.avito.ru/moskva/odezhda_obuv_aksessuary?q=${encodeURIComponent(q)}&s=104`,
+      "automatedsearches": q => `https://automatedsearches.com/search?search_siteid=0&search_new=1&search_query=${encodeURIComponent(q)}&search_number=0&search_hic=0&search_category=11450&search_category0=11450&search_hmo=0&search_condition_new=1&search_condition_new_other=1&search_condition_new_defects=1&search_condition_used=1&search_condition_parts=1&search_condition_unspecified=1&search_postalcode=&search_maxdistance=&search_feedback_min=0&search_show_items=0&search_located_in=WW&search_available_to=US&search_itemtypefilter=AllFixedPriceItemTypes&search_min=&search_max=&search_offer_max=&sf=0&r=&search_name=Untitled&search_notes=&search_interval=15min&search_sort=0&search_sap=&search_salt=&search_sus=&ebay_error=&totalEntries=25285&pp=100`,
+      "wallapop":        q => `https://es.wallapop.com/app/search?keywords=${encodeURIComponent(q)}&orderBy=newest`,
+      "leboncoin":       q => `https://www.leboncoin.fr/recherche?text=${encodeURIComponent(q)}&sort=time&order=desc`,
+      "subito":          q => `https://www.subito.it/annunci-italia/vendita/usato/?q=${encodeURIComponent(q)}&ord=data`,
+      "ricardo":         q => `https://www.ricardo.ch/de/s/${encodeURIComponent(q)}?sort=newest`,
+      "willhaben":       q => `https://www.willhaben.at/iad/kaufen-und-verkaufen/marktplatz?keyword=${encodeURIComponent(q)}&sort=2`,
+      "tradera":         q => `https://www.tradera.com/search?q=${encodeURIComponent(q)}&sort=newest`,
+      "tori":            q => `https://www.tori.fi/koko_suomi?q=${encodeURIComponent(q)}&sort=newest`,
+      "finn":            q => `https://www.finn.no/bap/forsale/search.html?q=${encodeURIComponent(q)}&sort=1`,
+      "dba":             q => `https://www.dba.dk/soeg?soeg=${encodeURIComponent(q)}&sort=createdTime`,
+      "marktplaats":     q => `https://www.marktplaats.nl/q/${encodeURIComponent(q)}/#q:${encodeURIComponent(q)}|sortBy:SortByDate`,
+      "kleinanzeigen":   q => `https://www.kleinanzeigen.de/s-${encodeURIComponent(q)}/k0`,
+      "shpock":          q => `https://www.shpock.com/en-gb/search?q=${encodeURIComponent(q)}&sort=newest`,
       "secondstreet":    q => `https://ec.2ndstreetusa.com/pages/search-results-page?q=${encodeURIComponent(q)}&tab=products&sort_by=created&page=1`,
       "therealreal":     q => `https://www.therealreal.com/products?keywords=${encodeURIComponent(q)}`,
-      "vestiaire":       q => `https://us.vestiairecollective.com/search/?q=${encodeURIComponent(q)}&sortBy=3`
+      "vestiaire":       q => `https://us.vestiairecollective.com/search/?q=${encodeURIComponent(q)}&sortBy=3`,
+      "rebelle":         q => `https://www.rebelle.com/en/search?q=${encodeURIComponent(q)}&sort=created_at_desc`,
+      "tradesy":         q => `https://www.tradesy.com/browse/?q=${encodeURIComponent(q)}&sort=newest`,
+      "fashionphile":    q => `https://www.fashionphile.com/search?q=${encodeURIComponent(q)}&sort=relevance`,
+      "rebag":           q => `https://shop.rebag.com/search?q=${encodeURIComponent(q)}&sort=relevance`,
+      "farfetch":        q => `https://www.farfetch.com/shopping/women/items.aspx?q=${encodeURIComponent(q)}&sort=3`,
+      "yoox":            q => `https://www.yoox.com/us/women/search?dept=women&query=${encodeURIComponent(q)}&sort=8`
     };
     // Custom market URLs: key is "custom-section-id"
     function getCustomMarketUrl(section, id, q) {
@@ -4210,8 +5230,11 @@
     document.addEventListener('click', function(e) {
       // --- Market button logic (support custom) ---
       const marketBtn = e.target.closest('.market-btn');
-      // Only proceed if clicking the button (not checkbox) and not disabled
-      if (marketBtn && !marketBtn.classList.contains('disabled') && !e.target.classList.contains('market-toggle')) {
+      // Only proceed if clicking the button (not checkbox, not favorite button, not remove button) and not disabled
+      if (marketBtn && !marketBtn.classList.contains('disabled') && 
+          !e.target.classList.contains('market-toggle') && 
+          !e.target.classList.contains('market-favorite-btn') &&
+          !e.target.classList.contains('market-remove-btn')) {
         // Check if any search terms are selected
         const selectedTerms = getSelectedSearchTerms();
         
@@ -4294,8 +5317,9 @@
               
               if (market.custom) {
                 const parts = market.key.split("-");
+                const originalSection = parts[1]; // Get original section (asia, international, special)
                 const customId = parts.slice(2).join("-");
-                const url = getCustomMarketUrl(section, customId, term);
+                const url = getCustomMarketUrl(originalSection, customId, term);
                 if (url) tabQueue.add(url);
               } else if (marketUrls[market.key]) {
                 tabQueue.add(marketUrls[market.key](term));
@@ -4328,8 +5352,9 @@
             
             if (market.custom) {
               const parts = market.key.split("-");
+              const originalSection = parts[1]; // Get original section (asia, international, special)
               const customId = parts.slice(2).join("-");
-              const url = getCustomMarketUrl(section, customId, query);
+              const url = getCustomMarketUrl(originalSection, customId, query);
               if (url) urls.push(url);
             } else if (marketUrls[market.key]) {
               urls.push(marketUrls[market.key](query));
@@ -4384,28 +5409,9 @@
       }
     });
 
-    // Update color indicator based on selected category
-    function updateRandomizeColorIndicator() {
-      const select = document.getElementById('randomize-category-select');
-      const indicator = document.getElementById('randomize-color-indicator');
-      const colors = {
-        'all': '#6a0572',
-        'asia': '#ff6b6b',
-        'international': '#4ecdc4',
-        'special': '#ffe66d'
-      };
-      indicator.style.backgroundColor = colors[select.value];
-    }
-
-    // Initialize color indicator
-    updateRandomizeColorIndicator();
-    
-    // Update indicator when selection changes
-    document.getElementById('randomize-category-select').addEventListener('change', updateRandomizeColorIndicator);
-    
     // Randomize button functionality
     document.getElementById('sidebar-randomize-btn').addEventListener('click', function() {
-      const category = document.getElementById('randomize-category-select').value;
+      const category = 'all';
       
       // Get the current folder's searches
       const folder = savedFolders[currentFolderIdx];
@@ -4914,45 +5920,6 @@
   });
 })();
 </script>
-  <!-- Theme Editor Modal -->
-  <div id="theme-editor-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;background:rgba(10,10,10,0.65);backdrop-filter:blur(2.5px);align-items:center;justify-content:center;">
-    <div style="background:rgba(32,34,36,0.98);border-radius:18px;box-shadow:0 8px 32px #000a;padding:28px 22px 18px 22px;max-width:350px;width:96vw;border:1.5px solid #232323;backdrop-filter:blur(7px);cursor:default;">
-      <h3 style="margin-top:0;font-size:1.17em;color:#e3e3e3;margin-bottom:10px;font-weight:bold;letter-spacing:0.01em;text-shadow:0 1px 8px #2224;">Theme Editor</h3>
-      <div style="margin-bottom:15px;">
-        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Background Color</label>
-        <input type="color" id="theme-bg-color" value="#121212" style="width:100%;height:40px;border-radius:5px;border:1.5px solid #232323;">
-      </div>
-      <div style="margin-bottom:15px;">
-        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Accent Color</label>
-        <input type="color" id="theme-accent-color" value="#666" style="width:100%;height:40px;border-radius:5px;border:1.5px solid #232323;">
-      </div>
-      <div style="margin-bottom:15px;">
-        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Search Highlight Color</label>
-        <input type="color" id="theme-highlight-color" value="#a0d8ed" style="width:100%;height:40px;border-radius:5px;border:1.5px solid #232323;">
-      </div>
-      <div style="margin-bottom:15px;">
-        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Background Image</label>
-        <input type="file" id="theme-bg-image" accept="image/*" style="width:100%;border-radius:5px;border:1.5px solid #232323;padding:5px;">
-        <div style="display:flex;gap:5px;margin-top:5px;">
-          <button id="theme-bg-image-remove" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Remove Image</button>
-          <button id="theme-bg-image-preview" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Preview</button>
-        </div>
-      </div>
-      <div style="margin-bottom:15px;">
-        <label style="display:block;margin-top:12px;margin-bottom:2px;color:#e3e3e3;font-weight:bold;font-size:1em;">Logo Image</label>
-        <input type="file" id="theme-logo-image" accept="image/*" style="width:100%;border-radius:5px;border:1.5px solid #232323;padding:5px;">
-        <div style="display:flex;gap:5px;margin-top:5px;">
-          <button id="theme-logo-image-remove" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Reset Default</button>
-          <button id="theme-logo-image-preview" style="background:#232323;color:#e3e3e3;border:none;border-radius:4px;font-size:0.9em;padding:3px 8px;cursor:pointer;">Preview</button>
-        </div>
-      </div>
-      <div style="display:flex;gap:11px;margin-top:18px;justify-content:flex-end;">
-        <button id="theme-apply-btn" style="background:#232323;color:#e3e3e3;border:none;border-radius:6px;font-size:1em;font-weight:bold;cursor:pointer;padding:8px 22px;transition:background .18s,box-shadow .18s,transform .13s;box-shadow:0 2px 8px #2224;opacity:0.93;backdrop-filter:blur(1.5px);">Apply</button>
-        <button id="theme-reset-btn" style="background:#232323;color:#e3e3e3;border:none;border-radius:6px;font-size:1em;font-weight:bold;cursor:pointer;padding:8px 22px;transition:background .14s,color .14s;opacity:0.93;backdrop-filter:blur(1.5px);">Reset</button>
-        <button id="theme-close-btn" style="background:#232323;color:#e3e3e3;border:none;border-radius:6px;font-size:1em;font-weight:bold;cursor:pointer;padding:8px 22px;transition:background .14s,color .14s;opacity:0.93;backdrop-filter:blur(1.5px);">Close</button>
-      </div>
-    </div>
-  </div>
 
   <!-- Particle Background Effect -->
   <canvas id="particle-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
@@ -5008,120 +5975,9 @@
     })();
   </script>
   <script>
-    // Theme Editor Functionality
+    // Theme editor removed - keeping theme loading for backward compatibility
     (function() {
-      const themeEditorBtn = document.getElementById('theme-editor-btn');
-      const themeCloseBtn = document.getElementById('theme-close-btn');
-      const themeModal = document.getElementById('theme-editor-modal');
-      const themeBgImage = document.getElementById('theme-bg-image');
-      const themeBgImageRemove = document.getElementById('theme-bg-image-remove');
-      const themeBgImagePreview = document.getElementById('theme-bg-image-preview');
-      const themeApplyBtn = document.getElementById('theme-apply-btn');
-      
-      if (themeEditorBtn) {
-        themeEditorBtn.addEventListener('click', function() {
-          if (themeModal) themeModal.style.display = 'flex';
-        });
-      }
 
-      if (themeCloseBtn) {
-        themeCloseBtn.addEventListener('click', function() {
-          if (themeModal) themeModal.style.display = 'none';
-        });
-      }
-
-      // Handle background image upload
-      if (themeBgImage) {
-        themeBgImage.addEventListener('change', function(e) {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-              const bgImage = event.target.result;
-              document.documentElement.style.setProperty('--theme-bg-image', `url(${bgImage})`);
-              localStorage.setItem('themeBgImage', bgImage);
-            };
-            reader.readAsDataURL(file);
-          }
-        });
-      }
-
-      // Remove background image
-      if (themeBgImageRemove) {
-        themeBgImageRemove.addEventListener('click', function() {
-          document.documentElement.style.setProperty('--theme-bg-image', 'none');
-          localStorage.removeItem('themeBgImage');
-          if (themeBgImage) themeBgImage.value = '';
-        });
-      }
-
-      // Preview background image
-      if (themeBgImagePreview) {
-        themeBgImagePreview.addEventListener('click', function() {
-          const bgImage = localStorage.getItem('themeBgImage');
-          if (bgImage) {
-            document.documentElement.style.setProperty('--theme-bg-image', `url(${bgImage})`);
-          } else {
-            document.documentElement.style.setProperty('--theme-bg-image', 'url("bg.svg")');
-          }
-        });
-      }
-
-      if (themeApplyBtn) {
-        themeApplyBtn.addEventListener('click', function() {
-          const bgColorEl = document.getElementById('theme-bg-color');
-          const accentColorEl = document.getElementById('theme-accent-color');
-          const highlightColorEl = document.getElementById('theme-highlight-color');
-          const bgColor = bgColorEl ? bgColorEl.value : '#0a0a0a';
-          const accentColor = accentColorEl ? accentColorEl.value : '#444';
-          const highlightColor = highlightColorEl ? highlightColorEl.value : '#00e6d6';
-          
-          // Apply theme
-          document.documentElement.style.setProperty('--theme-bg', bgColor);
-          document.documentElement.style.setProperty('--theme-accent', accentColor);
-          document.documentElement.style.setProperty('--theme-highlight', highlightColor);
-          
-          // Save to localStorage
-          localStorage.setItem('themeSettings', JSON.stringify({
-            bgColor,
-            accentColor,
-            highlightColor
-          }));
-        });
-      }
-
-      const themeResetBtn = document.getElementById('theme-reset-btn');
-      if (themeResetBtn) {
-        themeResetBtn.addEventListener('click', function() {
-          // Reset to defaults
-          const bgColorReset = document.getElementById('theme-bg-color');
-          const accentColorReset = document.getElementById('theme-accent-color');
-          const highlightColorReset = document.getElementById('theme-highlight-color');
-          const logoImageReset = document.getElementById('theme-logo-image');
-          const bgImageReset = document.getElementById('theme-bg-image');
-          
-          if (bgColorReset) bgColorReset.value = '#121212';
-          if (accentColorReset) accentColorReset.value = '#666';
-          if (highlightColorReset) highlightColorReset.value = '#a0d8ed';
-          
-          // Remove saved theme
-          localStorage.removeItem('themeSettings');
-          localStorage.removeItem('themeBgImage');
-          
-          // Apply defaults
-          document.documentElement.style.setProperty('--theme-bg', '#121212');
-          document.documentElement.style.setProperty('--theme-accent', '#666');
-          document.documentElement.style.setProperty('--theme-highlight', '#a0d8ed');
-          document.documentElement.style.setProperty('--theme-bg-image', 'url("bg.svg")');
-          
-          // Reset logo to default
-          const mascot = document.querySelector('.wishlist-mascot');
-          if (mascot) mascot.src = 'mmcs.svg';
-          localStorage.removeItem('themeLogoImage');
-          if (logoImageReset) logoImageReset.value = '';
-          if (bgImageReset) bgImageReset.value = '';
-        });
-      }
 
       // Reset highlights button
       const resetHighlightsBtn = document.getElementById('sidebar-reset-highlights-btn');
@@ -5145,15 +6001,16 @@
     function openAllMarketsWithQuery(query) {
       // Collect all URLs first (only enabled markets)
       const urls = [];
-      ['asia', 'international', 'special'].forEach(section => {
+      ['asia', 'international', 'special', 'favorites'].forEach(section => {
         getMarkets(section).forEach(market => {
           // Skip if this market is toggled off
           if (!loadMarketToggleState(market.key)) return;
           
           if (market.custom) {
             const parts = market.key.split("-");
+            const originalSection = parts[1]; // Get original section (asia, international, special)
             const customId = parts.slice(2).join("-");
-            const url = getCustomMarketUrl(section, customId, query);
+            const url = getCustomMarketUrl(originalSection, customId, query);
             if (url) urls.push(url);
           } else if (marketUrls[market.key]) {
             urls.push(marketUrls[market.key](query));
@@ -5170,20 +6027,15 @@
       renderSavedSearches();
     }
 
-    // Load saved theme on startup
+    // Load saved theme on startup (backward compatibility - no editor UI)
     const savedTheme = localStorage.getItem('themeSettings');
     if (savedTheme) {
       const theme = JSON.parse(savedTheme);
-      document.getElementById('theme-bg-color').value = theme.bgColor;
-      document.getElementById('theme-accent-color').value = theme.accentColor;
-      document.getElementById('theme-highlight-color').value = theme.highlightColor || '#00e6d6';
-      
       document.documentElement.style.setProperty('--theme-bg', theme.bgColor);
       document.documentElement.style.setProperty('--theme-accent', theme.accentColor);
       document.documentElement.style.setProperty('--theme-highlight', theme.highlightColor || '#00e6d6');
     } else {
-      // Apply default background image if no saved theme
-        document.documentElement.style.setProperty('--theme-bg-image', 'url("bg.svg")');
+      document.documentElement.style.setProperty('--theme-bg-image', 'url("bg.svg")');
     }
 
     // Load saved background image
@@ -5192,40 +6044,12 @@
       document.documentElement.style.setProperty('--theme-bg-image', `url(${savedBgImage})`);
     }
 
-    // Load saved logo image
+    // Theme editor removed - logo image loading kept for backward compatibility
     const savedLogoImage = localStorage.getItem('themeLogoImage');
     if (savedLogoImage) {
-      document.querySelector('.wishlist-mascot').src = savedLogoImage;
+      const mascot = document.querySelector('.wishlist-mascot');
+      if (mascot) mascot.src = savedLogoImage;
     }
-
-    // Handle logo image upload
-    document.getElementById('theme-logo-image').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const logoImage = event.target.result;
-          document.querySelector('.wishlist-mascot').src = logoImage;
-          localStorage.setItem('themeLogoImage', logoImage);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Reset logo to default
-    document.getElementById('theme-logo-image-remove').addEventListener('click', function() {
-      document.querySelector('.wishlist-mascot').src = 'mmcs.svg';
-      localStorage.removeItem('themeLogoImage');
-      document.getElementById('theme-logo-image').value = '';
-    });
-
-    // Preview logo
-    document.getElementById('theme-logo-image-preview').addEventListener('click', function() {
-      const logoImage = localStorage.getItem('themeLogoImage');
-      if (logoImage) {
-        document.querySelector('.wishlist-mascot').src = logoImage;
-      }
-    });
 
     // Sidebar detach/reattach functionality
     (function() {
@@ -5355,5 +6179,174 @@
       });
     })();
   </script>
+<script>
+  // iOS-specific fixes for buttons and scrolling
+  (function() {
+    let buttonFixApplied = new WeakSet();
+    
+    // Fix iOS button clicks - ensure all buttons work
+    function fixIOSButtons() {
+      const buttons = document.querySelectorAll('button, a[href], [role="button"], .market-btn, .add-market-btn, .section-openall-btn, .sidebar-add-btn, .sidebar-folder-btn, .sidebar-exp-btn, .sidebar-imp-btn, .sidebar-reset-btn, .sidebar-multi-clear-btn, .sidebar-randomize-btn, .unlock-btn, .unlock-submit-btn, .unlock-cancel-btn, .modal-btn, .modal-cancel-btn, .notification-market-btn, .notification-action-btn');
+      
+      buttons.forEach(btn => {
+        if (buttonFixApplied.has(btn)) return;
+        buttonFixApplied.add(btn);
+        
+        // Remove any inline styles that might block clicks
+        if (btn.style.pointerEvents === 'none' && !btn.disabled) {
+          btn.style.pointerEvents = 'auto';
+        }
+        
+        // Ensure CSS properties are set
+        btn.style.touchAction = 'manipulation';
+        btn.style.webkitTapHighlightColor = 'rgba(0, 230, 214, 0.2)';
+        btn.style.webkitAppearance = 'none';
+        btn.style.appearance = 'none';
+        btn.style.userSelect = 'none';
+        if (!btn.disabled) {
+          btn.style.pointerEvents = 'auto';
+        }
+        
+        // Ensure touch events work - don't prevent default
+        const touchHandler = function(e) {
+          if (btn.disabled) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        };
+        
+        btn.addEventListener('touchstart', touchHandler, { passive: false });
+        btn.addEventListener('touchend', touchHandler, { passive: false });
+        
+        // Fix click events on iOS - ensure they fire
+        const clickHandler = function(e) {
+          if (btn.disabled) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        };
+        
+        btn.addEventListener('click', clickHandler, { passive: false });
+      });
+    }
+    
+    // Fix iOS scrolling
+    function fixIOSScrolling() {
+      // Ensure body can scroll
+      document.body.style.height = 'auto';
+      document.body.style.minHeight = '100vh';
+      document.body.style.overflowY = 'auto';
+      document.body.style.webkitOverflowScrolling = 'touch';
+      document.body.style.position = 'relative';
+      
+      // Ensure html can scroll
+      document.documentElement.style.height = 'auto';
+      document.documentElement.style.minHeight = '100vh';
+      document.documentElement.style.overflowY = 'auto';
+      document.documentElement.style.webkitOverflowScrolling = 'touch';
+      document.documentElement.style.position = 'relative';
+      
+      // Fix container scrolling on mobile
+      const container = document.querySelector('.container');
+      if (container && window.innerWidth <= 768) {
+        container.style.position = 'relative';
+        container.style.transform = 'none';
+        container.style.left = 'auto';
+        container.style.top = 'auto';
+        container.style.maxHeight = 'none';
+        container.style.overflowY = 'visible';
+        container.style.height = 'auto';
+      }
+      
+      // Ensure sidebar doesn't block scrolling
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar && window.innerWidth <= 1000) {
+        sidebar.style.position = 'relative';
+        sidebar.style.height = 'auto';
+        sidebar.style.overflowY = 'visible';
+      }
+    }
+    
+    // Run fixes on load and after DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        fixIOSButtons();
+        fixIOSScrolling();
+      });
+    } else {
+      fixIOSButtons();
+      fixIOSScrolling();
+    }
+    
+    // Re-run fixes after delays to catch dynamically added buttons
+    setTimeout(function() {
+      fixIOSButtons();
+      fixIOSScrolling();
+    }, 100);
+    
+    setTimeout(function() {
+      fixIOSButtons();
+      fixIOSScrolling();
+    }, 500);
+    
+    setTimeout(function() {
+      fixIOSButtons();
+      fixIOSScrolling();
+    }, 1000);
+    
+    // Fix buttons when window resizes (orientation change)
+    window.addEventListener('resize', function() {
+      setTimeout(function() {
+        fixIOSButtons();
+        fixIOSScrolling();
+      }, 100);
+    });
+    
+    // Fix buttons when content is added dynamically
+    const observer = new MutationObserver(function(mutations) {
+      let shouldFix = false;
+      mutations.forEach(function(mutation) {
+        if (mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1 && (node.tagName === 'BUTTON' || node.querySelector && node.querySelector('button'))) {
+              shouldFix = true;
+            }
+          });
+        }
+      });
+      if (shouldFix) {
+        setTimeout(function() {
+          fixIOSButtons();
+          fixIOSScrolling();
+        }, 50);
+      }
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    
+    // Also observe for attribute changes that might affect buttons
+    const attrObserver = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          const target = mutation.target;
+          if (target.tagName === 'BUTTON' && target.style.pointerEvents === 'none' && !target.disabled) {
+            target.style.pointerEvents = 'auto';
+          }
+        }
+      });
+    });
+    
+    attrObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['style'],
+      subtree: true
+    });
+  })();
+</script>
 </body>
 </html>
