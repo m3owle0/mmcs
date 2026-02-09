@@ -5639,7 +5639,13 @@
       }
     });
 
-    document.getElementById('open-all-btn').addEventListener('click', function() {
+    // Function to handle open all button click/touch
+    function handleOpenAllClick(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
       // Check if any search terms are selected
       const selectedTerms = getSelectedSearchTerms();
       
@@ -5674,7 +5680,30 @@
         }
         openAllMarketsWithQuery(query);
       }
-    });
+    }
+
+    // Add event listeners for both click and touch events (mobile support)
+    const openAllBtn = document.getElementById('open-all-btn');
+    if (openAllBtn) {
+      // Click event for desktop
+      openAllBtn.addEventListener('click', handleOpenAllClick);
+      
+      // Touch events for mobile
+      let touchStartTime = 0;
+      openAllBtn.addEventListener('touchstart', function(e) {
+        touchStartTime = Date.now();
+        e.preventDefault(); // Prevent mouse events from firing
+      }, { passive: false });
+      
+      openAllBtn.addEventListener('touchend', function(e) {
+        const touchDuration = Date.now() - touchStartTime;
+        // Only trigger if it was a quick tap (not a swipe or long press)
+        if (touchDuration < 300) {
+          handleOpenAllClick(e);
+        }
+        e.preventDefault();
+      }, { passive: false });
+    }
 
     // Randomize button functionality
     document.getElementById('sidebar-randomize-btn').addEventListener('click', function() {
