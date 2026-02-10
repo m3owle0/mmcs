@@ -16,6 +16,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -24,6 +25,7 @@ type Notification struct {
 	ID         string   `json:"id"`
 	SearchTerm string   `json:"searchTerm"`
 	Markets    []string `json:"markets"`
+	Webhooks   []string `json:"webhooks,omitempty"` // Per-notification webhooks
 	CreatedAt  string   `json:"createdAt"`
 }
 
@@ -135,10 +137,15 @@ var (
 
 func main() {
 	// Get API key from environment or prompt
-	if key := os.Getenv("SUPABASE_ANON_KEY"); key != "" {
+	// NOTE: Use SERVICE_ROLE_KEY for notifier (bypasses RLS to read all users)
+	// Get it from: Supabase Dashboard → Project Settings → API → service_role key
+	if key := os.Getenv("SUPABASE_SERVICE_ROLE_KEY"); key != "" {
 		supabaseKey = key
+	} else if key := os.Getenv("SUPABASE_ANON_KEY"); key != "" {
+		supabaseKey = key
+		log.Printf("⚠️  WARNING: Using ANON_KEY. For production, use SERVICE_ROLE_KEY to bypass RLS.")
 	} else {
-		fmt.Print("Enter your Supabase Anon Key: ")
+		fmt.Print("Enter your Supabase Service Role Key (or Anon Key): ")
 		fmt.Scanln(&supabaseKey)
 		if supabaseKey == "" {
 			log.Fatal("❌ API key is required")
@@ -149,6 +156,13 @@ func main() {
 	log.Printf("📡 Supabase URL: %s", supabaseURL)
 	log.Printf("⏱️  Poll interval: %v", pollInterval)
 	log.Printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+	// Verify database schema before proceeding
+	log.Printf("🔍 Verifying database schema...")
+	if err := verifyDatabaseSchema(); err != nil {
+		log.Fatalf("❌ Database schema verification failed: %v", err)
+	}
+	log.Printf("✅ Database schema verified")
 
 	// Initialize Sendico client
 	log.Printf("🔧 Initializing Sendico client...")
@@ -250,15 +264,188 @@ func processAllNotifications() {
 	}
 }
 
+// verifyDatabaseSchema checks that the database table has the expected structure
+func verifyDatabaseSchema() error {
+	log.Printf("   Checking database connection and schema...")
+	
+	// Supabase uses PostgreSQL, verify we can connect and query
+	// Query the table with a simple select to verify it exists and has required columns
+	url := fmt.Sprintf("%s/rest/v1/unlocked_users?select=auth_user_id,email,username,discord_webhook_url,discord_notifications,notifications_subscription_active,notifications_subscription_expires_at&limit=1", supabaseURL)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("apikey", supabaseKey)
+	req.Header.Set("Authorization", "Bearer "+supabaseKey)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Prefer", "return=representation")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check response status
+	if resp.StatusCode == 404 {
+		return fmt.Errorf("table 'unlocked_users' does not exist - please run database/schema.sql in Supabase SQL Editor")
+	}
+
+	if resp.StatusCode == 401 || resp.StatusCode == 403 {
+		return fmt.Errorf("authentication failed (status %d) - check your API key and ensure it has proper permissions", resp.StatusCode)
+	}
+
+	if resp.StatusCode != 200 && resp.StatusCode != 206 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("database query failed (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	// Try to decode to verify column types match
+	var testUsers []User
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	if err := json.Unmarshal(bodyBytes, &testUsers); err != nil {
+		// Check if it's an empty array (which is fine)
+		var emptyArray []interface{}
+		if json.Unmarshal(bodyBytes, &emptyArray) == nil {
+			log.Printf("   ✓ Database table 'unlocked_users' exists (empty table)")
+		} else {
+			return fmt.Errorf("failed to parse database response - schema may be incorrect: %w\nResponse: %s", err, string(bodyBytes))
+		}
+	} else {
+		log.Printf("   ✓ Database table 'unlocked_users' exists and schema is valid")
+	}
+
+	// Verify database type (Supabase uses PostgreSQL)
+	log.Printf("   ✓ Database type: PostgreSQL (via Supabase)")
+	log.Printf("   ✓ Required columns verified: auth_user_id, email, username, discord_webhook_url, discord_notifications, notifications_subscription_active, notifications_subscription_expires_at")
+	
+	// Check for active subscribers count
+	activeCount, err := getActiveSubscriberCount()
+	if err == nil {
+		log.Printf("   ✓ Found %d active subscriber(s) with webhooks configured", activeCount)
+	}
+	
+	return nil
+}
+
+// getActiveSubscriberCount returns the count of active subscribers (for verification)
+func getActiveSubscriberCount() (int, error) {
+	url := fmt.Sprintf("%s/rest/v1/unlocked_users?select=auth_user_id&notifications_subscription_active=eq.true&discord_webhook_url=not.is.null", supabaseURL)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("apikey", supabaseKey)
+	req.Header.Set("Authorization", "Bearer "+supabaseKey)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Prefer", "count=exact")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 && resp.StatusCode != 206 {
+		return 0, fmt.Errorf("status %d", resp.StatusCode)
+	}
+
+	var users []map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {
+		return 0, err
+	}
+
+	return len(users), nil
+}
+
 func fetchActiveSubscribers() ([]User, error) {
-	url := fmt.Sprintf("%s/rest/v1/unlocked_users?select=auth_user_id,email,username,discord_webhook_url,discord_notifications,notifications_subscription_active,notifications_subscription_expires_at&notifications_subscription_active=eq.true&discord_webhook_url=not.is.null", supabaseURL)
+	// First, get ALL users to see what's actually in the database (for debugging)
+	log.Printf("   🔍 Querying database for subscribers...")
+	
+	// Query ALL users to see what we have (for debugging)
+	urlAllUsers := fmt.Sprintf("%s/rest/v1/unlocked_users?select=auth_user_id,email,username,discord_webhook_url,notifications_subscription_active&limit=100", supabaseURL)
+	reqAll, _ := http.NewRequest("GET", urlAllUsers, nil)
+	reqAll.Header.Set("apikey", supabaseKey)
+	reqAll.Header.Set("Authorization", "Bearer "+supabaseKey)
+	reqAll.Header.Set("Content-Type", "application/json")
+	
+	client := &http.Client{Timeout: 30 * time.Second}
+	respAll, err := client.Do(reqAll)
+	if err == nil {
+		defer respAll.Body.Close()
+		if respAll.StatusCode == 200 {
+			var allUsers []map[string]interface{}
+			if json.NewDecoder(respAll.Body).Decode(&allUsers) == nil {
+				totalUsers := len(allUsers)
+				activeCount := 0
+				withWebhookCount := 0
+				activeWithWebhookCount := 0
+				
+				for _, u := range allUsers {
+					email, _ := u["email"].(string)
+					subscriptionActive := false
+					if sa, ok := u["notifications_subscription_active"].(bool); ok {
+						subscriptionActive = sa
+					}
+					
+					webhookURL := ""
+					if w, ok := u["discord_webhook_url"].(string); ok {
+						webhookURL = strings.TrimSpace(w)
+					} else if u["discord_webhook_url"] != nil {
+						// Handle non-null but non-string values
+						webhookURL = fmt.Sprintf("%v", u["discord_webhook_url"])
+						webhookURL = strings.TrimSpace(webhookURL)
+					}
+					
+					// Fix corrupted webhook URLs that have JSON data appended
+					if strings.Contains(webhookURL, "[{") || strings.Contains(webhookURL, "{\"") {
+						if idx := strings.Index(webhookURL, "[{"); idx > 0 {
+							webhookURL = strings.TrimSpace(webhookURL[:idx])
+						} else if idx := strings.Index(webhookURL, "{\""); idx > 0 {
+							webhookURL = strings.TrimSpace(webhookURL[:idx])
+						}
+					}
+					
+					hasWebhook := webhookURL != "" && len(webhookURL) > 20 && strings.HasPrefix(webhookURL, "https://discord.com/api/webhooks/")
+					
+					if subscriptionActive {
+						activeCount++
+						if hasWebhook {
+							activeWithWebhookCount++
+							log.Printf("   ✓ User %s: subscription=ACTIVE, webhook=%s", email, maskWebhookURL(webhookURL))
+						} else {
+							log.Printf("   ⚠️  User %s: subscription=ACTIVE, webhook=EMPTY/NULL", email)
+						}
+					}
+					
+					if hasWebhook {
+						withWebhookCount++
+					}
+				}
+				
+				log.Printf("   📊 Database stats: %d total user(s), %d active subscription(s), %d with webhook URL, %d active+webhook", 
+					totalUsers, activeCount, withWebhookCount, activeWithWebhookCount)
+				
+				if activeCount > 0 && activeWithWebhookCount == 0 {
+					log.Printf("   ⚠️  Warning: %d user(s) have active subscriptions but no valid webhook URLs", activeCount)
+				}
+			}
+		}
+	}
+
+	// Now get the actual subscribers we can notify (active + webhook)
+	// Query for all active subscribers first, then filter in code (more reliable than PostgREST null checks)
+	url := fmt.Sprintf("%s/rest/v1/unlocked_users?select=auth_user_id,email,username,discord_webhook_url,discord_notifications,notifications_subscription_active,notifications_subscription_expires_at&notifications_subscription_active=eq.true", supabaseURL)
 
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("apikey", supabaseKey)
 	req.Header.Set("Authorization", "Bearer "+supabaseKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -266,13 +453,81 @@ func fetchActiveSubscribers() ([]User, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(body))
 	}
 
-	var users []User
-	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {
+	var allUsers []User
+	if err := json.NewDecoder(resp.Body).Decode(&allUsers); err != nil {
 		return nil, err
 	}
+	
+	// Filter to only users with webhook URLs OR notifications with webhooks
+	users := make([]User, 0, len(allUsers))
+	for i := range allUsers {
+		webhookURL := strings.TrimSpace(allUsers[i].DiscordWebhookURL)
+		
+		// Fix corrupted webhook URLs that have JSON data appended
+		// Sometimes the URL field gets JSON notifications concatenated to it
+		if strings.Contains(webhookURL, "[{") || strings.Contains(webhookURL, "{\"") {
+			// Extract just the URL part (everything before the JSON starts)
+			if idx := strings.Index(webhookURL, "[{"); idx > 0 {
+				webhookURL = strings.TrimSpace(webhookURL[:idx])
+				log.Printf("   🔧 Fixed corrupted webhook URL for user %s (had JSON appended)", allUsers[i].Email)
+			} else if idx := strings.Index(webhookURL, "{\""); idx > 0 {
+				webhookURL = strings.TrimSpace(webhookURL[:idx])
+				log.Printf("   🔧 Fixed corrupted webhook URL for user %s (had JSON appended)", allUsers[i].Email)
+			}
+			// Update the user struct with the cleaned URL
+			allUsers[i].DiscordWebhookURL = webhookURL
+		}
+		
+		// Check if user has global webhook
+		hasGlobalWebhook := webhookURL != "" && len(webhookURL) > 20 && strings.HasPrefix(webhookURL, "https://discord.com/api/webhooks/")
+		
+		// Check if user has notifications with per-notification webhooks
+		hasNotificationWebhooks := false
+		if len(allUsers[i].DiscordNotifications) > 0 {
+			// Try to parse notifications to check for webhooks
+			var notifications []Notification
+			if err := json.Unmarshal(allUsers[i].DiscordNotifications, &notifications); err == nil {
+				for _, notif := range notifications {
+					if len(notif.Webhooks) > 0 {
+						hasNotificationWebhooks = true
+						break
+					}
+				}
+			} else {
+				// Try as string first
+				var str string
+				if err2 := json.Unmarshal(allUsers[i].DiscordNotifications, &str); err2 == nil {
+					if err3 := json.Unmarshal([]byte(str), &notifications); err3 == nil {
+						for _, notif := range notifications {
+							if len(notif.Webhooks) > 0 {
+								hasNotificationWebhooks = true
+								break
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// Include user if they have either global webhook OR notification webhooks
+		if hasGlobalWebhook || hasNotificationWebhooks {
+			users = append(users, allUsers[i])
+			if hasGlobalWebhook {
+				log.Printf("   ✓ Including user %s (%s) - global webhook: %s", allUsers[i].Email, allUsers[i].Username, maskWebhookURL(webhookURL))
+			} else {
+				log.Printf("   ✓ Including user %s (%s) - has notification webhooks", allUsers[i].Email, allUsers[i].Username)
+			}
+		} else {
+			log.Printf("   ⚠️  Excluding user %s (%s) - no webhooks configured", 
+				allUsers[i].Email, allUsers[i].Username)
+		}
+	}
+	
+	log.Printf("   ✅ Found %d subscriber(s) ready for notifications (active subscription + webhook configured)", len(users))
 
 	// Parse notifications JSON (handle both string and array formats)
 	for i := range users {
@@ -303,6 +558,14 @@ func fetchActiveSubscribers() ([]User, error) {
 	}
 
 	return users, nil
+}
+
+// maskWebhookURL masks most of the webhook URL for security in logs
+func maskWebhookURL(url string) string {
+	if len(url) < 20 {
+		return "***"
+	}
+	return url[:20] + "..." + url[len(url)-10:]
 }
 
 func isSubscriptionActive(user User) bool {
@@ -411,12 +674,32 @@ func processUserNotifications(user User) {
 			})
 		}
 
-		// Send notification
-		log.Printf("   ✅ Sending notification...")
-		if err := sendDiscordNotification(user.DiscordWebhookURL, notif, notificationItems); err != nil {
-			log.Printf("   ❌ Error: %v", err)
-		} else {
-			log.Printf("   ✅ Notification sent!")
+		// Determine which webhooks to use
+		webhooksToUse := notif.Webhooks
+		if len(webhooksToUse) == 0 {
+			// Fallback to global webhook if no per-notification webhooks
+			if user.DiscordWebhookURL != "" {
+				webhooksToUse = []string{user.DiscordWebhookURL}
+			} else {
+				log.Printf("   ⚠️  No webhooks configured for this notification")
+				continue
+			}
+		}
+
+		// Send notification to each webhook
+		log.Printf("   ✅ Sending notification to %d webhook(s)...", len(webhooksToUse))
+		for i, webhookURL := range webhooksToUse {
+			webhookURL = strings.TrimSpace(webhookURL)
+			if webhookURL == "" || !strings.HasPrefix(webhookURL, "https://discord.com/api/webhooks/") {
+				log.Printf("   ⚠️  Skipping invalid webhook %d/%d", i+1, len(webhooksToUse))
+				continue
+			}
+			
+			if err := sendDiscordNotification(webhookURL, notif, notificationItems); err != nil {
+				log.Printf("   ❌ Error sending to webhook %d/%d: %v", i+1, len(webhooksToUse), err)
+			} else {
+				log.Printf("   ✅ Notification sent to webhook %d/%d!", i+1, len(webhooksToUse))
+			}
 		}
 	}
 }

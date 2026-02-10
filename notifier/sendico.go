@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -17,6 +18,9 @@ import (
 	orderedmap "github.com/wk8/go-ordered-map/v2"
 	"golang.org/x/sync/errgroup"
 )
+
+// ErrHMACRefreshNeeded is returned when HMAC secret needs to be refreshed
+var ErrHMACRefreshNeeded = errors.New("HMAC secret refreshed, retry needed")
 
 const (
 	SendicoBaseURL = "https://sendico.com"
@@ -139,7 +143,27 @@ func (c *SendicoClient) Translate(ctx context.Context, text string) (string, err
 		req.Header.Set("Content-Type", "application/json")
 	})
 	if err != nil {
-		return "", err
+		// If HMAC was refreshed, rebuild HMAC and retry once
+		if err == ErrHMACRefreshNeeded {
+			hmac, err = buildHMAC(HMACInput{
+				Secret:  c.HMACSecret(),
+				Path:    path,
+				Payload: request,
+				Nonce:   "",
+			})
+			if err != nil {
+				return "", err
+			}
+			// Retry with new HMAC
+			resp, err = c.req(ctx, http.MethodPost, path, bytes.NewReader(requestJSON), hmac, func(req *http.Request) {
+				req.Header.Set("Content-Type", "application/json")
+			})
+			if err != nil {
+				return "", err
+			}
+		} else {
+			return "", err
+		}
 	}
 	defer resp.Body.Close()
 
@@ -219,7 +243,27 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 		req.Header.Set("Content-Type", "application/json")
 	})
 	if err != nil {
-		return nil, err
+		// If HMAC was refreshed, rebuild HMAC and retry once
+		if err == ErrHMACRefreshNeeded {
+			hmac, err = buildHMAC(HMACInput{
+				Secret:  c.HMACSecret(),
+				Path:    path.Path,
+				Payload: params,
+				Nonce:   "",
+			})
+			if err != nil {
+				return nil, err
+			}
+			// Retry with new HMAC
+			resp, err = c.req(ctx, http.MethodGet, path.String(), nil, hmac, func(req *http.Request) {
+				req.Header.Set("Content-Type", "application/json")
+			})
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
 	}
 	defer resp.Body.Close()
 
@@ -243,8 +287,10 @@ func (c *SendicoClient) BulkSearch(ctx context.Context, shops []SendicoShop, opt
 	items := make([]SendicoItem, 0)
 	itemsMu := sync.Mutex{}
 
-	// Use semaphore to limit concurrent requests (max 5 at a time for rate limiting)
-	maxConcurrent := 5
+	// Reduced concurrency and increased delay to avoid rate limiting
+	// Sendico API appears to have strict rate limits, especially for Rakuten
+	maxConcurrent := 3 // Reduced from 5 to 3
+	requestDelay := 1 * time.Second // Increased from 200ms to 1s between requests
 	sem := make(chan struct{}, maxConcurrent)
 	g := new(errgroup.Group)
 	
@@ -256,14 +302,19 @@ func (c *SendicoClient) BulkSearch(ctx context.Context, shops []SendicoShop, opt
 			sem <- struct{}{}
 			defer func() { <-sem }()
 			
-			// Reduced delay - only 200ms between requests (faster but still respectful)
+			// Increased delay between requests to respect rate limits
 			if i > 0 {
-				time.Sleep(200 * time.Millisecond)
+				time.Sleep(requestDelay)
 			}
 			
 			results, err := c.Search(ctx, shop, opts)
 			if err != nil {
-				log.Printf("   ⚠️  Error searching %s: %v", shop, err)
+				// Check if it's a rate limit error
+				if errStr := err.Error(); strings.Contains(errStr, "429") || strings.Contains(errStr, "rate limited") {
+					log.Printf("   ❌ Rate limited searching %s: %v", shop, err)
+				} else {
+					log.Printf("   ⚠️  Error searching %s: %v", shop, err)
+				}
 				return nil // Continue with other shops
 			}
 
@@ -279,32 +330,113 @@ func (c *SendicoClient) BulkSearch(ctx context.Context, shops []SendicoShop, opt
 }
 
 func (c *SendicoClient) req(ctx context.Context, method, path string, body io.Reader, hmac *HMACAttributes, opts ...func(*http.Request)) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, body)
-	if err != nil {
-		return nil, err
+	maxRetries := 3
+	baseDelay := 2 * time.Second
+	
+	// Read body into bytes once for retries (body can only be read once)
+	var bodyBytes []byte
+	if body != nil {
+		var err error
+		bodyBytes, err = io.ReadAll(body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read request body: %w", err)
+		}
 	}
+	
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, func() io.Reader {
+			if bodyBytes != nil {
+				return bytes.NewReader(bodyBytes)
+			}
+			return nil
+		}())
+		if err != nil {
+			return nil, err
+		}
 
-	for _, opt := range opts {
-		opt(req)
+		for _, opt := range opts {
+			opt(req)
+		}
+
+		if hmac != nil {
+			req.Header.Set("X-Sendico-Signature", hmac.Signature)
+			req.Header.Set("X-Sendico-Nonce", hmac.Nonce)
+			req.Header.Set("X-Sendico-Timestamp", fmt.Sprintf("%d", hmac.Timestamp))
+		}
+
+		res, err := c.httpClient.Do(req)
+		if err != nil {
+			if attempt < maxRetries {
+				delay := baseDelay * time.Duration(1<<uint(attempt)) // Exponential backoff: 2s, 4s, 8s
+				log.Printf("   ⚠️  Request error (attempt %d/%d), retrying in %v: %v", attempt+1, maxRetries+1, delay, err)
+				time.Sleep(delay)
+				continue
+			}
+			return nil, err
+		}
+
+		// Handle 403 (Forbidden/Access Denied) - HMAC secret may have expired
+		if res.StatusCode == http.StatusForbidden {
+			bodyBytes, _ := io.ReadAll(res.Body)
+			_ = res.Body.Close()
+			bodyStr := string(bodyBytes)
+			
+			// Check if it's an access denied error (HMAC expired)
+			if strings.Contains(bodyStr, "Access denied") || strings.Contains(bodyStr, "403") {
+				// Refresh HMAC secret - it may have expired
+				log.Printf("   🔄 Access denied (403) - refreshing HMAC secret...")
+				if err := c.FindHMAC(ctx); err != nil {
+					log.Printf("   ❌ Failed to refresh HMAC secret: %v", err)
+					return nil, fmt.Errorf("failed to refresh HMAC secret: %w", err)
+				}
+				log.Printf("   ✅ HMAC secret refreshed")
+				
+				// Return special error so caller can rebuild HMAC with new secret and retry
+				// We can't rebuild HMAC here because we don't have the payload
+				return nil, ErrHMACRefreshNeeded
+			}
+			
+			// Other 403 errors (not access denied)
+			log.Printf("   ⚠️  Sendico API error: status 403, body: %s", bodyStr)
+			return nil, fmt.Errorf("access denied (403): %s", bodyStr)
+		}
+
+		// Handle 429 (Too Many Requests) with retry
+		if res.StatusCode == http.StatusTooManyRequests {
+			_ = res.Body.Close()
+			
+			// Check for Retry-After header
+			retryAfter := baseDelay
+			if retryAfterStr := res.Header.Get("Retry-After"); retryAfterStr != "" {
+				if seconds, err := time.ParseDuration(retryAfterStr + "s"); err == nil {
+					retryAfter = seconds
+				} else if seconds, err := time.ParseDuration(retryAfterStr); err == nil {
+					retryAfter = seconds
+				}
+			} else {
+				// Exponential backoff if no Retry-After header
+				retryAfter = baseDelay * time.Duration(1<<uint(attempt))
+			}
+			
+			if attempt < maxRetries {
+				log.Printf("   ⚠️  Rate limited (429) on %s (attempt %d/%d), retrying in %v", path, attempt+1, maxRetries+1, retryAfter)
+				time.Sleep(retryAfter)
+				continue
+			}
+			
+			// Max retries reached
+			return nil, fmt.Errorf("rate limited (429) after %d attempts", maxRetries+1)
+		}
+
+		if res.StatusCode != http.StatusOK {
+			body, _ := io.ReadAll(res.Body)
+			log.Printf("   ⚠️  Sendico API error: status %d, body: %s", res.StatusCode, string(body))
+			_ = res.Body.Close()
+			return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
+		}
+
+		return res, nil
 	}
-
-	if hmac != nil {
-		req.Header.Set("X-Sendico-Signature", hmac.Signature)
-		req.Header.Set("X-Sendico-Nonce", hmac.Nonce)
-		req.Header.Set("X-Sendico-Timestamp", fmt.Sprintf("%d", hmac.Timestamp))
-	}
-
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if res.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(res.Body)
-		log.Printf("   ⚠️  Sendico API error: status %d, body: %s", res.StatusCode, string(body))
-		_ = res.Body.Close()
-		return nil, fmt.Errorf("unexpected status code: %d", res.StatusCode)
-	}
-
-	return res, err
+	
+	return nil, fmt.Errorf("max retries exceeded")
 }
