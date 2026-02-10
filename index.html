@@ -3819,6 +3819,16 @@
         if (notificationSearchTerm) notificationSearchTerm.value = notif.searchTerm || '';
         if (notificationEditTitle) notificationEditTitle.textContent = 'Edit Notification';
         populateMarketsCheckboxes(notif.markets || []);
+        
+        // Handle backward compatibility: if no webhooks, use global webhook if available
+        let webhooksToShow = notif.webhooks || [];
+        if (webhooksToShow.length === 0) {
+          const globalWebhook = discordWebhookInput ? discordWebhookInput.value.trim() : '';
+          if (globalWebhook && globalWebhook.startsWith('https://discord.com/api/webhooks/')) {
+            webhooksToShow = [globalWebhook];
+          }
+        }
+        populateWebhooks(webhooksToShow);
         if (notificationEditModal) notificationEditModal.style.display = 'flex';
       };
 
@@ -3879,6 +3889,91 @@
         notificationMarkets.appendChild(infoDiv);
       }
 
+      // Populate webhooks list
+      function populateWebhooks(webhooks = []) {
+        if (!notificationWebhooks) return;
+        
+        notificationWebhooks.innerHTML = '';
+        
+        if (webhooks.length === 0) {
+          const emptyMsg = document.createElement('div');
+          emptyMsg.style.cssText = 'color: #888; font-size: 12px; text-align: center; padding: 10px;';
+          emptyMsg.textContent = 'No webhooks added. Click "+ Add Webhook" to add one.';
+          notificationWebhooks.appendChild(emptyMsg);
+        } else {
+          webhooks.forEach((webhook, index) => {
+            const webhookDiv = document.createElement('div');
+            webhookDiv.style.cssText = 'display: flex; gap: 8px; align-items: center; padding: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);';
+            
+            const webhookInput = document.createElement('input');
+            webhookInput.type = 'text';
+            webhookInput.value = webhook;
+            webhookInput.placeholder = 'https://discord.com/api/webhooks/...';
+            webhookInput.className = 'unlock-input';
+            webhookInput.style.cssText = 'flex: 1; font-family: monospace; font-size: 11px; padding: 6px 10px;';
+            webhookInput.setAttribute('data-webhook-index', index);
+            webhookInput.addEventListener('input', function() {
+              const idx = parseInt(this.getAttribute('data-webhook-index'));
+              if (idx >= 0 && idx < webhooks.length) {
+                webhooks[idx] = this.value.trim();
+              }
+              // Visual feedback for valid/invalid webhook URLs
+              const val = this.value.trim();
+              if (val && val.startsWith('https://discord.com/api/webhooks/')) {
+                this.style.borderColor = 'rgba(0, 230, 214, 0.5)';
+                this.style.background = 'rgba(0, 230, 214, 0.05)';
+              } else if (val) {
+                this.style.borderColor = 'rgba(255, 107, 107, 0.5)';
+                this.style.background = 'rgba(255, 107, 107, 0.05)';
+              } else {
+                this.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                this.style.background = '';
+              }
+            });
+            
+            // Set initial validation state
+            if (webhook && webhook.startsWith('https://discord.com/api/webhooks/')) {
+              webhookInput.style.borderColor = 'rgba(0, 230, 214, 0.5)';
+              webhookInput.style.background = 'rgba(0, 230, 214, 0.05)';
+            }
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'unlock-cancel-btn';
+            removeBtn.textContent = '✕';
+            removeBtn.style.cssText = 'padding: 6px 10px; min-width: 32px; background: rgba(255, 107, 107, 0.2); color: #ff6b6b; border-color: rgba(255, 107, 107, 0.5);';
+            removeBtn.title = 'Remove webhook';
+            removeBtn.addEventListener('click', function() {
+              const idx = parseInt(webhookInput.getAttribute('data-webhook-index'));
+              webhooks.splice(idx, 1);
+              populateWebhooks(webhooks);
+            });
+            
+            webhookDiv.appendChild(webhookInput);
+            webhookDiv.appendChild(removeBtn);
+            notificationWebhooks.appendChild(webhookDiv);
+          });
+        }
+      }
+      
+      // Add webhook button
+      if (addWebhookBtn) {
+        addWebhookBtn.addEventListener('click', () => {
+          // Get current webhooks from the UI
+          const currentWebhooks = [];
+          if (notificationWebhooks) {
+            notificationWebhooks.querySelectorAll('input[data-webhook-index]').forEach(input => {
+              const val = input.value.trim();
+              if (val) currentWebhooks.push(val);
+            });
+          }
+          
+          // Add new empty webhook
+          currentWebhooks.push('');
+          populateWebhooks(currentWebhooks);
+        });
+      }
+
       // Add notification button
       if (addNotificationBtn) {
         addNotificationBtn.addEventListener('click', () => {
@@ -3886,6 +3981,7 @@
           if (notificationSearchTerm) notificationSearchTerm.value = '';
           if (notificationEditTitle) notificationEditTitle.textContent = 'Add Notification';
           populateMarketsCheckboxes([]);
+          populateWebhooks([]);
           if (notificationEditModal) notificationEditModal.style.display = 'flex';
         });
       }
@@ -3912,10 +4008,34 @@
             });
           }
 
+          // Get webhooks from UI
+          const webhooks = [];
+          if (notificationWebhooks) {
+            notificationWebhooks.querySelectorAll('input[data-webhook-index]').forEach(input => {
+              const val = input.value.trim();
+              if (val && val.startsWith('https://discord.com/api/webhooks/')) {
+                webhooks.push(val);
+              }
+            });
+          }
+          
+          // Validate that at least one webhook is provided
+          // If no webhooks, try to use the global webhook as fallback
+          if (webhooks.length === 0) {
+            const globalWebhook = discordWebhookInput ? discordWebhookInput.value.trim() : '';
+            if (globalWebhook && globalWebhook.startsWith('https://discord.com/api/webhooks/')) {
+              webhooks.push(globalWebhook);
+            } else {
+              alert('Please add at least one Discord webhook URL for this notification, or set a global webhook.');
+              return;
+            }
+          }
+
           const notification = {
             id: editingNotificationId !== null ? currentNotifications[editingNotificationId].id : generateNotificationId(),
             searchTerm: searchTerm,
             markets: selectedMarkets,
+            webhooks: webhooks,
             createdAt: editingNotificationId !== null 
               ? currentNotifications[editingNotificationId].createdAt 
               : new Date().toISOString()
