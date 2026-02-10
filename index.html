@@ -2160,9 +2160,9 @@
     text-align: center;
     -webkit-overflow-scrolling: touch;
   }
-  /* iOS Safari specific fixes */
+  /* iOS Safari specific fixes - login modal only */
   @supports (-webkit-touch-callout: none) {
-    .unlock-modal-bg {
+    #unlock-modal-bg {
       position: fixed !important;
       top: 0 !important;
       left: 0 !important;
@@ -2175,7 +2175,7 @@
       -webkit-transform: translateZ(0) !important;
       transform: translateZ(0) !important;
     }
-    .unlock-modal-bg.show {
+    #unlock-modal-bg.show {
       display: flex !important;
       visibility: visible !important;
       opacity: 1 !important;
@@ -2183,7 +2183,8 @@
   }
   
   @media (max-width: 768px) {
-    .unlock-modal-bg {
+    /* Only style the LOGIN modal (#unlock-modal-bg) on mobile - do not force other modals visible */
+    #unlock-modal-bg {
       background: rgba(0, 0, 0, 0.98) !important;
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
@@ -2197,13 +2198,10 @@
       height: 100% !important;
       min-height: 100vh !important;
       min-height: -webkit-fill-available !important;
-      display: flex !important;
-      visibility: visible !important;
-      opacity: 1 !important;
       -webkit-transform: translateZ(0);
       transform: translateZ(0);
     }
-    .unlock-modal-bg.show {
+    #unlock-modal-bg.show {
       display: flex !important;
       visibility: visible !important;
       opacity: 1 !important;
@@ -2443,16 +2441,16 @@
     user-select: none !important;
   }
 
-  /* Exception: allow unlock modal and its children */
-  body.site-locked .unlock-modal-bg,
-  body.site-locked .unlock-modal-bg *,
+  /* Exception: allow LOGIN modal only (not online users or other modals) and top header */
+  body.site-locked #unlock-modal-bg,
+  body.site-locked #unlock-modal-bg *,
   body.site-locked .top-header,
   body.site-locked .top-header * {
     pointer-events: auto !important;
   }
   
-  /* Ensure unlock modal is always visible and above lock overlay on iOS */
-  body.site-locked .unlock-modal-bg {
+  /* Ensure only the LOGIN modal is visible when site is locked (not online users modal) */
+  body.site-locked #unlock-modal-bg.show {
     z-index: 999999 !important;
     position: fixed !important;
     display: flex !important;
@@ -2460,11 +2458,13 @@
     opacity: 1 !important;
   }
   
-  body.site-locked .unlock-modal-bg.show {
-    z-index: 999999 !important;
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+  /* When locked, hide other modals that share the unlock-modal-bg class */
+  body.site-locked #online-users-modal-bg,
+  body.site-locked #notifications-modal-bg,
+  body.site-locked #notification-edit-modal-bg,
+  body.site-locked #custom-category-modal-bg {
+    display: none !important;
+    visibility: hidden !important;
   }
   
   /* Global button fixes for iOS */
@@ -3511,14 +3511,15 @@
               const { data: { session } } = await supabase.auth.getSession();
               
               if (!currentUser) {
-                // No user - show modal for login/signup
+                // No user - show LOGIN modal only (hide online users and other modals)
+                const onlineUsersEl = document.getElementById('online-users-modal-bg');
+                if (onlineUsersEl) { onlineUsersEl.style.display = 'none'; onlineUsersEl.classList.remove('show'); }
                 if (unlockModalBg) {
                   unlockModalBg.classList.add('show');
                   unlockModalBg.style.display = 'flex';
                   unlockModalBg.style.visibility = 'visible';
                   unlockModalBg.style.opacity = '1';
                   unlockModalBg.style.zIndex = '999999';
-                  // Force reflow for iOS
                   unlockModalBg.offsetHeight;
                 }
               } else {
@@ -3530,15 +3531,18 @@
               }
             } catch (err) {
               console.error('Error checking session:', err);
-              // Default: show modal if no user
-              if (!currentUser && unlockModalBg) {
-                unlockModalBg.classList.add('show');
-                unlockModalBg.style.display = 'flex';
-                unlockModalBg.style.visibility = 'visible';
-                unlockModalBg.style.opacity = '1';
-                unlockModalBg.style.zIndex = '999999';
-                // Force reflow for iOS
-                unlockModalBg.offsetHeight;
+              // Default: show login modal if no user (hide online users modal)
+              if (!currentUser) {
+                const onlineUsersEl = document.getElementById('online-users-modal-bg');
+                if (onlineUsersEl) { onlineUsersEl.style.display = 'none'; onlineUsersEl.classList.remove('show'); }
+                if (unlockModalBg) {
+                  unlockModalBg.classList.add('show');
+                  unlockModalBg.style.display = 'flex';
+                  unlockModalBg.style.visibility = 'visible';
+                  unlockModalBg.style.opacity = '1';
+                  unlockModalBg.style.zIndex = '999999';
+                  unlockModalBg.offsetHeight;
+                }
               }
             }
           } else {
@@ -3555,19 +3559,19 @@
         
         isInitializing = false;
         
-        // Show login modal button
+        // Show login modal button (ensure online users modal is hidden)
         if (unlockBtn) {
           unlockBtn.onclick = () => {
+            const onlineUsersEl = document.getElementById('online-users-modal-bg');
+            if (onlineUsersEl) { onlineUsersEl.style.display = 'none'; onlineUsersEl.classList.remove('show'); }
             if (unlockModalBg) {
               unlockModalBg.classList.add('show');
               unlockModalBg.style.display = 'flex';
               unlockModalBg.style.visibility = 'visible';
               unlockModalBg.style.opacity = '1';
               unlockModalBg.style.zIndex = '999999';
-              // Force reflow for iOS
               unlockModalBg.offsetHeight;
             }
-            // Show login form by default
             if (loginForm) loginForm.style.display = 'block';
             if (signupForm) signupForm.style.display = 'none';
             if (loginUsernameInput) {
