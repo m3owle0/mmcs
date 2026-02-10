@@ -2726,7 +2726,8 @@
           <button type="button" id="add-webhook-btn" class="unlock-submit-btn" style="padding: 6px 12px; font-size: 12px; min-height: 32px;">+ Add Webhook</button>
         </div>
         <p style="color: #888; font-size: 12px; margin-bottom: 8px;">
-          Add one or more Discord webhooks for this notification. Each webhook can be a different channel (e.g., #rickowens, #supreme).
+          Add one or more Discord webhooks for this notification. Each webhook can be a different channel (e.g., #rickowens, #supreme).<br>
+          <span style="color: #00e6d6;">💡 Tip:</span> Create webhooks in Discord: Server Settings → Integrations → Webhooks → New Webhook
         </p>
         <div id="notification-webhooks" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px; -webkit-overflow-scrolling: touch;">
           <!-- Webhooks will be populated by JavaScript -->
@@ -4069,7 +4070,25 @@
               if (idx >= 0 && idx < webhooks.length) {
                 webhooks[idx] = this.value.trim();
               }
+              // Visual feedback for valid/invalid webhook URLs
+              const val = this.value.trim();
+              if (val && val.startsWith('https://discord.com/api/webhooks/')) {
+                this.style.borderColor = 'rgba(0, 230, 214, 0.5)';
+                this.style.background = 'rgba(0, 230, 214, 0.05)';
+              } else if (val) {
+                this.style.borderColor = 'rgba(255, 107, 107, 0.5)';
+                this.style.background = 'rgba(255, 107, 107, 0.05)';
+              } else {
+                this.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                this.style.background = '';
+              }
             });
+            
+            // Set initial validation state
+            if (webhook && webhook.startsWith('https://discord.com/api/webhooks/')) {
+              webhookInput.style.borderColor = 'rgba(0, 230, 214, 0.5)';
+              webhookInput.style.background = 'rgba(0, 230, 214, 0.05)';
+            }
             
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
