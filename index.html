@@ -423,6 +423,8 @@
       text-shadow: 0 1px 8px #2224;
     }
     #open-all-btn {
+      display: none !important;
+      visibility: hidden !important;
       background: #232323;
       color: #e3e3e3;
       border: none;
@@ -1536,7 +1538,11 @@
       .special-group { 
         padding: 10px 4px 6px 4px; 
       }
-      #open-all-btn, .section-openall-btn, .sidebar-randomize-btn { 
+      #open-all-btn {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      .section-openall-btn, .sidebar-randomize-btn { 
         max-width: 100%;
         min-height: 44px;
         padding: 10px 15px;
@@ -1744,9 +1750,8 @@
         touch-action: manipulation;
       }
       #open-all-btn {
-        min-height: 44px;
-        padding: 12px 20px;
-        font-size: 15px;
+        display: none !important;
+        visibility: hidden !important;
       }
       #toggle-all-checkbox {
         width: 20px;
@@ -6250,14 +6255,14 @@
         renderSavedSearches();
         updateUnhighlightedCount();
       } else {
-        // Use the current search query
-          const query = document.getElementById('query').value.trim();
-          if (!query) {
-            document.getElementById('query').focus();
-            return;
-          }
-          const section = e.target.getAttribute('data-section');
-          openAllMarketsWithQuery(query, section);
+        // Use the current search query - open ALL websites (no section filter)
+        const query = document.getElementById('query').value.trim();
+        if (!query) {
+          document.getElementById('query').focus();
+          return;
+        }
+        // Pass null to open all websites from all sections including custom categories
+        openAllMarketsWithQuery(query, null);
       }
     });
 
@@ -7011,10 +7016,21 @@
     function openAllMarketsWithQuery(query, section = null) {
       // Collect all URLs first (only enabled markets)
       const urls = [];
-      const sectionsToProcess = section ? [section] : ['asia', 'international', 'special', 'favorites', ...customCategories.map(cat => cat.id)];
+      
+      // If no section specified, open ALL websites from all sections including custom categories
+      const sectionsToProcess = section 
+        ? [section] 
+        : [
+            'asia', 
+            'international', 
+            'special', 
+            'favorites',
+            ...customCategories.map(cat => cat.id)
+          ];
       
       sectionsToProcess.forEach(sec => {
-        getMarkets(sec).forEach(market => {
+        const markets = getMarkets(sec);
+        markets.forEach(market => {
           // Skip if this market is toggled off
           if (!loadMarketToggleState(market.key)) return;
           
