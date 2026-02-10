@@ -2374,6 +2374,7 @@
     </div>
     <div class="header-right">
       <span id="user-display" style="display: none; color: #00e6d6; font-size: 14px; margin-right: 15px;"></span>
+      <button id="online-users-btn" class="unlock-btn" style="display: none; margin-right: 10px; background: #232323;">👥 Online</button>
       <button id="notifications-btn" class="unlock-btn" style="display: none; margin-right: 10px; background: #232323;">🔔 Notifications</button>
       <button id="unlock-btn" class="unlock-btn" style="display: none;">Unlock Site</button>
     </div>
@@ -2695,6 +2696,35 @@
         <button id="custom-category-save-btn" class="unlock-submit-btn">Save</button>
         <button id="custom-category-cancel-btn" class="unlock-cancel-btn">Cancel</button>
         <button id="custom-category-delete-btn" class="unlock-cancel-btn" style="display: none; background: rgba(255, 107, 107, 0.2); color: #ff6b6b;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Online Users Modal -->
+  <div id="online-users-modal-bg" class="unlock-modal-bg" style="display: none;">
+    <div class="unlock-modal" style="max-width: 600px; max-height: 80vh;">
+      <h3>👥 Online Users</h3>
+      <div style="margin-bottom: 15px;">
+        <div style="display: flex; gap: 15px; margin-bottom: 15px; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px;">
+          <div style="flex: 1;">
+            <div style="color: #00e6d6; font-size: 24px; font-weight: bold;" id="online-count-display">0</div>
+            <div style="color: #888; font-size: 12px;">Online</div>
+          </div>
+          <div style="flex: 1;">
+            <div style="color: #888; font-size: 24px; font-weight: bold;" id="offline-count-display">0</div>
+            <div style="color: #888; font-size: 12px;">Offline</div>
+          </div>
+          <div style="flex: 1;">
+            <div style="color: #e3e3e3; font-size: 24px; font-weight: bold;" id="total-count-display">0</div>
+            <div style="color: #888; font-size: 12px;">Total</div>
+          </div>
+        </div>
+        <div id="online-users-list" style="max-height: 50vh; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.3); border-radius: 8px; -webkit-overflow-scrolling: touch;">
+          <p style="color: #888; text-align: center; padding: 20px;">Loading users...</p>
+        </div>
+      </div>
+      <div class="unlock-btn-row">
+        <button id="online-users-close-btn" class="unlock-cancel-btn" style="width: 100%;">Close</button>
       </div>
     </div>
   </div>
@@ -3598,6 +3628,8 @@
             supabaseNotifications = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
           }
         }
+        // Expose globally for online users feature
+        window.supabaseNotifications = supabaseNotifications;
       } catch (e) {
         console.warn('Supabase notifications initialization error:', e);
       }
@@ -4316,6 +4348,181 @@
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+      }
+
+      // Online Users Feature
+      const onlineUsersBtn = document.getElementById('online-users-btn');
+      const onlineUsersModal = document.getElementById('online-users-modal-bg');
+      const onlineUsersCloseBtn = document.getElementById('online-users-close-btn');
+      const onlineUsersList = document.getElementById('online-users-list');
+      const onlineCountDisplay = document.getElementById('online-count-display');
+      const offlineCountDisplay = document.getElementById('offline-count-display');
+      const totalCountDisplay = document.getElementById('total-count-display');
+
+      // Show online users button when user is logged in
+      function updateOnlineUsersButtonVisibility() {
+        const userDisplay = document.getElementById('user-display');
+        if (userDisplay && userDisplay.style.display !== 'none') {
+          if (onlineUsersBtn) onlineUsersBtn.style.display = 'inline-block';
+        } else {
+          if (onlineUsersBtn) onlineUsersBtn.style.display = 'none';
+        }
+      }
+
+      // Check visibility periodically
+      setInterval(updateOnlineUsersButtonVisibility, 1000);
+
+      // Fetch all users from Supabase
+      async function fetchAllUsers() {
+        const client = window.supabaseNotifications || supabase;
+        if (!client) {
+          console.error('Supabase client not available');
+          return [];
+        }
+        
+        try {
+          const { data, error } = await client
+            .from('unlocked_users')
+            .select('username, email, last_active, verified, created_at')
+            .eq('verified', true)
+            .order('last_active', { ascending: false, nullsFirst: false });
+          
+          if (error) {
+            console.error('Error fetching users:', error);
+            return [];
+          }
+          
+          return data || [];
+        } catch (err) {
+          console.error('Error in fetchAllUsers:', err);
+          return [];
+        }
+      }
+
+      // Check if user is online (active within last 5 minutes)
+      function isUserOnline(lastActive) {
+        if (!lastActive) return false;
+        const lastActiveTime = new Date(lastActive);
+        const now = new Date();
+        const diffMinutes = (now - lastActiveTime) / (1000 * 60);
+        return diffMinutes <= 5;
+      }
+
+      // Format last active time
+      function formatLastActive(lastActive) {
+        if (!lastActive) return 'Never';
+        const lastActiveTime = new Date(lastActive);
+        const now = new Date();
+        const diffMs = now - lastActiveTime;
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        
+        if (diffMinutes < 1) return 'Just now';
+        if (diffMinutes < 60) return `${diffMinutes}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return lastActiveTime.toLocaleDateString();
+      }
+
+      // Render users list
+      async function renderUsersList() {
+        if (!onlineUsersList) return;
+        
+        onlineUsersList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">Loading users...</p>';
+        
+        const users = await fetchAllUsers();
+        
+        if (users.length === 0) {
+          onlineUsersList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No users found.</p>';
+          if (onlineCountDisplay) onlineCountDisplay.textContent = '0';
+          if (offlineCountDisplay) offlineCountDisplay.textContent = '0';
+          if (totalCountDisplay) totalCountDisplay.textContent = '0';
+          return;
+        }
+        
+        // Separate online and offline users
+        const onlineUsers = users.filter(u => isUserOnline(u.last_active));
+        const offlineUsers = users.filter(u => !isUserOnline(u.last_active));
+        
+        // Update counts
+        if (onlineCountDisplay) onlineCountDisplay.textContent = onlineUsers.length;
+        if (offlineCountDisplay) offlineCountDisplay.textContent = offlineUsers.length;
+        if (totalCountDisplay) totalCountDisplay.textContent = users.length;
+        
+        // Render online users first
+        let html = '';
+        
+        if (onlineUsers.length > 0) {
+          html += '<div style="margin-bottom: 20px;"><h4 style="color: #00e6d6; margin-bottom: 10px; font-size: 14px;">🟢 Online (' + onlineUsers.length + ')</h4>';
+          onlineUsers.forEach(user => {
+            const displayName = user.username || user.email || 'Unknown';
+            html += `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 8px; background: rgba(0, 230, 214, 0.1); border-radius: 6px; border: 1px solid rgba(0, 230, 214, 0.3);">
+                <div>
+                  <div style="color: #e3e3e3; font-weight: bold; font-size: 14px;">${escapeHtml(displayName)}</div>
+                  <div style="color: #888; font-size: 11px;">${escapeHtml(formatLastActive(user.last_active))}</div>
+                </div>
+                <div style="width: 8px; height: 8px; background: #00e6d6; border-radius: 50%;"></div>
+              </div>
+            `;
+          });
+          html += '</div>';
+        }
+        
+        // Render offline users
+        if (offlineUsers.length > 0) {
+          html += '<div><h4 style="color: #888; margin-bottom: 10px; font-size: 14px;">⚫ Offline (' + offlineUsers.length + ')</h4>';
+          offlineUsers.forEach(user => {
+            const displayName = user.username || user.email || 'Unknown';
+            html += `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 8px; background: rgba(35, 35, 35, 0.5); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div>
+                  <div style="color: #888; font-size: 14px;">${escapeHtml(displayName)}</div>
+                  <div style="color: #666; font-size: 11px;">${escapeHtml(formatLastActive(user.last_active))}</div>
+                </div>
+                <div style="width: 8px; height: 8px; background: #666; border-radius: 50%;"></div>
+              </div>
+            `;
+          });
+          html += '</div>';
+        }
+        
+        onlineUsersList.innerHTML = html;
+      }
+
+      // Open online users modal
+      if (onlineUsersBtn) {
+        onlineUsersBtn.addEventListener('click', async () => {
+          if (onlineUsersModal) {
+            onlineUsersModal.style.display = 'flex';
+            await renderUsersList();
+            // Refresh every 30 seconds while modal is open
+            const refreshInterval = setInterval(async () => {
+              if (onlineUsersModal.style.display === 'none') {
+                clearInterval(refreshInterval);
+              } else {
+                await renderUsersList();
+              }
+            }, 30000);
+          }
+        });
+      }
+
+      // Close online users modal
+      if (onlineUsersCloseBtn) {
+        onlineUsersCloseBtn.addEventListener('click', () => {
+          if (onlineUsersModal) onlineUsersModal.style.display = 'none';
+        });
+      }
+
+      // Close on background click
+      if (onlineUsersModal) {
+        onlineUsersModal.addEventListener('click', (e) => {
+          if (e.target === onlineUsersModal) {
+            onlineUsersModal.style.display = 'none';
+          }
+        });
       }
     })();
 
