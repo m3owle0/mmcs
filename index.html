@@ -4599,7 +4599,6 @@
         { key: "vinted", label: "Vinted" },
         { key: "avito", label: "Avito" },
         { key: "marktplaats", label: "Marktplaats" },
-        { key: "kleinanzeigen", label: "Kleinanzeigen" },
         { key: "automatedsearches", label: "Automated Searches" }
       ],
       special: [
@@ -5645,7 +5644,6 @@
       "avito":           q => `https://www.avito.ru/moskva/odezhda_obuv_aksessuary?q=${encodeURIComponent(q)}&s=104`,
       "automatedsearches": q => `https://automatedsearches.com/search?search_siteid=0&search_new=1&search_query=${encodeURIComponent(q)}&search_number=0&search_hic=0&search_category=11450&search_category0=11450&search_hmo=0&search_condition_new=1&search_condition_new_other=1&search_condition_new_defects=1&search_condition_used=1&search_condition_parts=1&search_condition_unspecified=1&search_postalcode=&search_maxdistance=&search_feedback_min=0&search_show_items=0&search_located_in=WW&search_available_to=US&search_itemtypefilter=AllFixedPriceItemTypes&search_min=&search_max=&search_offer_max=&sf=0&r=&search_name=Untitled&search_notes=&search_interval=15min&search_sort=0&search_sap=&search_salt=&search_sus=&ebay_error=&totalEntries=25285&pp=100`,
       "marktplaats":     q => `https://www.marktplaats.nl/q/${encodeURIComponent(q)}/#q:${encodeURIComponent(q)}|sortBy:SortByDate`,
-      "kleinanzeigen":   q => `https://www.kleinanzeigen.de/s-${encodeURIComponent(q)}/k0`,
       "secondstreet":    q => `https://ec.2ndstreetusa.com/pages/search-results-page?q=${encodeURIComponent(q)}&tab=products&sort_by=created&page=1`,
       "therealreal":     q => `https://www.therealreal.com/products?keywords=${encodeURIComponent(q)}`,
       "vestiaire":       q => `https://us.vestiairecollective.com/search/?q=${encodeURIComponent(q)}&sortBy=3`
