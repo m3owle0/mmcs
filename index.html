@@ -2071,6 +2071,8 @@
       max-width: 100%;
       max-height: 90vh;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
     }
     .unlock-modal h3 {
       font-size: 20px;
@@ -2079,6 +2081,9 @@
     .unlock-modal p {
       font-size: 13px;
       line-height: 1.6;
+    }
+    .unlock-modal form {
+      width: 100%;
     }
   }
 
@@ -2107,6 +2112,11 @@
       font-size: 16px;
       min-height: 44px;
       padding: 12px 15px;
+      width: 100%;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      appearance: none;
+      border-radius: 10px;
     }
   }
   .unlock-input:focus {
@@ -2401,24 +2411,24 @@
       <div id="login-success" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(0, 230, 214, 0.2); border: 1px solid rgba(0, 230, 214, 0.5);">
         <p style="color: #00e6d6; margin: 0; font-size: 14px;" id="login-success-text"></p>
       </div>
-      <div id="login-form">
-        <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" />
+      <form id="login-form" onsubmit="event.preventDefault(); return false;">
+        <input type="email" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" autocomplete="email" inputmode="email" />
+        <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" autocomplete="current-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button id="login-submit-btn" class="unlock-submit-btn">Login</button>
-          <button id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
-          <button id="login-cancel-btn" class="unlock-cancel-btn" style="display: none;">Cancel</button>
+          <button type="submit" id="login-submit-btn" class="unlock-submit-btn">Login</button>
+          <button type="button" id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
+          <button type="button" id="login-cancel-btn" class="unlock-cancel-btn" style="display: none;">Cancel</button>
         </div>
-      </div>
-      <div id="signup-form" style="display: none;">
-        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="email" id="signup-email-input" placeholder="Your email" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" />
+      </form>
+      <form id="signup-form" style="display: none;" onsubmit="event.preventDefault(); return false;">
+        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" autocomplete="username" />
+        <input type="email" id="signup-email-input" placeholder="Your email" class="unlock-input" style="margin-bottom: 12px;" autocomplete="email" inputmode="email" />
+        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" autocomplete="new-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button id="signup-submit-btn" class="unlock-submit-btn">Create Account</button>
-          <button id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
+          <button type="submit" id="signup-submit-btn" class="unlock-submit-btn">Create Account</button>
+          <button type="button" id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
         </div>
-      </div>
+      </form>
       <p style="color: #888; font-size: 12px; margin-top: 15px; line-height: 1.6; word-break: break-word;">
         <strong style="color: #00e6d6;">✓ Site Access:</strong> Free! Just create an account above.<br><br>
         <strong style="color: #f7931a;">🔔 Discord Notifications ($5/month):</strong><br>
@@ -3360,141 +3370,167 @@
           };
         }
         
-        // Login handler
-        if (loginSubmitBtn) {
-          loginSubmitBtn.onclick = async () => {
-            const usernameOrEmail = loginUsernameInput ? loginUsernameInput.value.trim() : '';
-            const password = loginPasswordInput ? loginPasswordInput.value : '';
-            
-            if (!usernameOrEmail || !password) {
-              if (loginError) {
-                loginErrorText.textContent = 'Please enter both username/email and password.';
-                loginError.style.display = 'block';
-              }
-              return;
+        // Login handler function (reusable for both onclick and form submit)
+        const handleLogin = async () => {
+          const usernameOrEmail = loginUsernameInput ? loginUsernameInput.value.trim() : '';
+          const password = loginPasswordInput ? loginPasswordInput.value : '';
+          
+          if (!usernameOrEmail || !password) {
+            if (loginError) {
+              loginErrorText.textContent = 'Please enter both username/email and password.';
+              loginError.style.display = 'block';
             }
-            
-            loginSubmitBtn.disabled = true;
-            loginSubmitBtn.textContent = 'Logging in...';
+            return;
+          }
+          
+          loginSubmitBtn.disabled = true;
+          loginSubmitBtn.textContent = 'Logging in...';
+          if (loginError) loginError.style.display = 'none';
+          
+          const result = await loginUser(usernameOrEmail, password);
+          
+          loginSubmitBtn.disabled = false;
+          loginSubmitBtn.textContent = 'Login';
+          
+          if (result.success) {
+            // Hide error message if showing
             if (loginError) loginError.style.display = 'none';
             
-            const result = await loginUser(usernameOrEmail, password);
+            // Clear password field
+            if (loginPasswordInput) loginPasswordInput.value = '';
+            // Clear username field
+            if (loginUsernameInput) loginUsernameInput.value = '';
             
-            loginSubmitBtn.disabled = false;
-            loginSubmitBtn.textContent = 'Login';
+            // Immediately check unlock status
+            const unlocked = await isUnlocked();
+            console.log('Unlock status after login:', unlocked);
             
-            if (result.success) {
-              // Hide error message if showing
-              if (loginError) loginError.style.display = 'none';
+            if (unlocked) {
+              // User is verified - show success briefly, then unlock
+              if (loginSuccess) {
+                loginSuccessText.textContent = 'Login successful! Welcome!';
+                loginSuccess.style.display = 'block';
+              }
               
-              // Clear password field
-              if (loginPasswordInput) loginPasswordInput.value = '';
-              // Clear username field
-              if (loginUsernameInput) loginUsernameInput.value = '';
-              
-              // Immediately check unlock status
-              const unlocked = await isUnlocked();
-              console.log('Unlock status after login:', unlocked);
-              
-              if (unlocked) {
-                // User is verified - show success briefly, then unlock
-                if (loginSuccess) {
-                  loginSuccessText.textContent = 'Login successful! Welcome!';
-                  loginSuccess.style.display = 'block';
-                }
-                
-                // Hide success and unlock site after brief delay
-                setTimeout(async () => {
-                  if (loginSuccess) {
-                    loginSuccess.style.display = 'none';
-                  }
-                  // Refresh unlock system - this will unlock the site and close modal
-                  await initUnlockSystem();
-                  console.log('Site unlocked for verified user');
-                }, 800);
-              } else {
-                // User logged in successfully - all users are now auto-verified
-                console.log('User logged in successfully');
+              // Hide success and unlock site after brief delay
+              setTimeout(async () => {
                 if (loginSuccess) {
                   loginSuccess.style.display = 'none';
                 }
-                if (loginError) {
-                  loginError.style.display = 'none';
-                }
-                // Close modal and unlock site
+                // Refresh unlock system - this will unlock the site and close modal
                 await initUnlockSystem();
-              }
+                console.log('Site unlocked for verified user');
+              }, 800);
             } else {
-              if (loginError) {
-                loginErrorText.textContent = result.error || 'Login failed. Please try again.';
-                loginError.style.display = 'block';
-                console.error('Login failed:', result.error);
+              // User logged in successfully - all users are now auto-verified
+              console.log('User logged in successfully');
+              if (loginSuccess) {
+                loginSuccess.style.display = 'none';
               }
-              // Clear password field on error
-              if (loginPasswordInput) loginPasswordInput.value = '';
+              if (loginError) {
+                loginError.style.display = 'none';
+              }
+              // Close modal and unlock site
+              await initUnlockSystem();
             }
+          } else {
+            if (loginError) {
+              loginErrorText.textContent = result.error || 'Login failed. Please try again.';
+              loginError.style.display = 'block';
+              console.error('Login failed:', result.error);
+            }
+            // Clear password field on error
+            if (loginPasswordInput) loginPasswordInput.value = '';
+          }
+        };
+        
+        // Login handler - support both onclick and form submit for mobile compatibility
+        if (loginSubmitBtn) {
+          loginSubmitBtn.onclick = handleLogin;
+        }
+        
+        // Form submit handler for better mobile support
+        const loginFormEl = document.getElementById('login-form');
+        if (loginFormEl) {
+          loginFormEl.onsubmit = (e) => {
+            e.preventDefault();
+            handleLogin();
+            return false;
           };
         }
         
-        // Signup handler
-        if (signupSubmitBtn) {
-          signupSubmitBtn.onclick = async () => {
-            const username = signupUsernameInput ? signupUsernameInput.value.trim() : '';
-            const email = signupEmailInput ? signupEmailInput.value.trim() : '';
-            const password = signupPasswordInput ? signupPasswordInput.value : '';
-            
-            if (!username || !email || !password) {
-              if (loginError) {
-                loginErrorText.textContent = 'Please fill in all fields.';
-                loginError.style.display = 'block';
-              }
-              return;
+        // Signup handler function (reusable for both onclick and form submit)
+        const handleSignup = async () => {
+          const username = signupUsernameInput ? signupUsernameInput.value.trim() : '';
+          const email = signupEmailInput ? signupEmailInput.value.trim() : '';
+          const password = signupPasswordInput ? signupPasswordInput.value : '';
+          
+          if (!username || !email || !password) {
+            if (loginError) {
+              loginErrorText.textContent = 'Please fill in all fields.';
+              loginError.style.display = 'block';
             }
-            
-            signupSubmitBtn.disabled = true;
-            signupSubmitBtn.textContent = 'Creating account...';
-            if (loginError) loginError.style.display = 'none';
-            
-            const result = await signUpUser(username, email, password);
-            
-            signupSubmitBtn.disabled = false;
-            signupSubmitBtn.textContent = 'Create Account';
-            
-            if (result.success) {
-              if (result.needsEmailVerification) {
-                // Email confirmation required (if enabled in Supabase)
-                if (loginSuccess) {
-                  loginSuccessText.textContent = 'Account created! Please check your email (' + email + ') to confirm your email address.';
-                  loginSuccess.style.display = 'block';
-                }
-                // Clear form
-                if (signupUsernameInput) signupUsernameInput.value = '';
-                if (signupEmailInput) signupEmailInput.value = '';
-                if (signupPasswordInput) signupPasswordInput.value = '';
-                // Switch to login form after 3 seconds
-                setTimeout(() => {
-                  if (loginToggleBtn) loginToggleBtn.click();
-                  if (loginSuccess) loginSuccess.style.display = 'none';
-                }, 5000);
-              } else {
-                // User is logged in immediately (email confirmation disabled, auto-verified)
-                if (loginSuccess) {
-                  loginSuccessText.textContent = 'Account created! Welcome! Your account is verified and ready to use.';
-                  loginSuccess.style.display = 'block';
-                }
-                setTimeout(async () => {
-                  await initUnlockSystem();
-                }, 500);
+            return;
+          }
+          
+          signupSubmitBtn.disabled = true;
+          signupSubmitBtn.textContent = 'Creating account...';
+          if (loginError) loginError.style.display = 'none';
+          
+          const result = await signUpUser(username, email, password);
+          
+          signupSubmitBtn.disabled = false;
+          signupSubmitBtn.textContent = 'Create Account';
+          
+          if (result.success) {
+            if (result.needsEmailVerification) {
+              // Email confirmation required (if enabled in Supabase)
+              if (loginSuccess) {
+                loginSuccessText.textContent = 'Account created! Please check your email (' + email + ') to confirm your email address.';
+                loginSuccess.style.display = 'block';
               }
+              // Clear form
+              if (signupUsernameInput) signupUsernameInput.value = '';
+              if (signupEmailInput) signupEmailInput.value = '';
+              if (signupPasswordInput) signupPasswordInput.value = '';
+              // Switch to login form after 3 seconds
+              setTimeout(() => {
+                if (loginToggleBtn) loginToggleBtn.click();
+                if (loginSuccess) loginSuccess.style.display = 'none';
+              }, 5000);
             } else {
-              if (loginError) {
-                // Show the actual error message from Supabase
-                const errorMsg = result.error || 'Account creation failed. Please try again.';
-                loginErrorText.textContent = errorMsg;
-                loginError.style.display = 'block';
-                console.error('Signup error:', result.error);
+              // User is logged in immediately (email confirmation disabled, auto-verified)
+              if (loginSuccess) {
+                loginSuccessText.textContent = 'Account created! Welcome! Your account is verified and ready to use.';
+                loginSuccess.style.display = 'block';
               }
+              setTimeout(async () => {
+                await initUnlockSystem();
+              }, 500);
             }
+          } else {
+            if (loginError) {
+              // Show the actual error message from Supabase
+              const errorMsg = result.error || 'Account creation failed. Please try again.';
+              loginErrorText.textContent = errorMsg;
+              loginError.style.display = 'block';
+              console.error('Signup error:', result.error);
+            }
+          }
+        };
+        
+        // Signup handler - support both onclick and form submit for mobile compatibility
+        if (signupSubmitBtn) {
+          signupSubmitBtn.onclick = handleSignup;
+        }
+        
+        // Form submit handler for better mobile support
+        const signupFormEl = document.getElementById('signup-form');
+        if (signupFormEl) {
+          signupFormEl.onsubmit = (e) => {
+            e.preventDefault();
+            handleSignup();
+            return false;
           };
         }
         
@@ -3508,19 +3544,46 @@
           };
         }
         
-        // Enter key handlers
+        // Enter key handlers - support both email and password fields
+        if (loginUsernameInput) {
+          loginUsernameInput.onkeydown = (e) => {
+            if (e.key === 'Enter' && loginSubmitBtn && !loginSubmitBtn.disabled) {
+              e.preventDefault();
+              handleLogin();
+            }
+          };
+        }
         if (loginPasswordInput) {
           loginPasswordInput.onkeydown = (e) => {
-            if (e.key === 'Enter' && loginSubmitBtn) {
-              loginSubmitBtn.click();
+            if (e.key === 'Enter' && loginSubmitBtn && !loginSubmitBtn.disabled) {
+              e.preventDefault();
+              handleLogin();
             }
           };
         }
         
+        // Enter key handlers for signup form - support all fields
+        if (signupUsernameInput) {
+          signupUsernameInput.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (signupEmailInput) signupEmailInput.focus();
+            }
+          };
+        }
+        if (signupEmailInput) {
+          signupEmailInput.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (signupPasswordInput) signupPasswordInput.focus();
+            }
+          };
+        }
         if (signupPasswordInput) {
           signupPasswordInput.onkeydown = (e) => {
-            if (e.key === 'Enter' && signupSubmitBtn) {
-              signupSubmitBtn.click();
+            if (e.key === 'Enter' && signupSubmitBtn && !signupSubmitBtn.disabled) {
+              e.preventDefault();
+              handleSignup();
             }
           };
         }
@@ -5469,11 +5532,13 @@
       // Open all market URLs immediately without delays
       enabledMarkets.forEach(market => {
         if (market.custom) {
-          const parts = market.key.split("-");
-          const customId = parts.slice(2).join("-");
-          const section = market.key.split("-")[1]; // Get the section from the key
-          const url = getCustomMarketUrl(section, customId, query);
-          if (url) tabQueue.add(url);
+          // If category is 'all', extract section from market key
+          const sectionToUse = category === 'all' ? extractSectionFromMarketKey(market.key) : category;
+          const customId = extractCustomMarketId(market.key, sectionToUse);
+          if (customId && sectionToUse) {
+            const url = getCustomMarketUrl(sectionToUse, customId, query);
+            if (url) tabQueue.add(url);
+          }
         } else if (marketUrls[market.key]) {
           tabQueue.add(marketUrls[market.key](query));
         }
@@ -5687,6 +5752,67 @@
       if (!found) return null;
       return found.url.replace(/example/g, encodeURIComponent(q));
     }
+    
+    // Helper function to extract custom market ID and section from market key
+    // Market key format: "custom-" + section + "-" + id
+    // For custom categories: "custom-custom-category-123-abc" -> section is "custom-category-123", id is "abc"
+    // For built-in sections: "custom-asia-abc" -> section is "asia", id is "abc"
+    function extractCustomMarketId(marketKey, section) {
+      if (!marketKey.startsWith("custom-")) return null;
+      // Remove "custom-" prefix
+      const withoutPrefix = marketKey.substring(7); // "custom-".length = 7
+      
+      // If section is provided, use it to extract the ID
+      if (section && section !== 'all') {
+        const sectionPrefix = section + "-";
+        if (withoutPrefix.startsWith(sectionPrefix)) {
+          return withoutPrefix.substring(sectionPrefix.length);
+        }
+      }
+      
+      // Fallback: try to extract by splitting (for backwards compatibility or when section is 'all')
+      const parts = marketKey.split("-");
+      if (parts.length >= 3) {
+        // Try to match known sections first
+        const knownSections = ['asia', 'international', 'special', 'favorites'];
+        for (const knownSection of knownSections) {
+          if (parts[1] === knownSection && parts.length >= 3) {
+            return parts.slice(2).join("-");
+          }
+        }
+        
+        // If it's a custom category (starts with "custom-custom-")
+        if (parts[1] === 'custom' && parts.length >= 4) {
+          // Find where the section ID ends - it's everything except the last part
+          // "custom-custom-category-123-abc" -> section is "custom-category-123", id is "abc"
+          // We need to find the last part which is the market ID
+          return parts[parts.length - 1];
+        }
+      }
+      return null;
+    }
+    
+    // Helper function to extract section from market key (for when category is 'all')
+    function extractSectionFromMarketKey(marketKey) {
+      if (!marketKey.startsWith("custom-")) return null;
+      const withoutPrefix = marketKey.substring(7);
+      const parts = withoutPrefix.split("-");
+      
+      // Check if it's a built-in section
+      const knownSections = ['asia', 'international', 'special', 'favorites'];
+      if (knownSections.includes(parts[0])) {
+        return parts[0];
+      }
+      
+      // It's a custom category - reconstruct the section ID
+      // "custom-category-123-abc" -> section is "custom-category-123"
+      // We need everything except the last part
+      if (parts[0] === 'custom' && parts.length >= 3) {
+        return parts.slice(0, -1).join("-");
+      }
+      
+      return null;
+    }
 
     // Instant tab opening queue
     const tabQueue = {
@@ -5751,10 +5877,11 @@
           
           openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
             if (market.startsWith("custom-")) {
-              const parts = market.split("-");
-              const customId = parts.slice(2).join("-");
-              const url = getCustomMarketUrl(section, customId, term);
-              if (url) tabQueue.add(url);
+              const customId = extractCustomMarketId(market, section);
+              if (customId) {
+                const url = getCustomMarketUrl(section, customId, term);
+                if (url) tabQueue.add(url);
+              }
             } else if (marketUrls[market]) {
               tabQueue.add(marketUrls[market](term));
             }
@@ -5777,10 +5904,11 @@
           const market = marketBtn.getAttribute('data-market');
           const section = marketBtn.getAttribute('data-section');
           if (market.startsWith("custom-")) {
-            const parts = market.split("-");
-            const customId = parts.slice(2).join("-");
-            const url = getCustomMarketUrl(section, customId, query);
-            if (url) tabQueue.add(url);
+            const customId = extractCustomMarketId(market, section);
+            if (customId) {
+              const url = getCustomMarketUrl(section, customId, query);
+              if (url) tabQueue.add(url);
+            }
           } else if (marketUrls[market]) {
             tabQueue.add(marketUrls[market](query));
           }
@@ -5813,18 +5941,9 @@
               if (!loadMarketToggleState(market.key)) return;
               
               if (market.custom) {
-                const parts = market.key.split("-");
-                // Check if section itself starts with "custom-"
-                if (section.startsWith('custom-')) {
-                  // Custom category market
-                  const customId = parts.slice(2).join("-");
+                const customId = extractCustomMarketId(market.key, section);
+                if (customId) {
                   const url = getCustomMarketUrl(section, customId, term);
-                  if (url) tabQueue.add(url);
-                } else {
-                  // Built-in section custom market
-                  const originalSection = parts[1];
-                  const customId = parts.slice(2).join("-");
-                  const url = getCustomMarketUrl(originalSection, customId, term);
                   if (url) tabQueue.add(url);
                 }
               } else if (marketUrls[market.key]) {
@@ -5857,11 +5976,11 @@
             if (!loadMarketToggleState(market.key)) return;
             
             if (market.custom) {
-              const parts = market.key.split("-");
-              const originalSection = parts[1]; // Get original section (asia, international, special)
-              const customId = parts.slice(2).join("-");
-              const url = getCustomMarketUrl(originalSection, customId, query);
-              if (url) urls.push(url);
+              const customId = extractCustomMarketId(market.key, section);
+              if (customId) {
+                const url = getCustomMarketUrl(section, customId, query);
+                if (url) urls.push(url);
+              }
             } else if (marketUrls[market.key]) {
               urls.push(marketUrls[market.key](query));
             }
@@ -6674,18 +6793,9 @@
           if (!loadMarketToggleState(market.key)) return;
           
           if (market.custom) {
-            const parts = market.key.split("-");
-            // Check if section itself starts with "custom-"
-            if (sec.startsWith('custom-')) {
-              // Custom category market
-              const customId = parts.slice(2).join("-");
+            const customId = extractCustomMarketId(market.key, sec);
+            if (customId) {
               const url = getCustomMarketUrl(sec, customId, query);
-              if (url) urls.push(url);
-            } else {
-              // Built-in section custom market
-              const originalSection = parts[1];
-              const customId = parts.slice(2).join("-");
-              const url = getCustomMarketUrl(originalSection, customId, query);
               if (url) urls.push(url);
             }
           } else if (marketUrls[market.key]) {
