@@ -648,10 +648,15 @@
       min-height: 0;
       max-height: none;
       overflow-y: visible;
+      display: block !important;
+      visibility: visible !important;
     }
     .saved-folder-item {
       margin-bottom: 4px;
       font-weight: bold;
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
       color: #e3e3e3;
       font-size: 1.03em;
       display: flex;
@@ -1638,6 +1643,40 @@
         min-height: 44px;
         padding: 10px;
         touch-action: manipulation;
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .sidebar-folder-row {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .saved-folder-list {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .saved-folder-item {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .sidebar-folder-edit-btn,
+      .sidebar-folder-remove-btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .sidebar-folder-input {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .sidebar-folder-btn {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
       .edit-btn,
       .remove-btn,
