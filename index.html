@@ -1123,6 +1123,29 @@
       margin-left: 1px;
       margin-right: 1px;
     }
+    .add-category-btn {
+      background: #00e6d6;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      min-width: 125px;
+      margin-bottom: 2px;
+      margin-top: 2px;
+      transition: background .18s, box-shadow .18s, transform .13s;
+      box-shadow: 0 1px 4px #2224;
+      opacity: 0.93;
+    }
+    .add-category-btn:hover {
+      background: #00d4c4;
+      opacity: 1;
+    }
+    .add-category-btn:active {
+      transform: scale(0.98);
+    }
     .add-market-btn {
       background: #232323;
       color: #e3e3e3;
@@ -1561,6 +1584,11 @@
         flex-direction: column;
         gap: 8px;
       }
+      .add-category-btn {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px;
+      }
       .add-market-btn {
         width: 100%;
         min-height: 44px;
@@ -1636,6 +1664,7 @@
         min-height: 44px;
         padding: 12px 20px;
         font-size: 15px;
+        display: block; /* Ensure it's visible on mobile */
       }
       #toggle-all-checkbox {
         width: 20px;
@@ -1662,9 +1691,22 @@
       }
       .unlock-modal-bg {
         padding: 10px;
-        align-items: flex-start;
+        align-items: center;
+        justify-content: center;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        z-index: 99999 !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0, 0, 0, 0.95) !important;
+      }
+      .unlock-modal-bg.show,
+      .unlock-modal-bg[style*="flex"],
+      .unlock-modal-bg[style*="display: flex"] {
+        display: flex !important;
       }
       .notifications-modal-bg, .notification-edit-modal-bg {
         padding: 10px;
@@ -1958,6 +2000,11 @@
     box-shadow: 0 4px 12px rgba(0, 112, 186, 0.4);
   }
 
+  .donation-link.discord-link:hover {
+    background: linear-gradient(135deg, #4752C4 0%, #3c45a5 100%);
+    box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
+  }
+
   .donation-link.cashapp {
     background: linear-gradient(135deg, #00d632 0%, #00b82a 100%);
     box-shadow: 0 2px 8px rgba(0, 214, 50, 0.3);
@@ -2035,12 +2082,31 @@
     -webkit-overflow-scrolling: touch;
   }
   @media (max-width: 768px) {
+    .unlock-modal-bg {
+      z-index: 99999 !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: rgba(0, 0, 0, 0.95) !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 10px !important;
+    }
+    .unlock-modal-bg.show,
+    .unlock-modal-bg[style*="flex"],
+    .unlock-modal-bg[style*="display: flex"] {
+      display: flex !important;
+    }
     .unlock-modal {
       padding: 20px 15px;
       width: calc(100% - 20px);
       max-width: 100%;
       max-height: 90vh;
       overflow-y: auto;
+      position: relative !important;
+      z-index: 100000 !important;
     }
     .unlock-modal h3 {
       font-size: 20px;
@@ -2324,6 +2390,13 @@
   <!-- Top Header with PayPal Donation -->
   <div class="top-header">
     <div class="header-left">
+      <a href="https://discord.gg/s6AzmucFGd" 
+         target="_blank" 
+         rel="noopener noreferrer" 
+         class="donation-link discord-link"
+         style="background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%); box-shadow: 0 2px 8px rgba(88, 101, 242, 0.3);">
+        💬 Join Discord
+      </a>
       <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
          target="_blank" 
          rel="noopener noreferrer" 
@@ -2500,7 +2573,9 @@
         <button type="button" class="add-market-btn" data-section="asia">+ Add Website to Asia</button>
         <button type="button" class="add-market-btn" data-section="international">+ Add Website to International</button>
         <button type="button" class="add-market-btn" data-section="special">+ Add Website to Designer</button>
+        <button type="button" class="add-category-btn" id="add-category-btn">+ Create Custom Category</button>
       </div>
+      <div id="custom-categories-container"></div>
       <div class="section-header-row" style="margin-top: 0;">
         <h2>⭐ Favorites</h2>
         <button type="button" class="section-openall-btn" data-section="favorites">Open All Favorites</button>
@@ -2551,6 +2626,19 @@
       <div class="modal-btn-row">
         <button class="modal-btn" id="custom-market-modal-save-btn">Save</button>
         <button class="modal-cancel-btn" id="custom-market-modal-cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <!-- Custom Category Modal -->
+  <div id="custom-category-modal-bg" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3000;background:rgba(0,0,0,0.5);">
+    <div class="custom-market-modal" style="position:relative;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:20px;max-width:500px;width:90%;">
+      <h3 id="custom-category-modal-title">Create Custom Category</h3>
+      <label for="custom-category-name-input">Category Name</label>
+      <input type="text" id="custom-category-name-input" maxlength="50" placeholder="e.g. My Custom Sites" required style="width:100%;padding:8px;margin:8px 0;background:#2a2a2a;border:1px solid #444;color:#fff;border-radius:4px;" />
+      <div class="modal-btn-row" style="display:flex;gap:10px;margin-top:15px;">
+        <button type="button" class="modal-cancel-btn" id="custom-category-cancel-btn">Cancel</button>
+        <button type="button" class="modal-save-btn" id="custom-category-save-btn">Save</button>
+        <button type="button" class="modal-delete-btn" id="custom-category-delete-btn" style="display:none;background:#d32f2f;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Delete</button>
       </div>
     </div>
   </div>
@@ -2626,20 +2714,6 @@
         </p>
         <div id="notification-markets" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 300px; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px; -webkit-overflow-scrolling: touch;">
           <!-- Markets will be populated by JavaScript -->
-        </div>
-      </div>
-
-      <div style="margin-bottom: 15px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <label style="color: #e3e3e3; display: block; font-size: 14px;">Discord Webhooks</label>
-          <button type="button" id="add-webhook-btn" class="unlock-submit-btn" style="padding: 6px 12px; font-size: 12px; min-height: 32px;">+ Add Webhook</button>
-        </div>
-        <p style="color: #888; font-size: 12px; margin-bottom: 8px;">
-          Add one or more Discord webhooks for this notification. Each webhook can be a different channel (e.g., #rickowens, #supreme).<br>
-          <span style="color: #00e6d6;">💡 Tip:</span> Create webhooks in Discord: Server Settings → Integrations → Webhooks → New Webhook
-        </p>
-        <div id="notification-webhooks" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px; -webkit-overflow-scrolling: touch;">
-          <!-- Webhooks will be populated by JavaScript -->
         </div>
       </div>
 
@@ -3568,8 +3642,6 @@
       const notificationEditTitle = document.getElementById('notification-edit-title');
       const notificationSearchTerm = document.getElementById('notification-search-term');
       const notificationMarkets = document.getElementById('notification-markets');
-      const notificationWebhooks = document.getElementById('notification-webhooks');
-      const addWebhookBtn = document.getElementById('add-webhook-btn');
       const notificationSaveBtn = document.getElementById('notification-save-btn');
       const notificationCancelBtn = document.getElementById('notification-cancel-btn');
 
@@ -3723,28 +3795,12 @@
             marketsText = 'All 5 Sendico markets';
           }
           
-          // Handle backward compatibility: show webhook count or indicate using global/default
-          const webhooksCount = (notif.webhooks || []).length;
-          let webhooksText = '';
-          if (webhooksCount > 0) {
-            webhooksText = `${webhooksCount} webhook${webhooksCount > 1 ? 's' : ''}`;
-          } else {
-            // Check if global webhook exists
-            const globalWebhook = discordWebhookInput ? discordWebhookInput.value.trim() : '';
-            if (globalWebhook && globalWebhook.startsWith('https://discord.com/api/webhooks/')) {
-              webhooksText = 'Using global webhook';
-            } else {
-              webhooksText = 'No webhooks configured';
-            }
-          }
-          
           return `
             <div class="notification-item">
               <div class="notification-content">
                 <div class="notification-info">
                   <div style="color: #e3e3e3; font-weight: bold; margin-bottom: 5px;">${escapeHtml(notif.searchTerm || 'Untitled')}</div>
                   <div style="color: #888; font-size: 12px;">Markets: ${escapeHtml(marketsText)}</div>
-                  <div style="color: #888; font-size: 12px;">Webhooks: ${escapeHtml(webhooksText)}</div>
                 </div>
                 <div class="notification-actions">
                   <button class="unlock-cancel-btn notification-action-btn" onclick="window.editNotification(${originalIndex})" style="padding: 5px 10px; margin-right: 5px; font-size: 12px;">Edit</button>
@@ -3763,16 +3819,6 @@
         if (notificationSearchTerm) notificationSearchTerm.value = notif.searchTerm || '';
         if (notificationEditTitle) notificationEditTitle.textContent = 'Edit Notification';
         populateMarketsCheckboxes(notif.markets || []);
-        
-        // Handle backward compatibility: if no webhooks, use global webhook if available
-        let webhooksToShow = notif.webhooks || [];
-        if (webhooksToShow.length === 0) {
-          const globalWebhook = discordWebhookInput ? discordWebhookInput.value.trim() : '';
-          if (globalWebhook && globalWebhook.startsWith('https://discord.com/api/webhooks/')) {
-            webhooksToShow = [globalWebhook];
-          }
-        }
-        populateWebhooks(webhooksToShow);
         if (notificationEditModal) notificationEditModal.style.display = 'flex';
       };
 
@@ -3833,91 +3879,6 @@
         notificationMarkets.appendChild(infoDiv);
       }
 
-      // Populate webhooks list
-      function populateWebhooks(webhooks = []) {
-        if (!notificationWebhooks) return;
-        
-        notificationWebhooks.innerHTML = '';
-        
-        if (webhooks.length === 0) {
-          const emptyMsg = document.createElement('div');
-          emptyMsg.style.cssText = 'color: #888; font-size: 12px; text-align: center; padding: 10px;';
-          emptyMsg.textContent = 'No webhooks added. Click "+ Add Webhook" to add one.';
-          notificationWebhooks.appendChild(emptyMsg);
-        } else {
-          webhooks.forEach((webhook, index) => {
-            const webhookDiv = document.createElement('div');
-            webhookDiv.style.cssText = 'display: flex; gap: 8px; align-items: center; padding: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);';
-            
-            const webhookInput = document.createElement('input');
-            webhookInput.type = 'text';
-            webhookInput.value = webhook;
-            webhookInput.placeholder = 'https://discord.com/api/webhooks/...';
-            webhookInput.className = 'unlock-input';
-            webhookInput.style.cssText = 'flex: 1; font-family: monospace; font-size: 11px; padding: 6px 10px;';
-            webhookInput.setAttribute('data-webhook-index', index);
-            webhookInput.addEventListener('input', function() {
-              const idx = parseInt(this.getAttribute('data-webhook-index'));
-              if (idx >= 0 && idx < webhooks.length) {
-                webhooks[idx] = this.value.trim();
-              }
-              // Visual feedback for valid/invalid webhook URLs
-              const val = this.value.trim();
-              if (val && val.startsWith('https://discord.com/api/webhooks/')) {
-                this.style.borderColor = 'rgba(0, 230, 214, 0.5)';
-                this.style.background = 'rgba(0, 230, 214, 0.05)';
-              } else if (val) {
-                this.style.borderColor = 'rgba(255, 107, 107, 0.5)';
-                this.style.background = 'rgba(255, 107, 107, 0.05)';
-              } else {
-                this.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                this.style.background = '';
-              }
-            });
-            
-            // Set initial validation state
-            if (webhook && webhook.startsWith('https://discord.com/api/webhooks/')) {
-              webhookInput.style.borderColor = 'rgba(0, 230, 214, 0.5)';
-              webhookInput.style.background = 'rgba(0, 230, 214, 0.05)';
-            }
-            
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'unlock-cancel-btn';
-            removeBtn.textContent = '✕';
-            removeBtn.style.cssText = 'padding: 6px 10px; min-width: 32px; background: rgba(255, 107, 107, 0.2); color: #ff6b6b; border-color: rgba(255, 107, 107, 0.5);';
-            removeBtn.title = 'Remove webhook';
-            removeBtn.addEventListener('click', function() {
-              const idx = parseInt(webhookInput.getAttribute('data-webhook-index'));
-              webhooks.splice(idx, 1);
-              populateWebhooks(webhooks);
-            });
-            
-            webhookDiv.appendChild(webhookInput);
-            webhookDiv.appendChild(removeBtn);
-            notificationWebhooks.appendChild(webhookDiv);
-          });
-        }
-      }
-      
-      // Add webhook button
-      if (addWebhookBtn) {
-        addWebhookBtn.addEventListener('click', () => {
-          // Get current webhooks from the UI
-          const currentWebhooks = [];
-          if (notificationWebhooks) {
-            notificationWebhooks.querySelectorAll('input[data-webhook-index]').forEach(input => {
-              const val = input.value.trim();
-              if (val) currentWebhooks.push(val);
-            });
-          }
-          
-          // Add new empty webhook
-          currentWebhooks.push('');
-          populateWebhooks(currentWebhooks);
-        });
-      }
-
       // Add notification button
       if (addNotificationBtn) {
         addNotificationBtn.addEventListener('click', () => {
@@ -3925,7 +3886,6 @@
           if (notificationSearchTerm) notificationSearchTerm.value = '';
           if (notificationEditTitle) notificationEditTitle.textContent = 'Add Notification';
           populateMarketsCheckboxes([]);
-          populateWebhooks([]);
           if (notificationEditModal) notificationEditModal.style.display = 'flex';
         });
       }
@@ -3952,34 +3912,10 @@
             });
           }
 
-          // Get webhooks from UI
-          const webhooks = [];
-          if (notificationWebhooks) {
-            notificationWebhooks.querySelectorAll('input[data-webhook-index]').forEach(input => {
-              const val = input.value.trim();
-              if (val && val.startsWith('https://discord.com/api/webhooks/')) {
-                webhooks.push(val);
-              }
-            });
-          }
-          
-          // Validate that at least one webhook is provided
-          // If no webhooks, try to use the global webhook as fallback
-          if (webhooks.length === 0) {
-            const globalWebhook = discordWebhookInput ? discordWebhookInput.value.trim() : '';
-            if (globalWebhook && globalWebhook.startsWith('https://discord.com/api/webhooks/')) {
-              webhooks.push(globalWebhook);
-            } else {
-              alert('Please add at least one Discord webhook URL for this notification, or set a global webhook.');
-              return;
-            }
-          }
-
           const notification = {
             id: editingNotificationId !== null ? currentNotifications[editingNotificationId].id : generateNotificationId(),
             searchTerm: searchTerm,
             markets: selectedMarkets,
-            webhooks: webhooks,
             createdAt: editingNotificationId !== null 
               ? currentNotifications[editingNotificationId].createdAt 
               : new Date().toISOString()
@@ -4277,6 +4213,16 @@
         : JSON.parse(localStorage.getItem(CUSTOM_MARKETS_KEY)) || { asia: [], international: [], special: [] };
     }
     const saveCustomMarkets = data => localStorage.setItem(CUSTOM_MARKETS_KEY, JSON.stringify(data));
+    
+    // Custom Categories Storage
+    const CUSTOM_CATEGORIES_KEY = 'customCategories_v1';
+    function loadCustomCategoriesFromFolders(foldersObj) {
+      return (foldersObj?.customCategories && Array.isArray(foldersObj.customCategories))
+        ? foldersObj.customCategories
+        : JSON.parse(localStorage.getItem(CUSTOM_CATEGORIES_KEY)) || [];
+    }
+    const saveCustomCategories = data => localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(data));
+    
     // Folder Storage
     const FOLDER_KEY = 'savedFolders_v2';
     function loadFoldersObj() {
@@ -4286,21 +4232,23 @@
           const data = JSON.parse(raw);
           if (Array.isArray(data)) {
             // legacy format, convert
-            return { folders: data, customMarkets: loadCustomMarketsFromFolders() };
+            return { folders: data, customMarkets: loadCustomMarketsFromFolders(), customCategories: loadCustomCategoriesFromFolders() };
           }
           return data;
         } catch {}
       }
       // Legacy fallback
-      return { folders: [{ name: 'Default', searches: [] }], customMarkets: { asia: [], international: [], special: [] } };
+      return { folders: [{ name: 'Default', searches: [] }], customMarkets: { asia: [], international: [], special: [] }, customCategories: [] };
     }
     function saveFoldersObj(obj) {
       localStorage.setItem(FOLDER_KEY, JSON.stringify(obj));
       saveCustomMarkets(obj.customMarkets);
+      saveCustomCategories(obj.customCategories || []);
     }
     let foldersObj = loadFoldersObj();
     let savedFolders = foldersObj.folders;
     let customMarkets = foldersObj.customMarkets || { asia: [], international: [], special: [] };
+    let customCategories = foldersObj.customCategories || [];
     let currentFolderIdx = 0; // Default folder on start
     // Market Data
     const marketDataInitial = {
@@ -4309,10 +4257,33 @@
         { key: "paypay-fleamarket", label: "Yahoo PayPay Flea" },
         { key: "rakuma", label: "Rakuten Rakuma" },
         { key: "rakuten-jp", label: "Rakuten Japan" },
-        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" }
+        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" },
+        { key: "carousell-sg", label: "Carousell SG" },
+        { key: "carousell-hk", label: "Carousell HK" },
+        { key: "carousell-id", label: "Carousell ID" },
+        { key: "carousell-my", label: "Carousell MY" },
+        { key: "carousell-ph", label: "Carousell PH" },
+        { key: "carousell-tw", label: "Carousell TW" },
+        { key: "secondstreet-jp", label: "2nd Street JP" }
       ],
-      international: [],
-      special: []
+      international: [
+        { key: "depop", label: "Depop" },
+        { key: "ebay", label: "eBay Global" },
+        { key: "facebook", label: "Facebook Marketplace" },
+        { key: "gem", label: "Gem" },
+        { key: "grailed", label: "Grailed" },
+        { key: "mercari-us", label: "Mercari US" },
+        { key: "poshmark", label: "Poshmark" },
+        { key: "shopgoodwill", label: "ShopGoodwill" },
+        { key: "vinted", label: "Vinted" },
+        { key: "automatedsearches", label: "Automated Searches" },
+        { key: "secondstreet", label: "2nd STREET" },
+        { key: "instagram", label: "Instagram" }
+      ],
+      special: [
+        { key: "therealreal", label: "The RealReal" },
+        { key: "vestiaire", label: "Vestiaire Collective" }
+      ]
     };
     // Market toggle state storage
     const MARKET_TOGGLE_KEY = 'marketToggleStates';
@@ -4349,11 +4320,17 @@
       saveFavorites();
     }
     function getFavoriteMarkets() {
-      const allMarkets = [
-        ...getMarkets('asia'),
-        ...getMarkets('international'),
-        ...getMarkets('special')
-      ];
+      const allMarkets = [];
+      // Include built-in sections
+      allMarkets.push(...getMarkets('asia'));
+      allMarkets.push(...getMarkets('international'));
+      allMarkets.push(...getMarkets('special'));
+      // Include custom categories
+      if (typeof customCategories !== 'undefined' && Array.isArray(customCategories)) {
+        customCategories.forEach(cat => {
+          allMarkets.push(...getMarkets(cat.id));
+        });
+      }
       return allMarkets.filter(m => favorites.includes(m.key));
     }
     function renderFavorites() {
@@ -4368,11 +4345,34 @@
       }
     }
 
+    // Get all section names (built-in + custom categories)
+    function getAllSections() {
+      const builtIn = ['asia', 'international', 'special'];
+      const custom = customCategories.map(cat => cat.id);
+      return [...builtIn, ...custom];
+    }
+    
     // Combined Market Data + Custom
     function getMarkets(section) {
       if (section === 'favorites') {
         return getFavoriteMarkets();
       }
+      
+      // Check if it's a custom category
+      const customCategory = customCategories.find(cat => cat.id === section);
+      if (customCategory) {
+        // Return markets for this custom category
+        const custom = (customMarkets[section] || []).map(m => ({
+          key: "custom-" + section + "-" + m.id,
+          label: m.title,
+          custom: true,
+          urlTemplate: m.url,
+          id: m.id
+        }));
+        return custom;
+      }
+      
+      // Built-in sections
       const orig = marketDataInitial[section] ? marketDataInitial[section].slice() : [];
       const custom = (customMarkets[section] || []).map(m => ({
         key: "custom-" + section + "-" + m.id,
@@ -4392,6 +4392,10 @@
         btn.className = "market-btn";
         btn.setAttribute("data-market", market.key);
         btn.setAttribute("data-section", sectionName);
+        // Store market ID for custom markets to avoid parsing issues
+        if (market.id) {
+          btn.setAttribute("data-market-id", market.id);
+        }
         
         // Add toggle checkbox
         const toggle = document.createElement('input');
@@ -4457,11 +4461,69 @@
         }
       });
     }
+    function renderCustomCategories() {
+      const container = document.getElementById('custom-categories-container');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      customCategories.forEach(category => {
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'section';
+        sectionDiv.id = category.id + '-section';
+        
+        const headerRow = document.createElement('div');
+        headerRow.className = 'section-header-row';
+        
+        const title = document.createElement('h2');
+        title.textContent = category.name;
+        
+        const openAllBtn = document.createElement('button');
+        openAllBtn.type = 'button';
+        openAllBtn.className = 'section-openall-btn';
+        openAllBtn.setAttribute('data-section', category.id);
+        openAllBtn.textContent = 'Open All ' + category.name;
+        
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'edit-category-btn';
+        editBtn.setAttribute('data-category-id', category.id);
+        editBtn.textContent = '✏️';
+        editBtn.style.cssText = 'background:transparent;border:none;color:#888;cursor:pointer;font-size:16px;padding:0 8px;';
+        editBtn.title = 'Edit Category';
+        
+        headerRow.appendChild(title);
+        headerRow.appendChild(openAllBtn);
+        headerRow.appendChild(editBtn);
+        
+        const marketsDiv = document.createElement('div');
+        marketsDiv.className = 'markets';
+        marketsDiv.id = category.id + '-markets';
+        
+        const addMarketBtn = document.createElement('button');
+        addMarketBtn.type = 'button';
+        addMarketBtn.className = 'add-market-btn';
+        addMarketBtn.setAttribute('data-section', category.id);
+        addMarketBtn.textContent = '+ Add Website to ' + category.name;
+        addMarketBtn.style.cssText = 'margin-bottom:10px;';
+        
+        sectionDiv.appendChild(headerRow);
+        sectionDiv.appendChild(addMarketBtn);
+        sectionDiv.appendChild(marketsDiv);
+        
+        container.appendChild(sectionDiv);
+        
+        // Render markets for this category
+        createMarketButtons(getMarkets(category.id), category.id + '-markets', category.id);
+      });
+    }
+    
     function refreshAllMarketButtons() {
       createMarketButtons(getMarkets('asia'), "asia-markets", "asia");
       createMarketButtons(getMarkets('international'), "international-markets", "international");
       createMarketButtons(getMarkets('special'), "special-markets", "special");
       renderFavorites();
+      renderCustomCategories();
     }
     refreshAllMarketButtons();
 
@@ -5070,9 +5132,26 @@
       // Open all market URLs immediately without delays
       enabledMarkets.forEach(market => {
         if (market.custom) {
-          const parts = market.key.split("-");
-          const customId = parts.slice(2).join("-");
-          const section = market.key.split("-")[1]; // Get the section from the key
+          // Use market.id directly if available, otherwise parse from key
+          const customId = market.id || (() => {
+            const parts = market.key.split("-");
+            // Check if section is a custom category (starts with "custom-")
+            const sectionPart = parts[1];
+            if (sectionPart && sectionPart.startsWith("custom-")) {
+              // Custom category: key is "custom-custom-{categoryId}-{marketId}"
+              // We need to extract just the market ID
+              const sectionPrefix = "custom-" + sectionPart + "-";
+              const keyWithoutPrefix = market.key.substring(sectionPrefix.length);
+              return keyWithoutPrefix || parts.slice(2).join("-");
+            }
+            // Standard format: "custom-{section}-{marketId}"
+            return parts.slice(2).join("-");
+          })();
+          // Get section from market object or parse from key
+          const section = market.section || (() => {
+            const parts = market.key.split("-");
+            return parts[1];
+          })();
           const url = getCustomMarketUrl(section, customId, query);
           if (url) tabQueue.add(url);
         } else if (marketUrls[market.key]) {
@@ -5261,12 +5340,12 @@
       "rakuten-jp":      q => `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(q)}/?s=4&st=O`,
       "xianyu":          q => `https://2.taobao.com/search?word=${encodeURIComponent(q)}&spm=a2170.xianyu_tbpc_search.0.0`,
       "yahoo-auctions":  q => `https://auctions.yahoo.co.jp/search/search?p=${encodeURIComponent(q)}&s1=new&o1=d`,
-      "carousell-sg":    q => `https://www.carousell.sg/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
-      "carousell-hk":    q => `https://www.carousell.com.hk/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
-      "carousell-id":    q => `https://www.carousell.co.id/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
-      "carousell-my":    q => `https://www.carousell.com.my/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
-      "carousell-ph":    q => `https://www.carousell.com.ph/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
-      "carousell-tw":    q => `https://www.carousell.com.tw/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-sg":    q => `https://www.carousell.sg/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&q=${encodeURIComponent(q)}&sort_by=3&t-search_query_source=direct_search`,
+      "carousell-hk":    q => `https://www.carousell.com.hk/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&q=${encodeURIComponent(q)}&sort_by=3&t-search_query_source=direct_search`,
+      "carousell-id":    q => `https://id.carousell.com/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&q=${encodeURIComponent(q)}&sort_by=3&t-search_query_source=direct_search`,
+      "carousell-my":    q => `https://www.carousell.com.my/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&q=${encodeURIComponent(q)}&sort_by=3&t-search_query_source=direct_search`,
+      "carousell-ph":    q => `https://www.carousell.ph/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&q=${encodeURIComponent(q)}&sort_by=3&t-search_query_source=direct_search`,
+      "carousell-tw":    q => `https://tw.carousell.com/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&sort_by=3&t-search_query_source=direct_search`,
       "depop":           q => `https://www.depop.com/search/?q=${encodeURIComponent(q)}&sort=newlyListed`,
       "ebay":            q => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}&_sop=10`,
       "facebook":        q => `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(q)}`,
@@ -5298,7 +5377,10 @@
       "fashionphile":    q => `https://www.fashionphile.com/search?q=${encodeURIComponent(q)}&sort=relevance`,
       "rebag":           q => `https://shop.rebag.com/search?q=${encodeURIComponent(q)}&sort=relevance`,
       "farfetch":        q => `https://www.farfetch.com/shopping/women/items.aspx?q=${encodeURIComponent(q)}&sort=3`,
-      "yoox":            q => `https://www.yoox.com/us/women/search?dept=women&query=${encodeURIComponent(q)}&sort=8`
+      "yoox":            q => `https://www.yoox.com/us/women/search?dept=women&query=${encodeURIComponent(q)}&sort=8`,
+      "secondstreet-jp": q => `https://www.2ndstreet.jp/search?q=${encodeURIComponent(q)}&sort=newest`,
+      "kindat":          q => `https://kindat.jp/search?q=${encodeURIComponent(q)}&sort=newest`,
+      "instagram":       q => `https://www.instagram.com/explore/tags/${encodeURIComponent(q)}/`
     };
     // Custom market URLs: key is "custom-section-id"
     function getCustomMarketUrl(section, id, q) {
@@ -5343,6 +5425,101 @@
       }
     };
 
+    // Helper function to open all markets with a query (defined before handleMainOpenAll)
+    function openAllMarketsWithQuery(query) {
+      // Collect all URLs first (only enabled markets)
+      const urls = [];
+      
+      // Get all sections (built-in + custom categories, but NOT favorites to avoid duplicates)
+      const sections = ['asia', 'international', 'special'];
+      
+      // Add custom categories
+      if (typeof customCategories !== 'undefined' && Array.isArray(customCategories)) {
+        customCategories.forEach(cat => {
+          sections.push(cat.id);
+        });
+      }
+      
+      // Process each section
+      sections.forEach(section => {
+        getMarkets(section).forEach(market => {
+          // Skip if this market is toggled off
+          if (!loadMarketToggleState(market.key)) return;
+          
+          if (market.custom) {
+            // For custom markets, use the section they belong to
+            // Use market.id directly if available, otherwise parse from key
+            const customId = market.id || (() => {
+              const parts = market.key.split("-");
+              // Check if section is a custom category (starts with "custom-")
+              const sectionPart = parts[1];
+              if (sectionPart && sectionPart.startsWith("custom-")) {
+                // Custom category: key is "custom-custom-{categoryId}-{marketId}"
+                // We need to extract just the market ID
+                const sectionPrefix = "custom-" + sectionPart + "-";
+                const keyWithoutPrefix = market.key.substring(sectionPrefix.length);
+                return keyWithoutPrefix || parts.slice(2).join("-");
+              }
+              // Standard format: "custom-{section}-{marketId}"
+              return parts.slice(2).join("-");
+            })();
+            const parts = market.key.split("-");
+            const originalSection = parts[1]; // Get original section (asia, international, special, or custom category id)
+            const url = getCustomMarketUrl(originalSection, customId, query);
+            if (url) urls.push(url);
+          } else if (marketUrls[market.key]) {
+            urls.push(marketUrls[market.key](query));
+          }
+        });
+      });
+      
+      // Process URLs with queue
+      urls.forEach(url => tabQueue.add(url));
+      
+      // Clear selection after search
+      selectedSearchTerms = {};
+      localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+      renderSavedSearches();
+    }
+
+    // Main Open All button handler function (defined before delegated handler)
+    function handleMainOpenAll() {
+      // Check if any search terms are selected
+      const selectedTerms = getSelectedSearchTerms();
+      
+      if (selectedTerms.length > 0) {
+        // Mark each term as clicked
+        selectedTerms.forEach(term => {
+          clickedSearches[term] = { 
+            clicked: true, 
+            category: determineSearchCategory(term) 
+          };
+        });
+        localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+        
+        // Open each selected term in separate tabs for all markets
+        openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
+          openAllMarketsWithQuery(term);
+        });
+        
+        // Clear selection
+        selectedSearchTerms = {};
+        localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+        
+        // Update UI
+        renderSavedSearches();
+        updateUnhighlightedCount();
+      } else {
+        // Use the current search query
+        const query = document.getElementById('query').value.trim();
+        if (!query) {
+          document.getElementById('query').focus();
+          return;
+        }
+        openAllMarketsWithQuery(query);
+      }
+    }
+
     document.addEventListener('click', function(e) {
       // --- Market button logic (support custom) ---
       const marketBtn = e.target.closest('.market-btn');
@@ -5367,11 +5544,26 @@
           // Open each selected term in separate tabs for this specific market
           const market = marketBtn.getAttribute('data-market');
           const section = marketBtn.getAttribute('data-section');
+          const marketId = marketBtn.getAttribute('data-market-id');
           
           openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
             if (market.startsWith("custom-")) {
-              const parts = market.split("-");
-              const customId = parts.slice(2).join("-");
+              // Use stored market ID if available, otherwise parse from key
+              const customId = marketId || (() => {
+                const parts = market.split("-");
+                // For custom categories, section is the category ID, so we need to extract just the market ID
+                // Key format: "custom-{section}-{marketId}" where section might also be "custom-..."
+                if (section.startsWith("custom-")) {
+                  // Custom category: key is "custom-custom-{categoryId}-{marketId}"
+                  // We need everything after the section part
+                  const sectionPrefix = "custom-" + section + "-";
+                  if (market.startsWith(sectionPrefix)) {
+                    return market.substring(sectionPrefix.length);
+                  }
+                }
+                // Fallback: assume standard format "custom-{section}-{marketId}"
+                return parts.slice(2).join("-");
+              })();
               const url = getCustomMarketUrl(section, customId, term);
               if (url) tabQueue.add(url);
             } else if (marketUrls[market]) {
@@ -5395,9 +5587,25 @@
           }
           const market = marketBtn.getAttribute('data-market');
           const section = marketBtn.getAttribute('data-section');
+          const marketId = marketBtn.getAttribute('data-market-id');
+          
           if (market.startsWith("custom-")) {
-            const parts = market.split("-");
-            const customId = parts.slice(2).join("-");
+            // Use stored market ID if available, otherwise parse from key
+            const customId = marketId || (() => {
+              // For custom categories, section is the category ID, so we need to extract just the market ID
+              // Key format: "custom-{section}-{marketId}" where section might also be "custom-..."
+              if (section.startsWith("custom-")) {
+                // Custom category: key is "custom-custom-{categoryId}-{marketId}"
+                // We need everything after the section part
+                const sectionPrefix = "custom-" + section + "-";
+                if (market.startsWith(sectionPrefix)) {
+                  return market.substring(sectionPrefix.length);
+                }
+              }
+              // Fallback: assume standard format "custom-{section}-{marketId}"
+              const parts = market.split("-");
+              return parts.slice(2).join("-");
+            })();
             const url = getCustomMarketUrl(section, customId, query);
             if (url) tabQueue.add(url);
           } else if (marketUrls[market]) {
@@ -5423,25 +5631,39 @@
           // Open each selected term in separate tabs for all markets in this section
           const section = e.target.getAttribute('data-section');
           
-          openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
-            let marketArr = getMarkets(section);
-            
-            // Open all URLs immediately without delays
-            marketArr.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
-              // Skip if this market is toggled off
-              if (!loadMarketToggleState(market.key)) return;
+            openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
+              let marketArr = getMarkets(section);
               
-              if (market.custom) {
-                const parts = market.key.split("-");
-                const originalSection = parts[1]; // Get original section (asia, international, special)
-                const customId = parts.slice(2).join("-");
-                const url = getCustomMarketUrl(originalSection, customId, term);
-                if (url) tabQueue.add(url);
-              } else if (marketUrls[market.key]) {
-                tabQueue.add(marketUrls[market.key](term));
-              }
+              // Open all URLs immediately without delays
+              marketArr.slice().sort((a, b) => a.label.localeCompare(b.label)).forEach(market => {
+                // Skip if this market is toggled off
+                if (!loadMarketToggleState(market.key)) return;
+                
+                if (market.custom) {
+                  // Use market.id directly if available, otherwise parse from key
+                  const customId = market.id || (() => {
+                    const parts = market.key.split("-");
+                    // Check if section is a custom category (starts with "custom-")
+                    const sectionPart = parts[1];
+                    if (sectionPart && sectionPart.startsWith("custom-")) {
+                      // Custom category: key is "custom-custom-{categoryId}-{marketId}"
+                      // We need to extract just the market ID
+                      const sectionPrefix = "custom-" + sectionPart + "-";
+                      const keyWithoutPrefix = market.key.substring(sectionPrefix.length);
+                      return keyWithoutPrefix || parts.slice(2).join("-");
+                    }
+                    // Standard format: "custom-{section}-{marketId}"
+                    return parts.slice(2).join("-");
+                  })();
+                  const parts = market.key.split("-");
+                  const originalSection = parts[1]; // Get original section (asia, international, special, or custom category id)
+                  const url = getCustomMarketUrl(originalSection, customId, term);
+                  if (url) tabQueue.add(url);
+                } else if (marketUrls[market.key]) {
+                  tabQueue.add(marketUrls[market.key](term));
+                }
+              });
             });
-          });
           
           // Clear selection
           selectedSearchTerms = {};
@@ -5481,6 +5703,18 @@
           urls.forEach(url => tabQueue.add(url));
         }
       }
+      // Main Open All button (works for all sections) - backup delegated handler
+      // Check if click is on or inside the open-all-btn
+      const openAllBtn = e.target.closest('#open-all-btn') || (e.target.id === 'open-all-btn' ? e.target : null);
+      if (openAllBtn) {
+        // Only handle if direct handler didn't already process it (check if default was prevented)
+        // The onclick handler should have already handled it, but this is a fallback
+        if (!e.defaultPrevented && typeof handleMainOpenAll === 'function') {
+          e.preventDefault();
+          e.stopPropagation();
+          handleMainOpenAll();
+        }
+      }
       // --- Add Custom Market Button ---
       if (e.target.classList.contains('add-market-btn')) {
         const section = e.target.getAttribute('data-section');
@@ -5488,42 +5722,11 @@
       }
     });
 
-    document.getElementById('open-all-btn').addEventListener('click', function() {
-      // Check if any search terms are selected
-      const selectedTerms = getSelectedSearchTerms();
-      
-      if (selectedTerms.length > 0) {
-        // Mark each term as clicked
-        selectedTerms.forEach(term => {
-          clickedSearches[term] = { 
-            clicked: true, 
-            category: determineSearchCategory(term) 
-          };
-        });
-        localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
-        
-        // Open each selected term in separate tabs for all markets
-        openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
-          openAllMarketsWithQuery(term);
-        });
-        
-        // Clear selection
-        selectedSearchTerms = {};
-        localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
-        
-        // Update UI
-        renderSavedSearches();
-        updateUnhighlightedCount();
-      } else {
-        // Use the current search query
-        const query = document.getElementById('query').value.trim();
-        if (!query) {
-          document.getElementById('query').focus();
-          return;
-        }
-        openAllMarketsWithQuery(query);
-      }
-    });
+    // Main Open All button handler (delegated handler above handles clicks, this is backup)
+    const openAllBtnDirect = document.getElementById('open-all-btn');
+    if (openAllBtnDirect) {
+      openAllBtnDirect.setAttribute('type', 'button');
+    }
 
     // Randomize button functionality
     document.getElementById('sidebar-randomize-btn').addEventListener('click', function() {
@@ -5610,7 +5813,10 @@
       
       // Ctrl+Enter to open all
       if (e.ctrlKey && e.key === 'Enter') {
-        document.getElementById('open-all-btn').click();
+        const openAllBtn = document.getElementById('open-all-btn');
+        if (openAllBtn) {
+          openAllBtn.click();
+        }
         return;
       }
       // Escape to clear search
@@ -5739,11 +5945,12 @@
     // --- Custom Market Modal Logic ---
     function showCustomMarketModal(section) {
       const bg = document.getElementById('custom-market-modal-bg');
-      document.getElementById('custom-market-modal-section').textContent = {
+      const sectionLabel = {
         asia: "Asia Section",
         international: "International Section",
         special: "Designer Section"
-      }[section] || "";
+      }[section] || (customCategories.find(cat => cat.id === section)?.name || section);
+      document.getElementById('custom-market-modal-section').textContent = sectionLabel;
       bg.style.display = 'flex';
       bg.setAttribute('data-section', section);
       document.getElementById('custom-market-title-input').value = '';
@@ -5754,6 +5961,103 @@
     }
     function hideCustomMarketModal() {
       document.getElementById('custom-market-modal-bg').style.display = 'none';
+    }
+    
+    function showCustomCategoryModal(categoryId = null) {
+      const bg = document.getElementById('custom-category-modal-bg');
+      const titleEl = document.getElementById('custom-category-modal-title');
+      const nameInput = document.getElementById('custom-category-name-input');
+      const saveBtn = document.getElementById('custom-category-save-btn');
+      const deleteBtn = document.getElementById('custom-category-delete-btn');
+      
+      if (categoryId) {
+        // Edit mode
+        const category = customCategories.find(cat => cat.id === categoryId);
+        if (category) {
+          titleEl.textContent = 'Edit Custom Category';
+          nameInput.value = category.name;
+          deleteBtn.style.display = 'block';
+          saveBtn.setAttribute('data-category-id', categoryId);
+        }
+      } else {
+        // Create mode
+        titleEl.textContent = 'Create Custom Category';
+        nameInput.value = '';
+        deleteBtn.style.display = 'none';
+        saveBtn.removeAttribute('data-category-id');
+      }
+      
+      bg.style.display = 'block';
+      setTimeout(() => nameInput.focus(), 20);
+    }
+    
+    function hideCustomCategoryModal() {
+      document.getElementById('custom-category-modal-bg').style.display = 'none';
+    }
+    
+    function saveCustomCategory() {
+      const nameInput = document.getElementById('custom-category-name-input');
+      const name = nameInput.value.trim();
+      if (!name) {
+        alert('Category name is required.');
+        return;
+      }
+      
+      const saveBtn = document.getElementById('custom-category-save-btn');
+      const categoryId = saveBtn.getAttribute('data-category-id');
+      
+      if (categoryId) {
+        // Update existing category
+        const category = customCategories.find(cat => cat.id === categoryId);
+        if (category) {
+          category.name = name;
+        }
+      } else {
+        // Create new category
+        const newId = 'custom-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 99999).toString(36);
+        customCategories.push({
+          id: newId,
+          name: name
+        });
+        // Initialize empty markets array for this category
+        if (!customMarkets[newId]) {
+          customMarkets[newId] = [];
+        }
+      }
+      
+      // Save to localStorage
+      foldersObj.customCategories = customCategories;
+      foldersObj.customMarkets = customMarkets;
+      saveFoldersObj(foldersObj);
+      
+      // Refresh UI
+      refreshAllMarketButtons();
+      hideCustomCategoryModal();
+    }
+    
+    function deleteCustomCategory(categoryId) {
+      if (!confirm('Are you sure you want to delete this category? All websites in this category will also be deleted.')) {
+        return;
+      }
+      
+      // Remove category
+      customCategories = customCategories.filter(cat => cat.id !== categoryId);
+      
+      // Remove markets for this category
+      delete customMarkets[categoryId];
+      
+      // Remove favorites that belong to this category
+      favorites = favorites.filter(fav => !fav.startsWith('custom-' + categoryId + '-'));
+      
+      // Save to localStorage
+      foldersObj.customCategories = customCategories;
+      foldersObj.customMarkets = customMarkets;
+      saveFoldersObj(foldersObj);
+      saveFavorites();
+      
+      // Refresh UI
+      refreshAllMarketButtons();
+      hideCustomCategoryModal();
     }
     document.getElementById('custom-market-modal-cancel-btn').onclick = hideCustomMarketModal;
     document.getElementById('custom-market-modal-bg').onclick = function(e) {
@@ -5776,6 +6080,67 @@
       refreshAllMarketButtons();
       hideCustomMarketModal();
     };
+    
+    // Custom Category Modal Event Handlers
+    function initCustomCategoryHandlers() {
+      const addCategoryBtn = document.getElementById('add-category-btn');
+      if (addCategoryBtn) {
+        addCategoryBtn.addEventListener('click', function() {
+          showCustomCategoryModal();
+        });
+      }
+      
+      const saveBtn = document.getElementById('custom-category-save-btn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+          saveCustomCategory();
+        });
+      }
+      
+      const cancelBtn = document.getElementById('custom-category-cancel-btn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+          hideCustomCategoryModal();
+        });
+      }
+      
+      const deleteBtn = document.getElementById('custom-category-delete-btn');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+          const saveBtn = document.getElementById('custom-category-save-btn');
+          const categoryId = saveBtn ? saveBtn.getAttribute('data-category-id') : null;
+          if (categoryId) {
+            deleteCustomCategory(categoryId);
+          }
+        });
+      }
+      
+      const modalBg = document.getElementById('custom-category-modal-bg');
+      if (modalBg) {
+        modalBg.addEventListener('click', function(e) {
+          if (e.target === this) {
+            hideCustomCategoryModal();
+          }
+        });
+      }
+    }
+    
+    // Initialize handlers when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initCustomCategoryHandlers);
+    } else {
+      initCustomCategoryHandlers();
+    }
+    
+    // Handle edit category button clicks (delegated)
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('edit-category-btn')) {
+        const categoryId = e.target.getAttribute('data-category-id');
+        if (categoryId) {
+          showCustomCategoryModal(categoryId);
+        }
+      }
+    });
 
     // Container minimize/restore and dragging functionality
     const container = document.querySelector('.container');
@@ -5936,6 +6301,84 @@
 
     // On folder or custom market change, refresh UI
     // (already handled above after relevant actions)
+    
+    // Main Open All button setup - attach handlers
+    function setupOpenAllButton() {
+      const openAllBtnSetup = document.getElementById('open-all-btn');
+      if (!openAllBtnSetup) {
+        // Retry if button doesn't exist yet (might be in a different script block)
+        setTimeout(setupOpenAllButton, 50);
+        return;
+      }
+      
+      // Ensure button doesn't submit form
+      openAllBtnSetup.setAttribute('type', 'button');
+      
+      // Remove any existing click handlers by replacing onclick
+      openAllBtnSetup.onclick = null;
+      
+      // Add direct click handler using onclick for maximum compatibility
+      openAllBtnSetup.onclick = function(e) {
+        // Prevent any default behavior and stop propagation
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        }
+        
+        // Call handler function directly - ensure it exists
+        try {
+          if (typeof handleMainOpenAll === 'function') {
+            handleMainOpenAll();
+          } else if (typeof openAllMarketsWithQuery === 'function') {
+            // Fallback: call openAllMarketsWithQuery directly if handler not available
+            const query = document.getElementById('query').value.trim();
+            if (query) {
+              openAllMarketsWithQuery(query);
+            } else {
+              document.getElementById('query').focus();
+            }
+          } else {
+            // Last resort: alert to debug
+            alert('Open All functions not available. Please refresh the page.');
+          }
+        } catch (error) {
+          console.error('Error in Open All button handler:', error);
+          alert('Error: ' + error.message);
+        }
+        return false;
+      };
+      
+      // Also add event listener as backup (bubble phase, not capture)
+      openAllBtnSetup.addEventListener('click', function(e) {
+        // Only handle if onclick didn't already process it
+        if (!e.defaultPrevented) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof handleMainOpenAll === 'function') {
+            handleMainOpenAll();
+          }
+        }
+        return false;
+      }, false); // Bubble phase, not capture
+      
+      // Touch event for mobile support
+      openAllBtnSetup.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        if (typeof handleMainOpenAll === 'function') {
+          handleMainOpenAll();
+        }
+        return false;
+      }, { passive: false });
+    }
+    
+    // Setup button - try immediately and also on DOM ready
+    setupOpenAllButton();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupOpenAllButton);
+    }
   </script>
   <script>
 (function() {
@@ -6113,35 +6556,6 @@
       renderSavedSearches();
     });
 
-    // Helper function to open all markets with a query
-    function openAllMarketsWithQuery(query) {
-      // Collect all URLs first (only enabled markets)
-      const urls = [];
-      ['asia', 'international', 'special', 'favorites'].forEach(section => {
-        getMarkets(section).forEach(market => {
-          // Skip if this market is toggled off
-          if (!loadMarketToggleState(market.key)) return;
-          
-          if (market.custom) {
-            const parts = market.key.split("-");
-            const originalSection = parts[1]; // Get original section (asia, international, special)
-            const customId = parts.slice(2).join("-");
-            const url = getCustomMarketUrl(originalSection, customId, query);
-            if (url) urls.push(url);
-          } else if (marketUrls[market.key]) {
-            urls.push(marketUrls[market.key](query));
-          }
-        });
-      });
-      
-      // Process URLs with queue
-      urls.forEach(url => tabQueue.add(url));
-      
-      // Clear selection after search
-      selectedSearchTerms = {};
-      localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
-      renderSavedSearches();
-    }
 
     // Load saved theme on startup (backward compatibility - no editor UI)
     const savedTheme = localStorage.getItem('themeSettings');
