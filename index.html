@@ -4170,10 +4170,33 @@
         { key: "paypay-fleamarket", label: "Yahoo PayPay Flea" },
         { key: "rakuma", label: "Rakuten Rakuma" },
         { key: "rakuten-jp", label: "Rakuten Japan" },
-        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" }
+        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" },
+        { key: "carousell-sg", label: "Carousell SG" },
+        { key: "carousell-hk", label: "Carousell HK" },
+        { key: "carousell-id", label: "Carousell ID" },
+        { key: "carousell-my", label: "Carousell MY" },
+        { key: "carousell-ph", label: "Carousell PH" },
+        { key: "carousell-tw", label: "Carousell TW" },
+        { key: "secondstreet-jp", label: "2nd Street JP" }
       ],
-      international: [],
-      special: []
+      international: [
+        { key: "depop", label: "Depop" },
+        { key: "ebay", label: "eBay Global" },
+        { key: "facebook", label: "Facebook Marketplace" },
+        { key: "gem", label: "Gem" },
+        { key: "grailed", label: "Grailed" },
+        { key: "mercari-us", label: "Mercari US" },
+        { key: "poshmark", label: "Poshmark" },
+        { key: "shopgoodwill", label: "ShopGoodwill" },
+        { key: "vinted", label: "Vinted" },
+        { key: "automatedsearches", label: "Automated Searches" },
+        { key: "secondstreet", label: "2nd STREET" },
+        { key: "instagram", label: "Instagram" }
+      ],
+      special: [
+        { key: "therealreal", label: "The RealReal" },
+        { key: "vestiaire", label: "Vestiaire Collective" }
+      ]
     };
     // Market toggle state storage
     const MARKET_TOGGLE_KEY = 'marketToggleStates';
@@ -5165,7 +5188,10 @@
       "fashionphile":    q => `https://www.fashionphile.com/search?q=${encodeURIComponent(q)}&sort=relevance`,
       "rebag":           q => `https://shop.rebag.com/search?q=${encodeURIComponent(q)}&sort=relevance`,
       "farfetch":        q => `https://www.farfetch.com/shopping/women/items.aspx?q=${encodeURIComponent(q)}&sort=3`,
-      "yoox":            q => `https://www.yoox.com/us/women/search?dept=women&query=${encodeURIComponent(q)}&sort=8`
+      "yoox":            q => `https://www.yoox.com/us/women/search?dept=women&query=${encodeURIComponent(q)}&sort=8`,
+      "secondstreet-jp": q => `https://www.2ndstreet.jp/search?q=${encodeURIComponent(q)}&sort=newest`,
+      "kindat":          q => `https://kindat.jp/search?q=${encodeURIComponent(q)}&sort=newest`,
+      "instagram":       q => `https://www.instagram.com/explore/tags/${encodeURIComponent(q)}/`
     };
     // Custom market URLs: key is "custom-section-id"
     function getCustomMarketUrl(section, id, q) {
