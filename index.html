@@ -423,6 +423,8 @@
       text-shadow: 0 1px 8px #2224;
     }
     #open-all-btn {
+      display: none !important;
+      visibility: hidden !important;
       background: #232323;
       color: #e3e3e3;
       border: none;
@@ -648,20 +650,29 @@
       min-height: 0;
       max-height: none;
       overflow-y: visible;
+      overflow-x: visible;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      height: auto !important;
+      max-height: none !important;
     }
     .saved-folder-item {
       margin-bottom: 4px;
       font-weight: bold;
       color: #e3e3e3;
       font-size: 1.03em;
-      display: flex;
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
       align-items: center;
       gap: 4px;
-      background:none;
+      background: none;
       cursor: grab;
       user-select: none;
       border-radius: 4px;
       transition: background .13s;
+      min-height: 32px;
     }
     .sidebar-folder-edit-btn, .sidebar-folder-remove-btn {
       border: none;
@@ -1147,6 +1158,29 @@
       pointer-events: auto;
     }
     .add-market-btn:hover { background: #444; color: #fff; box-shadow: 0 4px 16px #2226; transform: translateY(-1px) scale(1.04);}
+    .add-category-btn {
+      background: #232323;
+      color: #e3e3e3;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 9px 16px;
+      min-width: 200px;
+      margin: 15px 0;
+      transition: background .18s, box-shadow .18s, transform .13s;
+      box-shadow: 0 1px 4px #2224;
+      opacity: 0.93;
+      backdrop-filter: blur(2px);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      pointer-events: auto;
+    }
+    .add-category-btn:hover { background: #444; color: #fff; box-shadow: 0 4px 16px #2226; transform: translateY(-1px) scale(1.04);}
     .add-market-btn:active { transform: translateY(0) scale(1); }
     /* Wishlist styles (dark mode) */
     .wishlist-section {
@@ -1410,9 +1444,9 @@
     }
     @media (max-width: 1000px) {
       .sidebar {
-        position: relative;
-        width: 100%;
-        height: auto;
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
         box-shadow: none;
         border-right: none;
         border-bottom: 1.5px solid #232323;
@@ -1420,6 +1454,13 @@
         margin-bottom: 18px;
         max-width: 100vw;
         overflow-x: hidden;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: none !important;
+        left: 0 !important;
+        top: 0 !important;
+        z-index: 100 !important;
       }
       .container { 
         max-width: 100vw; 
@@ -1497,7 +1538,11 @@
       .special-group { 
         padding: 10px 4px 6px 4px; 
       }
-      #open-all-btn, .section-openall-btn, .sidebar-randomize-btn { 
+      #open-all-btn {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      .section-openall-btn, .sidebar-randomize-btn { 
         max-width: 100%;
         min-height: 44px;
         padding: 10px 15px;
@@ -1567,6 +1612,13 @@
         padding: 12px;
         font-size: 14px;
       }
+      .add-category-btn {
+        width: 100%;
+        min-height: 44px;
+        padding: 12px;
+        font-size: 14px;
+        margin: 10px 0;
+      }
       .sidebar-folder-btn,
       .sidebar-add-btn {
         min-height: 44px;
@@ -1608,6 +1660,71 @@
         min-height: 44px;
         padding: 10px;
         touch-action: manipulation;
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .sidebar-folder-row {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .saved-folder-list {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .saved-folder-item {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 100% !important;
+        min-height: 44px !important;
+        padding: 10px !important;
+        margin-bottom: 8px !important;
+        background: rgba(30, 32, 34, 0.5) !important;
+        border-radius: 6px !important;
+      }
+      .saved-folder-item button {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        flex: 1 !important;
+        color: #e3e3e3 !important;
+        font-size: 16px !important;
+      }
+      .saved-folder-item span {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #e3e3e3 !important;
+      }
+      .saved-folder-item img {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 20px !important;
+        height: 20px !important;
+      }
+      .sidebar-folder-active {
+        background: rgba(0, 230, 214, 0.2) !important;
+        color: #fff !important;
+      }
+      .sidebar-folder-edit-btn,
+      .sidebar-folder-remove-btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .sidebar-folder-input {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .sidebar-folder-btn {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
       .edit-btn,
       .remove-btn,
@@ -1633,9 +1750,8 @@
         touch-action: manipulation;
       }
       #open-all-btn {
-        min-height: 44px;
-        padding: 12px 20px;
-        font-size: 15px;
+        display: none !important;
+        visibility: hidden !important;
       }
       #toggle-all-checkbox {
         width: 20px;
@@ -2010,18 +2126,28 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
     background: rgba(0, 0, 0, 0.95);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: none; /* Start hidden, only show when explicitly needed */
     align-items: center;
     justify-content: center;
-    z-index: 99999; /* Above lock overlay */
+    z-index: 999999 !important; /* Above lock overlay - much higher for iOS */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: display;
   }
 
   .unlock-modal-bg.show {
     display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   .unlock-modal {
@@ -2034,21 +2160,95 @@
     text-align: center;
     -webkit-overflow-scrolling: touch;
   }
+  /* iOS Safari specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    .unlock-modal-bg {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      min-height: -webkit-fill-available !important;
+      z-index: 999999 !important;
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+    }
+    .unlock-modal-bg.show {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+  }
+  
   @media (max-width: 768px) {
+    .unlock-modal-bg {
+      background: rgba(0, 0, 0, 0.98) !important;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 999999 !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 100vh !important;
+      min-height: -webkit-fill-available !important;
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+    .unlock-modal-bg.show {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
     .unlock-modal {
       padding: 20px 15px;
-      width: calc(100% - 20px);
-      max-width: 100%;
+      width: calc(100% - 40px) !important;
+      max-width: calc(100% - 40px) !important;
       max-height: 90vh;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+      background: rgba(20, 20, 20, 1) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9) !important;
+      z-index: 1000000 !important;
+      margin: auto;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
     }
     .unlock-modal h3 {
       font-size: 20px;
       margin-bottom: 15px;
+      color: #e3e3e3 !important;
     }
     .unlock-modal p {
       font-size: 13px;
       line-height: 1.6;
+      color: #b0b0b0 !important;
+    }
+    .unlock-modal form {
+      width: 100%;
+    }
+    .unlock-modal * {
+      color: inherit;
+    }
+    .unlock-modal strong {
+      color: inherit !important;
+    }
+    .unlock-modal a {
+      color: #00e6d6 !important;
+    }
+    .unlock-modal code {
+      color: #e3e3e3 !important;
+      background: rgba(0, 230, 214, 0.1) !important;
     }
   }
 
@@ -2077,6 +2277,23 @@
       font-size: 16px;
       min-height: 44px;
       padding: 12px 15px;
+      width: 100%;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      appearance: none;
+      border-radius: 10px;
+      background: rgba(30, 32, 34, 1) !important;
+      color: #e3e3e3 !important;
+      border: 1.5px solid #2a2d2f !important;
+    }
+    .unlock-input::placeholder {
+      color: #888 !important;
+      opacity: 1;
+    }
+    .unlock-input:focus {
+      border-color: rgba(0, 230, 214, 0.55) !important;
+      background: rgba(40, 42, 44, 1) !important;
+      color: #e3e3e3 !important;
     }
   }
   .unlock-input:focus {
@@ -2112,6 +2329,17 @@
       min-height: 44px;
       font-size: 15px;
       padding: 12px 20px;
+      background: #00e6d6 !important;
+      color: #0a0a0a !important;
+      border: none !important;
+    }
+    .unlock-cancel-btn {
+      min-height: 44px;
+      font-size: 15px;
+      padding: 12px 20px;
+      background: rgba(60, 60, 60, 1) !important;
+      color: #e3e3e3 !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
     }
   }
   .unlock-submit-btn:hover {
@@ -2196,9 +2424,14 @@
     right: 0;
     bottom: 0;
     width: 100vw;
+    width: 100%;
     height: 100vh;
+    height: 100%;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
     background: rgba(0, 0, 0, 0.95);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 99997; /* Below unlock modal but above everything else */
     pointer-events: all;
     cursor: not-allowed;
@@ -2216,6 +2449,22 @@
   body.site-locked .top-header,
   body.site-locked .top-header * {
     pointer-events: auto !important;
+  }
+  
+  /* Ensure unlock modal is always visible and above lock overlay on iOS */
+  body.site-locked .unlock-modal-bg {
+    z-index: 999999 !important;
+    position: fixed !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  body.site-locked .unlock-modal-bg.show {
+    z-index: 999999 !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
   
   /* Global button fixes for iOS */
@@ -2307,13 +2556,20 @@
 
   /* Visual feedback for locked content */
   body.site-locked .container,
-  body.site-locked .sidebar,
   body.site-locked .wishlist-section,
   body.site-locked .container *,
-  body.site-locked .sidebar *,
   body.site-locked .wishlist-section * {
     filter: blur(4px);
     opacity: 0.3;
+  }
+  
+  /* Keep sidebar visible and clear even when site is locked */
+  body.site-locked .sidebar,
+  body.site-locked .sidebar * {
+    filter: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    user-select: auto !important;
   }
 }
   </style>
@@ -2324,6 +2580,13 @@
   <!-- Top Header with PayPal Donation -->
   <div class="top-header">
     <div class="header-left">
+      <a href="https://discord.gg/s6AzmucFGd" 
+         target="_blank" 
+         rel="noopener noreferrer" 
+         class="donation-link" 
+         style="background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%); box-shadow: 0 2px 8px rgba(88, 101, 242, 0.3);">
+        💬 Discord
+      </a>
       <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
          target="_blank" 
          rel="noopener noreferrer" 
@@ -2344,6 +2607,7 @@
     </div>
     <div class="header-right">
       <span id="user-display" style="display: none; color: #00e6d6; font-size: 14px; margin-right: 15px;"></span>
+      <button id="online-users-btn" class="unlock-btn" style="display: none; margin-right: 10px; background: #232323;">👥 Online</button>
       <button id="notifications-btn" class="unlock-btn" style="display: none; margin-right: 10px; background: #232323;">🔔 Notifications</button>
       <button id="unlock-btn" class="unlock-btn" style="display: none;">Unlock Site</button>
     </div>
@@ -2363,24 +2627,24 @@
       <div id="login-success" style="display: none; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: rgba(0, 230, 214, 0.2); border: 1px solid rgba(0, 230, 214, 0.5);">
         <p style="color: #00e6d6; margin: 0; font-size: 14px;" id="login-success-text"></p>
       </div>
-      <div id="login-form">
-        <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" />
+      <form id="login-form" onsubmit="event.preventDefault(); return false;">
+        <input type="email" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" autocomplete="email" inputmode="email" />
+        <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" autocomplete="current-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button id="login-submit-btn" class="unlock-submit-btn">Login</button>
-          <button id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
-          <button id="login-cancel-btn" class="unlock-cancel-btn" style="display: none;">Cancel</button>
+          <button type="submit" id="login-submit-btn" class="unlock-submit-btn">Login</button>
+          <button type="button" id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
+          <button type="button" id="login-cancel-btn" class="unlock-cancel-btn" style="display: none;">Cancel</button>
         </div>
-      </div>
-      <div id="signup-form" style="display: none;">
-        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="email" id="signup-email-input" placeholder="Your email" class="unlock-input" style="margin-bottom: 12px;" />
-        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" />
+      </form>
+      <form id="signup-form" style="display: none;" onsubmit="event.preventDefault(); return false;">
+        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" autocomplete="username" />
+        <input type="email" id="signup-email-input" placeholder="Your email" class="unlock-input" style="margin-bottom: 12px;" autocomplete="email" inputmode="email" />
+        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" autocomplete="new-password" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
-          <button id="signup-submit-btn" class="unlock-submit-btn">Create Account</button>
-          <button id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
+          <button type="submit" id="signup-submit-btn" class="unlock-submit-btn">Create Account</button>
+          <button type="button" id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
         </div>
-      </div>
+      </form>
       <p style="color: #888; font-size: 12px; margin-top: 15px; line-height: 1.6; word-break: break-word;">
         <strong style="color: #00e6d6;">✓ Site Access:</strong> Free! Just create an account above.<br><br>
         <strong style="color: #f7931a;">🔔 Discord Notifications ($5/month):</strong><br>
@@ -2506,6 +2770,8 @@
         <button type="button" class="section-openall-btn" data-section="favorites">Open All Favorites</button>
       </div>
       <div class="markets" id="favorites-markets"></div>
+      <button type="button" class="add-category-btn" id="add-category-btn">+ Create Custom Category</button>
+      <div id="custom-categories-container"></div>
       <div class="section-header-row">
         <h2>Asia</h2>
         <button type="button" class="section-openall-btn" data-section="asia">Open All Asia</button>
@@ -2629,9 +2895,69 @@
         </div>
       </div>
 
+      <div style="margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="color: #e3e3e3; display: block; font-size: 14px;">Discord Webhooks</label>
+          <button type="button" id="add-webhook-btn" class="unlock-submit-btn" style="padding: 6px 12px; font-size: 12px; min-height: 32px;">+ Add Webhook</button>
+        </div>
+        <p style="color: #888; font-size: 12px; margin-bottom: 8px;">
+          Add one or more Discord webhooks for this notification. Each webhook can be a different channel (e.g., #rickowens, #supreme).<br>
+          <span style="color: #00e6d6;">💡 Tip:</span> Create webhooks in Discord: Server Settings → Integrations → Webhooks → New Webhook
+        </p>
+        <div id="notification-webhooks" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px; -webkit-overflow-scrolling: touch;">
+          <!-- Webhooks will be populated by JavaScript -->
+        </div>
+      </div>
+
       <div class="unlock-btn-row">
         <button id="notification-save-btn" class="unlock-submit-btn">Save</button>
         <button id="notification-cancel-btn" class="unlock-cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Category Modal -->
+  <div id="custom-category-modal-bg" class="unlock-modal-bg" style="display: none;">
+    <div class="unlock-modal" style="max-width: 500px;">
+      <h3 id="custom-category-modal-title">Create Custom Category</h3>
+      <div style="margin-bottom: 15px;">
+        <label style="color: #e3e3e3; display: block; margin-bottom: 8px; font-size: 14px;">Category Name</label>
+        <input type="text" id="custom-category-name-input" placeholder="e.g., Streetwear" 
+               class="unlock-input" style="margin-bottom: 15px;" maxlength="50" />
+      </div>
+      <div class="unlock-btn-row">
+        <button id="custom-category-save-btn" class="unlock-submit-btn">Save</button>
+        <button id="custom-category-cancel-btn" class="unlock-cancel-btn">Cancel</button>
+        <button id="custom-category-delete-btn" class="unlock-cancel-btn" style="display: none; background: rgba(255, 107, 107, 0.2); color: #ff6b6b;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Online Users Modal -->
+  <div id="online-users-modal-bg" class="unlock-modal-bg" style="display: none;">
+    <div class="unlock-modal" style="max-width: 600px; max-height: 80vh;">
+      <h3>👥 Online Users</h3>
+      <div style="margin-bottom: 15px;">
+        <div style="display: flex; gap: 15px; margin-bottom: 15px; padding: 10px; background: rgba(35, 35, 35, 0.5); border-radius: 8px;">
+          <div style="flex: 1;">
+            <div style="color: #00e6d6; font-size: 24px; font-weight: bold;" id="online-count-display">0</div>
+            <div style="color: #888; font-size: 12px;">Online</div>
+          </div>
+          <div style="flex: 1;">
+            <div style="color: #888; font-size: 24px; font-weight: bold;" id="offline-count-display">0</div>
+            <div style="color: #888; font-size: 12px;">Offline</div>
+          </div>
+          <div style="flex: 1;">
+            <div style="color: #e3e3e3; font-size: 24px; font-weight: bold;" id="total-count-display">0</div>
+            <div style="color: #888; font-size: 12px;">Total</div>
+          </div>
+        </div>
+        <div id="online-users-list" style="max-height: 50vh; overflow-y: auto; padding: 10px; background: rgba(35, 35, 35, 0.3); border-radius: 8px; -webkit-overflow-scrolling: touch;">
+          <p style="color: #888; text-align: center; padding: 20px;">Loading users...</p>
+        </div>
+      </div>
+      <div class="unlock-btn-row">
+        <button id="online-users-close-btn" class="unlock-cancel-btn" style="width: 100%;">Close</button>
       </div>
     </div>
   </div>
@@ -3189,6 +3515,11 @@
                 if (unlockModalBg) {
                   unlockModalBg.classList.add('show');
                   unlockModalBg.style.display = 'flex';
+                  unlockModalBg.style.visibility = 'visible';
+                  unlockModalBg.style.opacity = '1';
+                  unlockModalBg.style.zIndex = '999999';
+                  // Force reflow for iOS
+                  unlockModalBg.offsetHeight;
                 }
               } else {
                 // Hide modal, show button instead
@@ -3203,6 +3534,11 @@
               if (!currentUser && unlockModalBg) {
                 unlockModalBg.classList.add('show');
                 unlockModalBg.style.display = 'flex';
+                unlockModalBg.style.visibility = 'visible';
+                unlockModalBg.style.opacity = '1';
+                unlockModalBg.style.zIndex = '999999';
+                // Force reflow for iOS
+                unlockModalBg.offsetHeight;
               }
             }
           } else {
@@ -3225,6 +3561,11 @@
             if (unlockModalBg) {
               unlockModalBg.classList.add('show');
               unlockModalBg.style.display = 'flex';
+              unlockModalBg.style.visibility = 'visible';
+              unlockModalBg.style.opacity = '1';
+              unlockModalBg.style.zIndex = '999999';
+              // Force reflow for iOS
+              unlockModalBg.offsetHeight;
             }
             // Show login form by default
             if (loginForm) loginForm.style.display = 'block';
@@ -3260,141 +3601,167 @@
           };
         }
         
-        // Login handler
-        if (loginSubmitBtn) {
-          loginSubmitBtn.onclick = async () => {
-            const usernameOrEmail = loginUsernameInput ? loginUsernameInput.value.trim() : '';
-            const password = loginPasswordInput ? loginPasswordInput.value : '';
-            
-            if (!usernameOrEmail || !password) {
-              if (loginError) {
-                loginErrorText.textContent = 'Please enter both username/email and password.';
-                loginError.style.display = 'block';
-              }
-              return;
+        // Login handler function (reusable for both onclick and form submit)
+        const handleLogin = async () => {
+          const usernameOrEmail = loginUsernameInput ? loginUsernameInput.value.trim() : '';
+          const password = loginPasswordInput ? loginPasswordInput.value : '';
+          
+          if (!usernameOrEmail || !password) {
+            if (loginError) {
+              loginErrorText.textContent = 'Please enter both username/email and password.';
+              loginError.style.display = 'block';
             }
-            
-            loginSubmitBtn.disabled = true;
-            loginSubmitBtn.textContent = 'Logging in...';
+            return;
+          }
+          
+          loginSubmitBtn.disabled = true;
+          loginSubmitBtn.textContent = 'Logging in...';
+          if (loginError) loginError.style.display = 'none';
+          
+          const result = await loginUser(usernameOrEmail, password);
+          
+          loginSubmitBtn.disabled = false;
+          loginSubmitBtn.textContent = 'Login';
+          
+          if (result.success) {
+            // Hide error message if showing
             if (loginError) loginError.style.display = 'none';
             
-            const result = await loginUser(usernameOrEmail, password);
+            // Clear password field
+            if (loginPasswordInput) loginPasswordInput.value = '';
+            // Clear username field
+            if (loginUsernameInput) loginUsernameInput.value = '';
             
-            loginSubmitBtn.disabled = false;
-            loginSubmitBtn.textContent = 'Login';
+            // Immediately check unlock status
+            const unlocked = await isUnlocked();
+            console.log('Unlock status after login:', unlocked);
             
-            if (result.success) {
-              // Hide error message if showing
-              if (loginError) loginError.style.display = 'none';
+            if (unlocked) {
+              // User is verified - show success briefly, then unlock
+              if (loginSuccess) {
+                loginSuccessText.textContent = 'Login successful! Welcome!';
+                loginSuccess.style.display = 'block';
+              }
               
-              // Clear password field
-              if (loginPasswordInput) loginPasswordInput.value = '';
-              // Clear username field
-              if (loginUsernameInput) loginUsernameInput.value = '';
-              
-              // Immediately check unlock status
-              const unlocked = await isUnlocked();
-              console.log('Unlock status after login:', unlocked);
-              
-              if (unlocked) {
-                // User is verified - show success briefly, then unlock
-                if (loginSuccess) {
-                  loginSuccessText.textContent = 'Login successful! Welcome!';
-                  loginSuccess.style.display = 'block';
-                }
-                
-                // Hide success and unlock site after brief delay
-                setTimeout(async () => {
-                  if (loginSuccess) {
-                    loginSuccess.style.display = 'none';
-                  }
-                  // Refresh unlock system - this will unlock the site and close modal
-                  await initUnlockSystem();
-                  console.log('Site unlocked for verified user');
-                }, 800);
-              } else {
-                // User logged in successfully - all users are now auto-verified
-                console.log('User logged in successfully');
+              // Hide success and unlock site after brief delay
+              setTimeout(async () => {
                 if (loginSuccess) {
                   loginSuccess.style.display = 'none';
                 }
-                if (loginError) {
-                  loginError.style.display = 'none';
-                }
-                // Close modal and unlock site
+                // Refresh unlock system - this will unlock the site and close modal
                 await initUnlockSystem();
-              }
+                console.log('Site unlocked for verified user');
+              }, 800);
             } else {
-              if (loginError) {
-                loginErrorText.textContent = result.error || 'Login failed. Please try again.';
-                loginError.style.display = 'block';
-                console.error('Login failed:', result.error);
+              // User logged in successfully - all users are now auto-verified
+              console.log('User logged in successfully');
+              if (loginSuccess) {
+                loginSuccess.style.display = 'none';
               }
-              // Clear password field on error
-              if (loginPasswordInput) loginPasswordInput.value = '';
+              if (loginError) {
+                loginError.style.display = 'none';
+              }
+              // Close modal and unlock site
+              await initUnlockSystem();
             }
+          } else {
+            if (loginError) {
+              loginErrorText.textContent = result.error || 'Login failed. Please try again.';
+              loginError.style.display = 'block';
+              console.error('Login failed:', result.error);
+            }
+            // Clear password field on error
+            if (loginPasswordInput) loginPasswordInput.value = '';
+          }
+        };
+        
+        // Login handler - support both onclick and form submit for mobile compatibility
+        if (loginSubmitBtn) {
+          loginSubmitBtn.onclick = handleLogin;
+        }
+        
+        // Form submit handler for better mobile support
+        const loginFormEl = document.getElementById('login-form');
+        if (loginFormEl) {
+          loginFormEl.onsubmit = (e) => {
+            e.preventDefault();
+            handleLogin();
+            return false;
           };
         }
         
-        // Signup handler
-        if (signupSubmitBtn) {
-          signupSubmitBtn.onclick = async () => {
-            const username = signupUsernameInput ? signupUsernameInput.value.trim() : '';
-            const email = signupEmailInput ? signupEmailInput.value.trim() : '';
-            const password = signupPasswordInput ? signupPasswordInput.value : '';
-            
-            if (!username || !email || !password) {
-              if (loginError) {
-                loginErrorText.textContent = 'Please fill in all fields.';
-                loginError.style.display = 'block';
-              }
-              return;
+        // Signup handler function (reusable for both onclick and form submit)
+        const handleSignup = async () => {
+          const username = signupUsernameInput ? signupUsernameInput.value.trim() : '';
+          const email = signupEmailInput ? signupEmailInput.value.trim() : '';
+          const password = signupPasswordInput ? signupPasswordInput.value : '';
+          
+          if (!username || !email || !password) {
+            if (loginError) {
+              loginErrorText.textContent = 'Please fill in all fields.';
+              loginError.style.display = 'block';
             }
-            
-            signupSubmitBtn.disabled = true;
-            signupSubmitBtn.textContent = 'Creating account...';
-            if (loginError) loginError.style.display = 'none';
-            
-            const result = await signUpUser(username, email, password);
-            
-            signupSubmitBtn.disabled = false;
-            signupSubmitBtn.textContent = 'Create Account';
-            
-            if (result.success) {
-              if (result.needsEmailVerification) {
-                // Email confirmation required (if enabled in Supabase)
-                if (loginSuccess) {
-                  loginSuccessText.textContent = 'Account created! Please check your email (' + email + ') to confirm your email address.';
-                  loginSuccess.style.display = 'block';
-                }
-                // Clear form
-                if (signupUsernameInput) signupUsernameInput.value = '';
-                if (signupEmailInput) signupEmailInput.value = '';
-                if (signupPasswordInput) signupPasswordInput.value = '';
-                // Switch to login form after 3 seconds
-                setTimeout(() => {
-                  if (loginToggleBtn) loginToggleBtn.click();
-                  if (loginSuccess) loginSuccess.style.display = 'none';
-                }, 5000);
-              } else {
-                // User is logged in immediately (email confirmation disabled, auto-verified)
-                if (loginSuccess) {
-                  loginSuccessText.textContent = 'Account created! Welcome! Your account is verified and ready to use.';
-                  loginSuccess.style.display = 'block';
-                }
-                setTimeout(async () => {
-                  await initUnlockSystem();
-                }, 500);
+            return;
+          }
+          
+          signupSubmitBtn.disabled = true;
+          signupSubmitBtn.textContent = 'Creating account...';
+          if (loginError) loginError.style.display = 'none';
+          
+          const result = await signUpUser(username, email, password);
+          
+          signupSubmitBtn.disabled = false;
+          signupSubmitBtn.textContent = 'Create Account';
+          
+          if (result.success) {
+            if (result.needsEmailVerification) {
+              // Email confirmation required (if enabled in Supabase)
+              if (loginSuccess) {
+                loginSuccessText.textContent = 'Account created! Please check your email (' + email + ') to confirm your email address.';
+                loginSuccess.style.display = 'block';
               }
+              // Clear form
+              if (signupUsernameInput) signupUsernameInput.value = '';
+              if (signupEmailInput) signupEmailInput.value = '';
+              if (signupPasswordInput) signupPasswordInput.value = '';
+              // Switch to login form after 3 seconds
+              setTimeout(() => {
+                if (loginToggleBtn) loginToggleBtn.click();
+                if (loginSuccess) loginSuccess.style.display = 'none';
+              }, 5000);
             } else {
-              if (loginError) {
-                // Show the actual error message from Supabase
-                const errorMsg = result.error || 'Account creation failed. Please try again.';
-                loginErrorText.textContent = errorMsg;
-                loginError.style.display = 'block';
-                console.error('Signup error:', result.error);
+              // User is logged in immediately (email confirmation disabled, auto-verified)
+              if (loginSuccess) {
+                loginSuccessText.textContent = 'Account created! Welcome! Your account is verified and ready to use.';
+                loginSuccess.style.display = 'block';
               }
+              setTimeout(async () => {
+                await initUnlockSystem();
+              }, 500);
             }
+          } else {
+            if (loginError) {
+              // Show the actual error message from Supabase
+              const errorMsg = result.error || 'Account creation failed. Please try again.';
+              loginErrorText.textContent = errorMsg;
+              loginError.style.display = 'block';
+              console.error('Signup error:', result.error);
+            }
+          }
+        };
+        
+        // Signup handler - support both onclick and form submit for mobile compatibility
+        if (signupSubmitBtn) {
+          signupSubmitBtn.onclick = handleSignup;
+        }
+        
+        // Form submit handler for better mobile support
+        const signupFormEl = document.getElementById('signup-form');
+        if (signupFormEl) {
+          signupFormEl.onsubmit = (e) => {
+            e.preventDefault();
+            handleSignup();
+            return false;
           };
         }
         
@@ -3408,19 +3775,46 @@
           };
         }
         
-        // Enter key handlers
+        // Enter key handlers - support both email and password fields
+        if (loginUsernameInput) {
+          loginUsernameInput.onkeydown = (e) => {
+            if (e.key === 'Enter' && loginSubmitBtn && !loginSubmitBtn.disabled) {
+              e.preventDefault();
+              handleLogin();
+            }
+          };
+        }
         if (loginPasswordInput) {
           loginPasswordInput.onkeydown = (e) => {
-            if (e.key === 'Enter' && loginSubmitBtn) {
-              loginSubmitBtn.click();
+            if (e.key === 'Enter' && loginSubmitBtn && !loginSubmitBtn.disabled) {
+              e.preventDefault();
+              handleLogin();
             }
           };
         }
         
+        // Enter key handlers for signup form - support all fields
+        if (signupUsernameInput) {
+          signupUsernameInput.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (signupEmailInput) signupEmailInput.focus();
+            }
+          };
+        }
+        if (signupEmailInput) {
+          signupEmailInput.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (signupPasswordInput) signupPasswordInput.focus();
+            }
+          };
+        }
         if (signupPasswordInput) {
           signupPasswordInput.onkeydown = (e) => {
-            if (e.key === 'Enter' && signupSubmitBtn) {
-              signupSubmitBtn.click();
+            if (e.key === 'Enter' && signupSubmitBtn && !signupSubmitBtn.disabled) {
+              e.preventDefault();
+              handleSignup();
             }
           };
         }
@@ -3535,6 +3929,8 @@
             supabaseNotifications = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
           }
         }
+        // Expose globally for online users feature
+        window.supabaseNotifications = supabaseNotifications;
       } catch (e) {
         console.warn('Supabase notifications initialization error:', e);
       }
@@ -3554,6 +3950,8 @@
       const notificationEditTitle = document.getElementById('notification-edit-title');
       const notificationSearchTerm = document.getElementById('notification-search-term');
       const notificationMarkets = document.getElementById('notification-markets');
+      const notificationWebhooks = document.getElementById('notification-webhooks');
+      const addWebhookBtn = document.getElementById('add-webhook-btn');
       const notificationSaveBtn = document.getElementById('notification-save-btn');
       const notificationCancelBtn = document.getElementById('notification-cancel-btn');
 
@@ -3707,12 +4105,28 @@
             marketsText = 'All 5 Sendico markets';
           }
           
+          // Handle backward compatibility: show webhook count or indicate using global/default
+          const webhooksCount = (notif.webhooks || []).length;
+          let webhooksText = '';
+          if (webhooksCount > 0) {
+            webhooksText = `${webhooksCount} webhook${webhooksCount > 1 ? 's' : ''}`;
+          } else {
+            // Check if global webhook exists
+            const globalWebhook = discordWebhookInput ? discordWebhookInput.value.trim() : '';
+            if (globalWebhook && globalWebhook.startsWith('https://discord.com/api/webhooks/')) {
+              webhooksText = 'Using global webhook';
+            } else {
+              webhooksText = 'No webhooks configured';
+            }
+          }
+          
           return `
             <div class="notification-item">
               <div class="notification-content">
                 <div class="notification-info">
                   <div style="color: #e3e3e3; font-weight: bold; margin-bottom: 5px;">${escapeHtml(notif.searchTerm || 'Untitled')}</div>
                   <div style="color: #888; font-size: 12px;">Markets: ${escapeHtml(marketsText)}</div>
+                  <div style="color: #888; font-size: 12px;">Webhooks: ${escapeHtml(webhooksText)}</div>
                 </div>
                 <div class="notification-actions">
                   <button class="unlock-cancel-btn notification-action-btn" onclick="window.editNotification(${originalIndex})" style="padding: 5px 10px; margin-right: 5px; font-size: 12px;">Edit</button>
@@ -3731,6 +4145,18 @@
         if (notificationSearchTerm) notificationSearchTerm.value = notif.searchTerm || '';
         if (notificationEditTitle) notificationEditTitle.textContent = 'Edit Notification';
         populateMarketsCheckboxes(notif.markets || []);
+        
+        // Populate webhooks - use notification's webhooks or fallback to global webhook
+        let webhooksToShow = notif.webhooks || [];
+        if (webhooksToShow.length === 0) {
+          // Fallback to global webhook if no per-notification webhooks
+          const globalWebhook = discordWebhookInput ? discordWebhookInput.value.trim() : '';
+          if (globalWebhook && globalWebhook.startsWith('https://discord.com/api/webhooks/')) {
+            webhooksToShow = [globalWebhook];
+          }
+        }
+        populateWebhooks(webhooksToShow);
+        
         if (notificationEditModal) notificationEditModal.style.display = 'flex';
       };
 
@@ -3740,6 +4166,73 @@
         await saveNotifications();
         renderNotifications();
       };
+
+      // Populate webhooks UI
+      function populateWebhooks(webhooks = []) {
+        if (!notificationWebhooks) return;
+        
+        notificationWebhooks.innerHTML = '';
+        
+        if (webhooks.length === 0) {
+          const emptyMsg = document.createElement('div');
+          emptyMsg.style.cssText = 'color: #888; font-size: 12px; text-align: center; padding: 10px;';
+          emptyMsg.textContent = 'No webhooks added. Click "+ Add Webhook" to add one.';
+          notificationWebhooks.appendChild(emptyMsg);
+        } else {
+          webhooks.forEach((webhook, index) => {
+            const webhookDiv = document.createElement('div');
+            webhookDiv.style.cssText = 'display: flex; gap: 8px; align-items: center; padding: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);';
+            
+            const webhookInput = document.createElement('input');
+            webhookInput.type = 'text';
+            webhookInput.value = webhook;
+            webhookInput.placeholder = 'https://discord.com/api/webhooks/...';
+            webhookInput.className = 'unlock-input';
+            webhookInput.style.cssText = 'flex: 1; font-family: monospace; font-size: 11px; padding: 6px 10px;';
+            webhookInput.setAttribute('data-webhook-index', index);
+            webhookInput.addEventListener('input', function() {
+              const idx = parseInt(this.getAttribute('data-webhook-index'));
+              if (idx >= 0 && idx < webhooks.length) {
+                webhooks[idx] = this.value.trim();
+              }
+              // Visual feedback for valid/invalid webhook URLs
+              const val = this.value.trim();
+              if (val && val.startsWith('https://discord.com/api/webhooks/')) {
+                this.style.borderColor = 'rgba(0, 230, 214, 0.5)';
+                this.style.background = 'rgba(0, 230, 214, 0.05)';
+              } else if (val) {
+                this.style.borderColor = 'rgba(255, 107, 107, 0.5)';
+                this.style.background = 'rgba(255, 107, 107, 0.05)';
+              } else {
+                this.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                this.style.background = '';
+              }
+            });
+            
+            // Set initial validation state
+            if (webhook && webhook.startsWith('https://discord.com/api/webhooks/')) {
+              webhookInput.style.borderColor = 'rgba(0, 230, 214, 0.5)';
+              webhookInput.style.background = 'rgba(0, 230, 214, 0.05)';
+            }
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'unlock-cancel-btn';
+            removeBtn.textContent = '✕';
+            removeBtn.style.cssText = 'padding: 6px 10px; min-width: 32px; background: rgba(255, 107, 107, 0.2); color: #ff6b6b; border-color: rgba(255, 107, 107, 0.5);';
+            removeBtn.title = 'Remove webhook';
+            removeBtn.addEventListener('click', function() {
+              const idx = parseInt(webhookInput.getAttribute('data-webhook-index'));
+              webhooks.splice(idx, 1);
+              populateWebhooks(webhooks);
+            });
+            
+            webhookDiv.appendChild(webhookInput);
+            webhookDiv.appendChild(removeBtn);
+            notificationWebhooks.appendChild(webhookDiv);
+          });
+        }
+      }
 
       // Populate markets checkboxes - ONLY Sendico-supported markets
       // These are the only markets that will actually send notifications via the notifier
@@ -3791,6 +4284,24 @@
         notificationMarkets.appendChild(infoDiv);
       }
 
+      // Add webhook button
+      if (addWebhookBtn) {
+        addWebhookBtn.addEventListener('click', () => {
+          // Get current webhooks from the UI
+          const currentWebhooks = [];
+          if (notificationWebhooks) {
+            notificationWebhooks.querySelectorAll('input[data-webhook-index]').forEach(input => {
+              const val = input.value.trim();
+              if (val) currentWebhooks.push(val);
+            });
+          }
+          
+          // Add new empty webhook
+          currentWebhooks.push('');
+          populateWebhooks(currentWebhooks);
+        });
+      }
+
       // Add notification button
       if (addNotificationBtn) {
         addNotificationBtn.addEventListener('click', () => {
@@ -3798,6 +4309,7 @@
           if (notificationSearchTerm) notificationSearchTerm.value = '';
           if (notificationEditTitle) notificationEditTitle.textContent = 'Add Notification';
           populateMarketsCheckboxes([]);
+          populateWebhooks([]);
           if (notificationEditModal) notificationEditModal.style.display = 'flex';
         });
       }
@@ -3824,10 +4336,34 @@
             });
           }
 
+          // Get webhooks from UI
+          const webhooks = [];
+          if (notificationWebhooks) {
+            notificationWebhooks.querySelectorAll('input[data-webhook-index]').forEach(input => {
+              const val = input.value.trim();
+              if (val && val.startsWith('https://discord.com/api/webhooks/')) {
+                webhooks.push(val);
+              }
+            });
+          }
+          
+          // Validate that at least one webhook is provided
+          // If no webhooks, try to use the global webhook as fallback
+          if (webhooks.length === 0) {
+            const globalWebhook = discordWebhookInput ? discordWebhookInput.value.trim() : '';
+            if (globalWebhook && globalWebhook.startsWith('https://discord.com/api/webhooks/')) {
+              webhooks.push(globalWebhook);
+            } else {
+              alert('Please add at least one Discord webhook URL for this notification, or set a global webhook.');
+              return;
+            }
+          }
+
           const notification = {
             id: editingNotificationId !== null ? currentNotifications[editingNotificationId].id : generateNotificationId(),
             searchTerm: searchTerm,
             markets: selectedMarkets,
+            webhooks: webhooks,
             createdAt: editingNotificationId !== null 
               ? currentNotifications[editingNotificationId].createdAt 
               : new Date().toISOString()
@@ -4114,6 +4650,181 @@
         div.textContent = text;
         return div.innerHTML;
       }
+
+      // Online Users Feature
+      const onlineUsersBtn = document.getElementById('online-users-btn');
+      const onlineUsersModal = document.getElementById('online-users-modal-bg');
+      const onlineUsersCloseBtn = document.getElementById('online-users-close-btn');
+      const onlineUsersList = document.getElementById('online-users-list');
+      const onlineCountDisplay = document.getElementById('online-count-display');
+      const offlineCountDisplay = document.getElementById('offline-count-display');
+      const totalCountDisplay = document.getElementById('total-count-display');
+
+      // Show online users button when user is logged in
+      function updateOnlineUsersButtonVisibility() {
+        const userDisplay = document.getElementById('user-display');
+        if (userDisplay && userDisplay.style.display !== 'none') {
+          if (onlineUsersBtn) onlineUsersBtn.style.display = 'inline-block';
+        } else {
+          if (onlineUsersBtn) onlineUsersBtn.style.display = 'none';
+        }
+      }
+
+      // Check visibility periodically
+      setInterval(updateOnlineUsersButtonVisibility, 1000);
+
+      // Fetch all users from Supabase
+      async function fetchAllUsers() {
+        const client = window.supabaseNotifications || supabase;
+        if (!client) {
+          console.error('Supabase client not available');
+          return [];
+        }
+        
+        try {
+          const { data, error } = await client
+            .from('unlocked_users')
+            .select('username, email, last_active, verified, created_at')
+            .eq('verified', true)
+            .order('last_active', { ascending: false, nullsFirst: false });
+          
+          if (error) {
+            console.error('Error fetching users:', error);
+            return [];
+          }
+          
+          return data || [];
+        } catch (err) {
+          console.error('Error in fetchAllUsers:', err);
+          return [];
+        }
+      }
+
+      // Check if user is online (active within last 5 minutes)
+      function isUserOnline(lastActive) {
+        if (!lastActive) return false;
+        const lastActiveTime = new Date(lastActive);
+        const now = new Date();
+        const diffMinutes = (now - lastActiveTime) / (1000 * 60);
+        return diffMinutes <= 5;
+      }
+
+      // Format last active time
+      function formatLastActive(lastActive) {
+        if (!lastActive) return 'Never';
+        const lastActiveTime = new Date(lastActive);
+        const now = new Date();
+        const diffMs = now - lastActiveTime;
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        
+        if (diffMinutes < 1) return 'Just now';
+        if (diffMinutes < 60) return `${diffMinutes}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return lastActiveTime.toLocaleDateString();
+      }
+
+      // Render users list
+      async function renderUsersList() {
+        if (!onlineUsersList) return;
+        
+        onlineUsersList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">Loading users...</p>';
+        
+        const users = await fetchAllUsers();
+        
+        if (users.length === 0) {
+          onlineUsersList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No users found.</p>';
+          if (onlineCountDisplay) onlineCountDisplay.textContent = '0';
+          if (offlineCountDisplay) offlineCountDisplay.textContent = '0';
+          if (totalCountDisplay) totalCountDisplay.textContent = '0';
+          return;
+        }
+        
+        // Separate online and offline users
+        const onlineUsers = users.filter(u => isUserOnline(u.last_active));
+        const offlineUsers = users.filter(u => !isUserOnline(u.last_active));
+        
+        // Update counts
+        if (onlineCountDisplay) onlineCountDisplay.textContent = onlineUsers.length;
+        if (offlineCountDisplay) offlineCountDisplay.textContent = offlineUsers.length;
+        if (totalCountDisplay) totalCountDisplay.textContent = users.length;
+        
+        // Render online users first
+        let html = '';
+        
+        if (onlineUsers.length > 0) {
+          html += '<div style="margin-bottom: 20px;"><h4 style="color: #00e6d6; margin-bottom: 10px; font-size: 14px;">🟢 Online (' + onlineUsers.length + ')</h4>';
+          onlineUsers.forEach(user => {
+            const displayName = user.username || user.email || 'Unknown';
+            html += `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 8px; background: rgba(0, 230, 214, 0.1); border-radius: 6px; border: 1px solid rgba(0, 230, 214, 0.3);">
+                <div>
+                  <div style="color: #e3e3e3; font-weight: bold; font-size: 14px;">${escapeHtml(displayName)}</div>
+                  <div style="color: #888; font-size: 11px;">${escapeHtml(formatLastActive(user.last_active))}</div>
+                </div>
+                <div style="width: 8px; height: 8px; background: #00e6d6; border-radius: 50%;"></div>
+              </div>
+            `;
+          });
+          html += '</div>';
+        }
+        
+        // Render offline users
+        if (offlineUsers.length > 0) {
+          html += '<div><h4 style="color: #888; margin-bottom: 10px; font-size: 14px;">⚫ Offline (' + offlineUsers.length + ')</h4>';
+          offlineUsers.forEach(user => {
+            const displayName = user.username || user.email || 'Unknown';
+            html += `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 8px; background: rgba(35, 35, 35, 0.5); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div>
+                  <div style="color: #888; font-size: 14px;">${escapeHtml(displayName)}</div>
+                  <div style="color: #666; font-size: 11px;">${escapeHtml(formatLastActive(user.last_active))}</div>
+                </div>
+                <div style="width: 8px; height: 8px; background: #666; border-radius: 50%;"></div>
+              </div>
+            `;
+          });
+          html += '</div>';
+        }
+        
+        onlineUsersList.innerHTML = html;
+      }
+
+      // Open online users modal
+      if (onlineUsersBtn) {
+        onlineUsersBtn.addEventListener('click', async () => {
+          if (onlineUsersModal) {
+            onlineUsersModal.style.display = 'flex';
+            await renderUsersList();
+            // Refresh every 30 seconds while modal is open
+            const refreshInterval = setInterval(async () => {
+              if (onlineUsersModal.style.display === 'none') {
+                clearInterval(refreshInterval);
+              } else {
+                await renderUsersList();
+              }
+            }, 30000);
+          }
+        });
+      }
+
+      // Close online users modal
+      if (onlineUsersCloseBtn) {
+        onlineUsersCloseBtn.addEventListener('click', () => {
+          if (onlineUsersModal) onlineUsersModal.style.display = 'none';
+        });
+      }
+
+      // Close on background click
+      if (onlineUsersModal) {
+        onlineUsersModal.addEventListener('click', (e) => {
+          if (e.target === onlineUsersModal) {
+            onlineUsersModal.style.display = 'none';
+          }
+        });
+      }
     })();
 
 
@@ -4150,6 +4861,25 @@
     let savedFolders = foldersObj.folders;
     let customMarkets = foldersObj.customMarkets || { asia: [], international: [], special: [] };
     let currentFolderIdx = 0; // Default folder on start
+    
+    // Custom Categories
+    const CUSTOM_CATEGORIES_KEY = 'customCategories';
+    function loadCustomCategoriesFromFolders(foldersObj) {
+      return foldersObj?.customCategories || JSON.parse(localStorage.getItem(CUSTOM_CATEGORIES_KEY)) || [];
+    }
+    function saveCustomCategories(categories) {
+      foldersObj.customCategories = categories;
+      saveFoldersObj(foldersObj);
+    }
+    let customCategories = loadCustomCategoriesFromFolders(foldersObj);
+    
+    // Ensure customMarkets is initialized for all custom categories
+    customCategories.forEach(cat => {
+      if (!customMarkets[cat.id]) {
+        customMarkets[cat.id] = [];
+      }
+    });
+    
     // Market Data
     const marketDataInitial = {
       asia: [
@@ -4157,10 +4887,33 @@
         { key: "paypay-fleamarket", label: "Yahoo PayPay Flea" },
         { key: "rakuma", label: "Rakuten Rakuma" },
         { key: "rakuten-jp", label: "Rakuten Japan" },
-        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" }
+        { key: "yahoo-auctions", label: "Yahoo Japan Auctions" },
+        { key: "xianyu", label: "Xianyu (闲鱼)" },
+        { key: "carousell-sg", label: "Carousell Singapore" },
+        { key: "carousell-hk", label: "Carousell Hong Kong" },
+        { key: "carousell-id", label: "Carousell Indonesia" },
+        { key: "carousell-my", label: "Carousell Malaysia" },
+        { key: "carousell-ph", label: "Carousell Philippines" },
+        { key: "carousell-tw", label: "Carousell Taiwan" }
       ],
-      international: [],
-      special: []
+      international: [
+        { key: "depop", label: "Depop" },
+        { key: "ebay", label: "eBay Global" },
+        { key: "facebook", label: "Facebook Marketplace" },
+        { key: "gem", label: "Gem" },
+        { key: "grailed", label: "Grailed" },
+        { key: "mercari-us", label: "Mercari US" },
+        { key: "poshmark", label: "Poshmark" },
+        { key: "shopgoodwill", label: "ShopGoodwill" },
+        { key: "vinted", label: "Vinted" },
+        { key: "avito", label: "Avito" },
+        { key: "automatedsearches", label: "Automated Searches" }
+      ],
+      special: [
+        { key: "secondstreet", label: "2nd STREET" },
+        { key: "therealreal", label: "The RealReal" },
+        { key: "vestiaire", label: "Vestiaire Collective" }
+      ]
     };
     // Market toggle state storage
     const MARKET_TOGGLE_KEY = 'marketToggleStates';
@@ -4200,7 +4953,8 @@
       const allMarkets = [
         ...getMarkets('asia'),
         ...getMarkets('international'),
-        ...getMarkets('special')
+        ...getMarkets('special'),
+        ...customCategories.flatMap(cat => getMarkets(cat.id))
       ];
       return allMarkets.filter(m => favorites.includes(m.key));
     }
@@ -4216,11 +4970,31 @@
       }
     }
 
+    // Get all sections (built-in + custom categories)
+    function getAllSections() {
+      const builtIn = ['asia', 'international', 'special'];
+      const custom = customCategories.map(cat => cat.id);
+      return [...builtIn, ...custom];
+    }
+
     // Combined Market Data + Custom
     function getMarkets(section) {
       if (section === 'favorites') {
         return getFavoriteMarkets();
       }
+      // Check if it's a custom category
+      const customCat = customCategories.find(cat => cat.id === section);
+      if (customCat) {
+        // Return markets for this custom category
+        return (customMarkets[section] || []).map(m => ({
+          key: "custom-" + section + "-" + m.id,
+          label: m.title,
+          custom: true,
+          urlTemplate: m.url,
+          id: m.id
+        }));
+      }
+      // Built-in section
       const orig = marketDataInitial[section] ? marketDataInitial[section].slice() : [];
       const custom = (customMarkets[section] || []).map(m => ({
         key: "custom-" + section + "-" + m.id,
@@ -4305,11 +5079,82 @@
         }
       });
     }
+    // Render custom categories
+    function renderCustomCategories() {
+      const container = document.getElementById('custom-categories-container');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      customCategories.forEach(category => {
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'market-section';
+        sectionDiv.id = `custom-category-${category.id}`;
+        
+        const headerRow = document.createElement('div');
+        headerRow.className = 'section-header-row';
+        
+        const h2 = document.createElement('h2');
+        h2.textContent = category.name;
+        
+        const openAllBtn = document.createElement('button');
+        openAllBtn.type = 'button';
+        openAllBtn.className = 'section-openall-btn';
+        openAllBtn.setAttribute('data-section', category.id);
+        openAllBtn.textContent = `Open All ${category.name}`;
+        
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'edit-category-btn';
+        editBtn.setAttribute('data-category-id', category.id);
+        editBtn.textContent = '✎';
+        editBtn.title = 'Edit Category';
+        editBtn.style.cssText = 'margin-left: 10px; padding: 4px 8px; background: rgba(0, 230, 214, 0.2); color: #00e6d6; border: 1px solid rgba(0, 230, 214, 0.5); border-radius: 4px; cursor: pointer;';
+        
+        headerRow.appendChild(h2);
+        headerRow.appendChild(openAllBtn);
+        headerRow.appendChild(editBtn);
+        
+        const marketsDiv = document.createElement('div');
+        marketsDiv.className = 'markets';
+        marketsDiv.id = `custom-category-${category.id}-markets`;
+        
+        sectionDiv.appendChild(headerRow);
+        sectionDiv.appendChild(marketsDiv);
+        
+        // Add "Add Website" button for this custom category
+        const addWebsiteBtn = document.createElement('button');
+        addWebsiteBtn.type = 'button';
+        addWebsiteBtn.className = 'add-market-btn';
+        addWebsiteBtn.setAttribute('data-section', category.id);
+        addWebsiteBtn.textContent = `+ Add Website to ${category.name}`;
+        sectionDiv.appendChild(addWebsiteBtn);
+        
+        container.appendChild(sectionDiv);
+        
+        // Render markets for this category
+        const markets = getMarkets(category.id);
+        createMarketButtons(markets, `custom-category-${category.id}-markets`, category.id);
+        
+        // Re-attach the "Add Website" button after rendering (in case it was removed)
+        const existingAddBtn = sectionDiv.querySelector('.add-market-btn');
+        if (!existingAddBtn) {
+          const addWebsiteBtn = document.createElement('button');
+          addWebsiteBtn.type = 'button';
+          addWebsiteBtn.className = 'add-market-btn';
+          addWebsiteBtn.setAttribute('data-section', category.id);
+          addWebsiteBtn.textContent = `+ Add Website to ${category.name}`;
+          sectionDiv.appendChild(addWebsiteBtn);
+        }
+      });
+    }
+
     function refreshAllMarketButtons() {
       createMarketButtons(getMarkets('asia'), "asia-markets", "asia");
       createMarketButtons(getMarkets('international'), "international-markets", "international");
       createMarketButtons(getMarkets('special'), "special-markets", "special");
       renderFavorites();
+      renderCustomCategories();
     }
     refreshAllMarketButtons();
 
@@ -4918,11 +5763,13 @@
       // Open all market URLs immediately without delays
       enabledMarkets.forEach(market => {
         if (market.custom) {
-          const parts = market.key.split("-");
-          const customId = parts.slice(2).join("-");
-          const section = market.key.split("-")[1]; // Get the section from the key
-          const url = getCustomMarketUrl(section, customId, query);
-          if (url) tabQueue.add(url);
+          // If category is 'all', extract section from market key
+          const sectionToUse = category === 'all' ? extractSectionFromMarketKey(market.key) : category;
+          const customId = extractCustomMarketId(market.key, sectionToUse);
+          if (customId && sectionToUse) {
+            const url = getCustomMarketUrl(sectionToUse, customId, query);
+            if (url) tabQueue.add(url);
+          }
         } else if (marketUrls[market.key]) {
           tabQueue.add(marketUrls[market.key](query));
         }
@@ -5109,12 +5956,12 @@
       "rakuten-jp":      q => `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(q)}/?s=4&st=O`,
       "xianyu":          q => `https://2.taobao.com/search?word=${encodeURIComponent(q)}&spm=a2170.xianyu_tbpc_search.0.0`,
       "yahoo-auctions":  q => `https://auctions.yahoo.co.jp/search/search?p=${encodeURIComponent(q)}&s1=new&o1=d`,
-      "carousell-sg":    q => `https://www.carousell.sg/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
-      "carousell-hk":    q => `https://www.carousell.com.hk/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
-      "carousell-id":    q => `https://www.carousell.co.id/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
-      "carousell-my":    q => `https://www.carousell.com.my/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
-      "carousell-ph":    q => `https://www.carousell.com.ph/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
-      "carousell-tw":    q => `https://www.carousell.com.tw/search/products/?q=${encodeURIComponent(q)}&sort_by=3`,
+      "carousell-sg":    q => `https://www.carousell.sg/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&q=${encodeURIComponent(q)}&sort_by=3&t-search_query_source=direct_search`,
+      "carousell-hk":    q => `https://www.carousell.com.hk/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&q=${encodeURIComponent(q)}&sort_by=3&t-search_query_source=direct_search`,
+      "carousell-id":    q => `https://id.carousell.com/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&q=${encodeURIComponent(q)}&sort_by=3&t-search_query_source=direct_search`,
+      "carousell-my":    q => `https://www.carousell.com.my/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&q=${encodeURIComponent(q)}&sort_by=3&t-search_query_source=direct_search`,
+      "carousell-ph":    q => `https://www.carousell.com.ph/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&q=${encodeURIComponent(q)}&sort_by=3&t-search_query_source=direct_search`,
+      "carousell-tw":    q => `https://tw.carousell.com/search/${encodeURIComponent(q)}?addRecent=true&canChangeKeyword=true&includeSuggestions=true&sort_by=3&t-search_query_source=direct_search`,
       "depop":           q => `https://www.depop.com/search/?q=${encodeURIComponent(q)}&sort=newlyListed`,
       "ebay":            q => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}&_sop=10`,
       "facebook":        q => `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(q)}`,
@@ -5126,33 +5973,76 @@
       "vinted":          q => `https://www.vinted.com/catalog?search_text=${encodeURIComponent(q)}&time=${getVintedTime()}&order=newest_first&page=1`,
       "avito":           q => `https://www.avito.ru/moskva/odezhda_obuv_aksessuary?q=${encodeURIComponent(q)}&s=104`,
       "automatedsearches": q => `https://automatedsearches.com/search?search_siteid=0&search_new=1&search_query=${encodeURIComponent(q)}&search_number=0&search_hic=0&search_category=11450&search_category0=11450&search_hmo=0&search_condition_new=1&search_condition_new_other=1&search_condition_new_defects=1&search_condition_used=1&search_condition_parts=1&search_condition_unspecified=1&search_postalcode=&search_maxdistance=&search_feedback_min=0&search_show_items=0&search_located_in=WW&search_available_to=US&search_itemtypefilter=AllFixedPriceItemTypes&search_min=&search_max=&search_offer_max=&sf=0&r=&search_name=Untitled&search_notes=&search_interval=15min&search_sort=0&search_sap=&search_salt=&search_sus=&ebay_error=&totalEntries=25285&pp=100`,
-      "wallapop":        q => `https://es.wallapop.com/app/search?keywords=${encodeURIComponent(q)}&orderBy=newest`,
-      "leboncoin":       q => `https://www.leboncoin.fr/recherche?text=${encodeURIComponent(q)}&sort=time&order=desc`,
-      "subito":          q => `https://www.subito.it/annunci-italia/vendita/usato/?q=${encodeURIComponent(q)}&ord=data`,
-      "ricardo":         q => `https://www.ricardo.ch/de/s/${encodeURIComponent(q)}?sort=newest`,
-      "willhaben":       q => `https://www.willhaben.at/iad/kaufen-und-verkaufen/marktplatz?keyword=${encodeURIComponent(q)}&sort=2`,
-      "tradera":         q => `https://www.tradera.com/search?q=${encodeURIComponent(q)}&sort=newest`,
-      "tori":            q => `https://www.tori.fi/koko_suomi?q=${encodeURIComponent(q)}&sort=newest`,
-      "finn":            q => `https://www.finn.no/bap/forsale/search.html?q=${encodeURIComponent(q)}&sort=1`,
-      "dba":             q => `https://www.dba.dk/soeg?soeg=${encodeURIComponent(q)}&sort=createdTime`,
-      "marktplaats":     q => `https://www.marktplaats.nl/q/${encodeURIComponent(q)}/#q:${encodeURIComponent(q)}|sortBy:SortByDate`,
-      "kleinanzeigen":   q => `https://www.kleinanzeigen.de/s-${encodeURIComponent(q)}/k0`,
-      "shpock":          q => `https://www.shpock.com/en-gb/search?q=${encodeURIComponent(q)}&sort=newest`,
       "secondstreet":    q => `https://ec.2ndstreetusa.com/pages/search-results-page?q=${encodeURIComponent(q)}&tab=products&sort_by=created&page=1`,
       "therealreal":     q => `https://www.therealreal.com/products?keywords=${encodeURIComponent(q)}`,
-      "vestiaire":       q => `https://us.vestiairecollective.com/search/?q=${encodeURIComponent(q)}&sortBy=3`,
-      "rebelle":         q => `https://www.rebelle.com/en/search?q=${encodeURIComponent(q)}&sort=created_at_desc`,
-      "tradesy":         q => `https://www.tradesy.com/browse/?q=${encodeURIComponent(q)}&sort=newest`,
-      "fashionphile":    q => `https://www.fashionphile.com/search?q=${encodeURIComponent(q)}&sort=relevance`,
-      "rebag":           q => `https://shop.rebag.com/search?q=${encodeURIComponent(q)}&sort=relevance`,
-      "farfetch":        q => `https://www.farfetch.com/shopping/women/items.aspx?q=${encodeURIComponent(q)}&sort=3`,
-      "yoox":            q => `https://www.yoox.com/us/women/search?dept=women&query=${encodeURIComponent(q)}&sort=8`
+      "vestiaire":       q => `https://us.vestiairecollective.com/search/?q=${encodeURIComponent(q)}&sortBy=3`
     };
     // Custom market URLs: key is "custom-section-id"
     function getCustomMarketUrl(section, id, q) {
       const found = (customMarkets[section] || []).find(item => item.id === id);
       if (!found) return null;
       return found.url.replace(/example/g, encodeURIComponent(q));
+    }
+    
+    // Helper function to extract custom market ID and section from market key
+    // Market key format: "custom-" + section + "-" + id
+    // For custom categories: "custom-custom-category-123-abc" -> section is "custom-category-123", id is "abc"
+    // For built-in sections: "custom-asia-abc" -> section is "asia", id is "abc"
+    function extractCustomMarketId(marketKey, section) {
+      if (!marketKey.startsWith("custom-")) return null;
+      // Remove "custom-" prefix
+      const withoutPrefix = marketKey.substring(7); // "custom-".length = 7
+      
+      // If section is provided, use it to extract the ID
+      if (section && section !== 'all') {
+        const sectionPrefix = section + "-";
+        if (withoutPrefix.startsWith(sectionPrefix)) {
+          return withoutPrefix.substring(sectionPrefix.length);
+        }
+      }
+      
+      // Fallback: try to extract by splitting (for backwards compatibility or when section is 'all')
+      const parts = marketKey.split("-");
+      if (parts.length >= 3) {
+        // Try to match known sections first
+        const knownSections = ['asia', 'international', 'special', 'favorites'];
+        for (const knownSection of knownSections) {
+          if (parts[1] === knownSection && parts.length >= 3) {
+            return parts.slice(2).join("-");
+          }
+        }
+        
+        // If it's a custom category (starts with "custom-custom-")
+        if (parts[1] === 'custom' && parts.length >= 4) {
+          // Find where the section ID ends - it's everything except the last part
+          // "custom-custom-category-123-abc" -> section is "custom-category-123", id is "abc"
+          // We need to find the last part which is the market ID
+          return parts[parts.length - 1];
+        }
+      }
+      return null;
+    }
+    
+    // Helper function to extract section from market key (for when category is 'all')
+    function extractSectionFromMarketKey(marketKey) {
+      if (!marketKey.startsWith("custom-")) return null;
+      const withoutPrefix = marketKey.substring(7);
+      const parts = withoutPrefix.split("-");
+      
+      // Check if it's a built-in section
+      const knownSections = ['asia', 'international', 'special', 'favorites'];
+      if (knownSections.includes(parts[0])) {
+        return parts[0];
+      }
+      
+      // It's a custom category - reconstruct the section ID
+      // "custom-category-123-abc" -> section is "custom-category-123"
+      // We need everything except the last part
+      if (parts[0] === 'custom' && parts.length >= 3) {
+        return parts.slice(0, -1).join("-");
+      }
+      
+      return null;
     }
 
     // Instant tab opening queue
@@ -5218,10 +6108,11 @@
           
           openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
             if (market.startsWith("custom-")) {
-              const parts = market.split("-");
-              const customId = parts.slice(2).join("-");
-              const url = getCustomMarketUrl(section, customId, term);
-              if (url) tabQueue.add(url);
+              const customId = extractCustomMarketId(market, section);
+              if (customId) {
+                const url = getCustomMarketUrl(section, customId, term);
+                if (url) tabQueue.add(url);
+              }
             } else if (marketUrls[market]) {
               tabQueue.add(marketUrls[market](term));
             }
@@ -5244,10 +6135,11 @@
           const market = marketBtn.getAttribute('data-market');
           const section = marketBtn.getAttribute('data-section');
           if (market.startsWith("custom-")) {
-            const parts = market.split("-");
-            const customId = parts.slice(2).join("-");
-            const url = getCustomMarketUrl(section, customId, query);
-            if (url) tabQueue.add(url);
+            const customId = extractCustomMarketId(market, section);
+            if (customId) {
+              const url = getCustomMarketUrl(section, customId, query);
+              if (url) tabQueue.add(url);
+            }
           } else if (marketUrls[market]) {
             tabQueue.add(marketUrls[market](query));
           }
@@ -5280,11 +6172,11 @@
               if (!loadMarketToggleState(market.key)) return;
               
               if (market.custom) {
-                const parts = market.key.split("-");
-                const originalSection = parts[1]; // Get original section (asia, international, special)
-                const customId = parts.slice(2).join("-");
-                const url = getCustomMarketUrl(originalSection, customId, term);
-                if (url) tabQueue.add(url);
+                const customId = extractCustomMarketId(market.key, section);
+                if (customId) {
+                  const url = getCustomMarketUrl(section, customId, term);
+                  if (url) tabQueue.add(url);
+                }
               } else if (marketUrls[market.key]) {
                 tabQueue.add(marketUrls[market.key](term));
               }
@@ -5315,11 +6207,11 @@
             if (!loadMarketToggleState(market.key)) return;
             
             if (market.custom) {
-              const parts = market.key.split("-");
-              const originalSection = parts[1]; // Get original section (asia, international, special)
-              const customId = parts.slice(2).join("-");
-              const url = getCustomMarketUrl(originalSection, customId, query);
-              if (url) urls.push(url);
+              const customId = extractCustomMarketId(market.key, section);
+              if (customId) {
+                const url = getCustomMarketUrl(section, customId, query);
+                if (url) urls.push(url);
+              }
             } else if (marketUrls[market.key]) {
               urls.push(marketUrls[market.key](query));
             }
@@ -5363,13 +6255,14 @@
         renderSavedSearches();
         updateUnhighlightedCount();
       } else {
-        // Use the current search query
+        // Use the current search query - open ALL websites (no section filter)
         const query = document.getElementById('query').value.trim();
         if (!query) {
           document.getElementById('query').focus();
           return;
         }
-        openAllMarketsWithQuery(query);
+        // Pass null to open all websites from all sections including custom categories
+        openAllMarketsWithQuery(query, null);
       }
     });
 
@@ -5587,11 +6480,20 @@
     // --- Custom Market Modal Logic ---
     function showCustomMarketModal(section) {
       const bg = document.getElementById('custom-market-modal-bg');
-      document.getElementById('custom-market-modal-section').textContent = {
-        asia: "Asia Section",
-        international: "International Section",
-        special: "Designer Section"
-      }[section] || "";
+      const sectionLabel = document.getElementById('custom-market-modal-section');
+      
+      // Check if it's a custom category
+      const customCat = customCategories.find(cat => cat.id === section);
+      if (customCat) {
+        sectionLabel.textContent = `${customCat.name} Category`;
+      } else {
+        sectionLabel.textContent = {
+          asia: "Asia Section",
+          international: "International Section",
+          special: "Designer Section"
+        }[section] || "";
+      }
+      
       bg.style.display = 'flex';
       bg.setAttribute('data-section', section);
       document.getElementById('custom-market-title-input').value = '';
@@ -5617,13 +6519,162 @@
       }
       // Generate unique id
       const id = Date.now().toString(36) + '-' + Math.floor(Math.random()*99999).toString(36);
-      customMarkets[section] = customMarkets[section] || [];
+      
+      // Ensure customMarkets is initialized for this section
+      if (!customMarkets[section]) {
+        customMarkets[section] = [];
+      }
       customMarkets[section].push({ id, title, url });
+      
+      // Update foldersObj to ensure sync (make sure we're updating the same object)
+      foldersObj.customMarkets = customMarkets;
+      saveFoldersObj(foldersObj);
+      
+      // Force re-render of custom categories to show the new website
+      renderCustomCategories();
+      
+      // Also refresh all other market buttons
+      createMarketButtons(getMarkets('asia'), "asia-markets", "asia");
+      createMarketButtons(getMarkets('international'), "international-markets", "international");
+      createMarketButtons(getMarkets('special'), "special-markets", "special");
+      renderFavorites();
+      
+      hideCustomMarketModal();
+    };
+
+    // Custom Category Modal Functions
+    let editingCategoryId = null;
+    function showCustomCategoryModal(categoryId = null) {
+      const modal = document.getElementById('custom-category-modal-bg');
+      const titleEl = document.getElementById('custom-category-modal-title');
+      const nameInput = document.getElementById('custom-category-name-input');
+      const deleteBtn = document.getElementById('custom-category-delete-btn');
+      
+      editingCategoryId = categoryId;
+      
+      if (categoryId) {
+        const category = customCategories.find(c => c.id === categoryId);
+        if (category) {
+          titleEl.textContent = 'Edit Custom Category';
+          nameInput.value = category.name;
+          deleteBtn.style.display = 'block';
+        }
+      } else {
+        titleEl.textContent = 'Create Custom Category';
+        nameInput.value = '';
+        deleteBtn.style.display = 'none';
+      }
+      
+      modal.style.display = 'flex';
+      setTimeout(() => nameInput.focus(), 20);
+    }
+    
+    function hideCustomCategoryModal() {
+      document.getElementById('custom-category-modal-bg').style.display = 'none';
+      editingCategoryId = null;
+    }
+    
+    function saveCustomCategory() {
+      const nameInput = document.getElementById('custom-category-name-input');
+      const name = nameInput.value.trim();
+      
+      if (!name) {
+        alert('Please enter a category name.');
+        return;
+      }
+      
+      if (editingCategoryId) {
+        // Update existing category
+        const category = customCategories.find(c => c.id === editingCategoryId);
+        if (category) {
+          category.name = name;
+        }
+      } else {
+        // Create new category
+        const id = 'custom-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 99999).toString(36);
+        customCategories.push({ id, name });
+        // Initialize empty markets array for this category
+        if (!customMarkets[id]) {
+          customMarkets[id] = [];
+        }
+      }
+      
+      // Ensure foldersObj.customMarkets is synced
+      foldersObj.customMarkets = customMarkets;
+      saveCustomCategories(customCategories);
+      saveFoldersObj(foldersObj);
+      refreshAllMarketButtons();
+      hideCustomCategoryModal();
+    }
+    
+    function deleteCustomCategory() {
+      if (!editingCategoryId) return;
+      
+      if (!confirm('Are you sure you want to delete this category? All websites in this category will also be deleted.')) {
+        return;
+      }
+      
+      // Remove category
+      customCategories = customCategories.filter(c => c.id !== editingCategoryId);
+      
+      // Remove markets for this category
+      delete customMarkets[editingCategoryId];
+      
+      saveCustomCategories(customCategories);
       foldersObj.customMarkets = customMarkets;
       saveFoldersObj(foldersObj);
       refreshAllMarketButtons();
-      hideCustomMarketModal();
-    };
+      hideCustomCategoryModal();
+    }
+    
+    // Initialize custom category handlers
+    function initCustomCategoryHandlers() {
+      const addCategoryBtn = document.getElementById('add-category-btn');
+      const saveBtn = document.getElementById('custom-category-save-btn');
+      const cancelBtn = document.getElementById('custom-category-cancel-btn');
+      const deleteBtn = document.getElementById('custom-category-delete-btn');
+      const modal = document.getElementById('custom-category-modal-bg');
+      
+      if (addCategoryBtn) {
+        addCategoryBtn.addEventListener('click', () => showCustomCategoryModal());
+      }
+      
+      if (saveBtn) {
+        saveBtn.addEventListener('click', saveCustomCategory);
+      }
+      
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', hideCustomCategoryModal);
+      }
+      
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', deleteCustomCategory);
+      }
+      
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) hideCustomCategoryModal();
+        });
+      }
+      
+      // Delegate edit button clicks
+      document.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.edit-category-btn');
+        if (editBtn) {
+          const categoryId = editBtn.getAttribute('data-category-id');
+          if (categoryId) {
+            showCustomCategoryModal(categoryId);
+          }
+        }
+      });
+    }
+    
+    // Call initialization when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initCustomCategoryHandlers);
+    } else {
+      initCustomCategoryHandlers();
+    }
 
     // Container minimize/restore and dragging functionality
     const container = document.querySelector('.container');
@@ -5962,20 +7013,33 @@
     });
 
     // Helper function to open all markets with a query
-    function openAllMarketsWithQuery(query) {
+    function openAllMarketsWithQuery(query, section = null) {
       // Collect all URLs first (only enabled markets)
       const urls = [];
-      ['asia', 'international', 'special', 'favorites'].forEach(section => {
-        getMarkets(section).forEach(market => {
+      
+      // If no section specified, open ALL websites from all sections including custom categories
+      const sectionsToProcess = section 
+        ? [section] 
+        : [
+            'asia', 
+            'international', 
+            'special', 
+            'favorites',
+            ...customCategories.map(cat => cat.id)
+          ];
+      
+      sectionsToProcess.forEach(sec => {
+        const markets = getMarkets(sec);
+        markets.forEach(market => {
           // Skip if this market is toggled off
           if (!loadMarketToggleState(market.key)) return;
           
           if (market.custom) {
-            const parts = market.key.split("-");
-            const originalSection = parts[1]; // Get original section (asia, international, special)
-            const customId = parts.slice(2).join("-");
-            const url = getCustomMarketUrl(originalSection, customId, query);
-            if (url) urls.push(url);
+            const customId = extractCustomMarketId(market.key, sec);
+            if (customId) {
+              const url = getCustomMarketUrl(sec, customId, query);
+              if (url) urls.push(url);
+            }
           } else if (marketUrls[market.key]) {
             urls.push(marketUrls[market.key](query));
           }
