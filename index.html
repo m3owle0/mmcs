@@ -36,10 +36,6 @@
       -webkit-overflow-scrolling: touch;
       position: relative;
     }
-    /* Prevent background from blocking modal interactions */
-    body.site-locked {
-      background-attachment: scroll; /* Change from fixed to prevent blocking */
-    }
     @media (max-width: 768px) {
       html, body {
         overflow-y: auto;
@@ -1637,7 +1633,10 @@
         touch-action: manipulation;
       }
       #open-all-btn {
-        display: none; /* Hide main Open All button on mobile */
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: 15px;
+        display: block; /* Ensure it's visible on mobile */
       }
       #toggle-all-checkbox {
         width: 20px;
@@ -1667,7 +1666,6 @@
         align-items: flex-start;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        pointer-events: auto !important;
       }
       .notifications-modal-bg, .notification-edit-modal-bg {
         padding: 10px;
@@ -1849,67 +1847,8 @@
       .section-header-row h2 {
         font-size: 1em;
       }
-      .unlock-modal-bg {
-        padding: 10px;
-        align-items: flex-start;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        pointer-events: auto !important;
-      }
       .unlock-modal {
-        padding: 20px 15px;
-        width: calc(100% - 20px);
-        max-width: 100%;
-        max-height: 90vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        position: relative;
-        z-index: 100000;
-        pointer-events: auto !important;
-        margin-top: 20px;
-        margin-bottom: 20px;
-      }
-      .unlock-modal h3 {
-        font-size: 20px;
-        margin-bottom: 15px;
-      }
-      .unlock-modal p {
-        font-size: 13px;
-        line-height: 1.6;
-        word-break: break-word;
-      }
-      .unlock-input {
-        font-size: 16px !important; /* Prevent zoom on iOS */
-        min-height: 44px;
-        padding: 12px 15px;
-        pointer-events: auto !important;
-        touch-action: manipulation;
-        -webkit-appearance: none;
-        appearance: none;
-      }
-      .unlock-btn-row {
-        flex-direction: column;
-        gap: 10px;
-      }
-      .unlock-btn-row button {
-        width: 100%;
-        min-height: 44px;
-        font-size: 16px;
-        pointer-events: auto !important;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2);
-      }
-      #signup-form {
-        display: flex;
-        flex-direction: column;
-      }
-      #login-form {
-        display: flex;
-        flex-direction: column;
-      }
-      /* Ensure all modal elements are interactive on mobile */
-      .unlock-modal * {
-        pointer-events: auto !important;
+        padding: 15px 10px;
       }
       .donation-link {
         padding: 8px 12px;
@@ -2020,6 +1959,11 @@
     box-shadow: 0 4px 12px rgba(0, 112, 186, 0.4);
   }
 
+  .donation-link.discord-link:hover {
+    background: linear-gradient(135deg, #4752C4 0%, #3c45a5 100%);
+    box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
+  }
+
   .donation-link.cashapp {
     background: linear-gradient(135deg, #00d632 0%, #00b82a 100%);
     box-shadow: 0 2px 8px rgba(0, 214, 50, 0.3);
@@ -2080,98 +2024,10 @@
     align-items: center;
     justify-content: center;
     z-index: 99999; /* Above lock overlay */
-    pointer-events: auto !important;
-    -webkit-overflow-scrolling: touch;
-    overflow-y: auto;
   }
 
   .unlock-modal-bg.show {
     display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  /* Ensure modal is visible on mobile and iOS */
-  @media (max-width: 768px) {
-    /* Force modal background to be visible - override inline styles */
-    #unlock-modal-bg.show,
-    .unlock-modal-bg.show {
-      display: flex !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      z-index: 100000 !important;
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-    }
-    /* Even without .show class, if display is flex, make it visible */
-    #unlock-modal-bg[style*="display: flex"],
-    #unlock-modal-bg[style*="display:flex"],
-    .unlock-modal-bg[style*="display: flex"],
-    .unlock-modal-bg[style*="display:flex"] {
-      display: flex !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      z-index: 100000 !important;
-    }
-    /* Override inline display:none on mobile */
-    #unlock-modal-bg.show {
-      display: flex !important;
-      visibility: visible !important;
-    }
-    .unlock-modal-bg {
-      z-index: 100000 !important;
-    }
-    .unlock-modal {
-      visibility: visible !important;
-      opacity: 1 !important;
-      display: block !important;
-      position: relative !important;
-      z-index: 100001 !important;
-      transform: none !important;
-    }
-    /* Ensure unlock button is visible on mobile */
-    #unlock-btn {
-      display: inline-block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      z-index: 100002 !important;
-      position: relative !important;
-    }
-  }
-  
-  /* iOS Safari specific fixes */
-  @supports (-webkit-touch-callout: none) {
-    .unlock-modal-bg.show,
-    .unlock-modal-bg[style*="display: flex"],
-    .unlock-modal-bg[style*="display:flex"] {
-      display: flex !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      -webkit-transform: translateZ(0) !important;
-      transform: translateZ(0) !important;
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 100000 !important;
-    }
-    /* Override inline display:none on iOS */
-    #unlock-modal-bg.show {
-      display: flex !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-    .unlock-modal {
-      -webkit-transform: translateZ(0) !important;
-      transform: translateZ(0) !important;
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
   }
 
   .unlock-modal {
@@ -2183,9 +2039,6 @@
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
     text-align: center;
     -webkit-overflow-scrolling: touch;
-    position: relative;
-    z-index: 100000;
-    pointer-events: auto !important;
   }
   @media (max-width: 768px) {
     .unlock-modal {
@@ -2371,22 +2224,6 @@
     pointer-events: auto !important;
   }
   
-  /* Ensure modal inputs and buttons work on mobile */
-  body.site-locked .unlock-modal input,
-  body.site-locked .unlock-modal button,
-  body.site-locked .unlock-modal a,
-  body.site-locked .unlock-modal label {
-    pointer-events: auto !important;
-    touch-action: manipulation !important;
-    -webkit-tap-highlight-color: rgba(0, 230, 214, 0.2) !important;
-  }
-  
-  /* Prevent background images from blocking interactions */
-  body.site-locked .unlock-modal-bg::before,
-  body.site-locked .unlock-modal-bg::after {
-    pointer-events: none !important;
-  }
-  
   /* Global button fixes for iOS */
   button {
     touch-action: manipulation;
@@ -2493,6 +2330,13 @@
   <!-- Top Header with PayPal Donation -->
   <div class="top-header">
     <div class="header-left">
+      <a href="https://discord.gg/s6AzmucFGd" 
+         target="_blank" 
+         rel="noopener noreferrer" 
+         class="donation-link discord-link"
+         style="background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%); box-shadow: 0 2px 8px rgba(88, 101, 242, 0.3);">
+        💬 Join Discord
+      </a>
       <a href="https://www.paypal.com/donate?business=m3owle0@gmail.com&currency_code=USD" 
          target="_blank" 
          rel="noopener noreferrer" 
@@ -2519,7 +2363,7 @@
   </div>
 
   <!-- Login Modal -->
-  <div id="unlock-modal-bg" class="unlock-modal-bg" style="display: none; visibility: hidden;">
+  <div id="unlock-modal-bg" class="unlock-modal-bg" style="display: none;">
     <div class="unlock-modal">
       <h3>Login</h3>
       <p style="color: #b0b0b0; margin-bottom: 20px; line-height: 1.6;">
@@ -2533,8 +2377,8 @@
         <p style="color: #00e6d6; margin: 0; font-size: 14px;" id="login-success-text"></p>
       </div>
       <div id="login-form">
-        <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" autocomplete="email" inputmode="email" style="margin-bottom: 12px;" />
-        <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" autocomplete="current-password" />
+        <input type="text" id="login-username-input" placeholder="Email address" class="unlock-input" style="margin-bottom: 12px;" />
+        <input type="password" id="login-password-input" placeholder="Password" class="unlock-input" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
           <button id="login-submit-btn" class="unlock-submit-btn">Login</button>
           <button id="signup-toggle-btn" class="unlock-cancel-btn">Sign Up</button>
@@ -2542,9 +2386,9 @@
         </div>
       </div>
       <div id="signup-form" style="display: none;">
-        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" autocomplete="username" style="margin-bottom: 12px;" />
-        <input type="email" id="signup-email-input" placeholder="Your email" class="unlock-input" autocomplete="email" inputmode="email" style="margin-bottom: 12px;" />
-        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" autocomplete="new-password" />
+        <input type="text" id="signup-username-input" placeholder="Choose a username" class="unlock-input" style="margin-bottom: 12px;" />
+        <input type="email" id="signup-email-input" placeholder="Your email" class="unlock-input" style="margin-bottom: 12px;" />
+        <input type="password" id="signup-password-input" placeholder="Choose a password (min 6 characters)" class="unlock-input" />
         <div class="unlock-btn-row" style="margin-top: 15px;">
           <button id="signup-submit-btn" class="unlock-submit-btn">Create Account</button>
           <button id="login-toggle-btn" class="unlock-cancel-btn">Back to Login</button>
@@ -3305,21 +3149,15 @@
           const blockInteractions = (e) => {
             // Allow interactions only with unlock modal and top header
             const target = e.target;
-            const isUnlockModal = target.closest('.unlock-modal-bg') || target.closest('.unlock-modal');
+            const isUnlockModal = target.closest('.unlock-modal-bg');
             const isTopHeader = target.closest('.top-header');
-            const isModalInput = target.matches('.unlock-input, .unlock-submit-btn, .unlock-cancel-btn');
-            const isModalButton = target.closest('.unlock-modal') !== null;
             
-            // Allow all interactions within the modal
-            if (isUnlockModal || isTopHeader || isModalInput || isModalButton) {
-              return true; // Allow the interaction
+            if (!isUnlockModal && !isTopHeader) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              return false;
             }
-            
-            // Block everything else
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            return false;
           };
           
           // Store blocker function reference for cleanup
@@ -3364,28 +3202,6 @@
                 if (unlockModalBg) {
                   unlockModalBg.classList.add('show');
                   unlockModalBg.style.display = 'flex';
-                  unlockModalBg.style.visibility = 'visible';
-                  unlockModalBg.style.opacity = '1';
-                  
-                  // iOS-specific: Force show with all properties
-                  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                  if (isIOS || window.innerWidth <= 768) {
-                    unlockModalBg.style.position = 'fixed';
-                    unlockModalBg.style.top = '0';
-                    unlockModalBg.style.left = '0';
-                    unlockModalBg.style.width = '100vw';
-                    unlockModalBg.style.height = '100vh';
-                    unlockModalBg.style.zIndex = '100000';
-                    
-                    // Force modal content visibility
-                    const modal = unlockModalBg.querySelector('.unlock-modal');
-                    if (modal) {
-                      modal.style.display = 'block';
-                      modal.style.visibility = 'visible';
-                      modal.style.opacity = '1';
-                    }
-                  }
                 }
               } else {
                 // Hide modal, show button instead
@@ -3400,82 +3216,18 @@
               if (!currentUser && unlockModalBg) {
                 unlockModalBg.classList.add('show');
                 unlockModalBg.style.display = 'flex';
-                unlockModalBg.style.visibility = 'visible';
-                unlockModalBg.style.opacity = '1';
-                
-                // iOS-specific: Force show with all properties
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                if (isIOS) {
-                  unlockModalBg.style.position = 'fixed';
-                  unlockModalBg.style.top = '0';
-                  unlockModalBg.style.left = '0';
-                  unlockModalBg.style.width = '100vw';
-                  unlockModalBg.style.height = '100vh';
-                  unlockModalBg.style.zIndex = '100000';
-                }
               }
             }
           } else {
-            // Modal suppressed - but show on mobile/iOS anyway
-            const isMobile = window.innerWidth <= 768;
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            
+            // Modal suppressed - hide it
             if (unlockModalBg) {
-              if (isMobile || isIOS) {
-                // Force show on mobile/iOS even if suppressed
-                unlockModalBg.classList.add('show');
-                unlockModalBg.style.display = 'flex';
-                unlockModalBg.style.visibility = 'visible';
-                unlockModalBg.style.opacity = '1';
-              } else {
-                // Hide on desktop if suppressed
-                unlockModalBg.classList.remove('show');
-                unlockModalBg.style.display = 'none';
-              }
+              unlockModalBg.classList.remove('show');
+              unlockModalBg.style.display = 'none';
             }
           }
           
-          if (unlockBtn) {
-            unlockBtn.style.display = 'inline-block';
-            unlockBtn.style.visibility = 'visible';
-            unlockBtn.style.opacity = '1';
-          }
+          if (unlockBtn) unlockBtn.style.display = 'inline-block';
           if (userDisplay) userDisplay.style.display = 'none';
-          
-          // Auto-show modal on mobile/iOS when site is locked (override suppressModal)
-          const isMobile = window.innerWidth <= 768;
-          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-          
-          if ((isMobile || isIOS) && unlockModalBg && !unlocked) {
-            // Force show modal on mobile/iOS
-            unlockModalBg.classList.add('show');
-            unlockModalBg.style.display = 'flex';
-            unlockModalBg.style.visibility = 'visible';
-            unlockModalBg.style.opacity = '1';
-            unlockModalBg.style.position = 'fixed';
-            unlockModalBg.style.top = '0';
-            unlockModalBg.style.left = '0';
-            unlockModalBg.style.width = '100vw';
-            unlockModalBg.style.height = '100vh';
-            unlockModalBg.style.zIndex = '100000';
-            
-            // Force modal content to be visible
-            const modal = unlockModalBg.querySelector('.unlock-modal');
-            if (modal) {
-              modal.style.display = 'block';
-              modal.style.visibility = 'visible';
-              modal.style.opacity = '1';
-              modal.style.position = 'relative';
-              modal.style.zIndex = '100001';
-            }
-            
-            // Ensure forms are visible
-            if (loginForm) loginForm.style.display = 'block';
-            if (signupForm) signupForm.style.display = 'none';
-          }
         }
         
         isInitializing = false;
@@ -3486,15 +3238,6 @@
             if (unlockModalBg) {
               unlockModalBg.classList.add('show');
               unlockModalBg.style.display = 'flex';
-              unlockModalBg.style.visibility = 'visible';
-              unlockModalBg.style.opacity = '1';
-              // Ensure modal is visible on mobile
-              const modal = unlockModalBg.querySelector('.unlock-modal');
-              if (modal) {
-                modal.style.display = 'block';
-                modal.style.visibility = 'visible';
-                modal.style.opacity = '1';
-              }
             }
             // Show login form by default
             if (loginForm) loginForm.style.display = 'block';
@@ -3739,37 +3482,6 @@
             const currentUser = getCurrentUser();
             if (currentUser) {
               startSessionHeartbeat();
-            }
-            
-            // iOS-specific: Force check and show modal if locked
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            if (isIOS || window.innerWidth <= 768) {
-              setTimeout(() => {
-                const unlockModalBg = document.getElementById('unlock-modal-bg');
-                const isLocked = document.body.classList.contains('site-locked');
-                const hasUser = getCurrentUser();
-                
-                if (isLocked && !hasUser && unlockModalBg) {
-                  unlockModalBg.classList.add('show');
-                  unlockModalBg.style.display = 'flex';
-                  unlockModalBg.style.visibility = 'visible';
-                  unlockModalBg.style.opacity = '1';
-                  unlockModalBg.style.position = 'fixed';
-                  unlockModalBg.style.top = '0';
-                  unlockModalBg.style.left = '0';
-                  unlockModalBg.style.width = '100vw';
-                  unlockModalBg.style.height = '100vh';
-                  unlockModalBg.style.zIndex = '100000';
-                  
-                  const modal = unlockModalBg.querySelector('.unlock-modal');
-                  if (modal) {
-                    modal.style.display = 'block';
-                    modal.style.visibility = 'visible';
-                    modal.style.opacity = '1';
-                  }
-                }
-              }, 500);
             }
           });
         });
@@ -4498,11 +4210,17 @@
       saveFavorites();
     }
     function getFavoriteMarkets() {
-      const allMarkets = [
-        ...getMarkets('asia'),
-        ...getMarkets('international'),
-        ...getMarkets('special')
-      ];
+      const allMarkets = [];
+      // Include built-in sections
+      allMarkets.push(...getMarkets('asia'));
+      allMarkets.push(...getMarkets('international'));
+      allMarkets.push(...getMarkets('special'));
+      // Include custom categories
+      if (typeof customCategories !== 'undefined' && Array.isArray(customCategories)) {
+        customCategories.forEach(cat => {
+          allMarkets.push(...getMarkets(cat.id));
+        });
+      }
       return allMarkets.filter(m => favorites.includes(m.key));
     }
     function renderFavorites() {
@@ -5492,6 +5210,87 @@
       }
     };
 
+    // Helper function to open all markets with a query (defined before handleMainOpenAll)
+    function openAllMarketsWithQuery(query) {
+      // Collect all URLs first (only enabled markets)
+      const urls = [];
+      
+      // Get all sections (built-in + custom categories, but NOT favorites to avoid duplicates)
+      const sections = ['asia', 'international', 'special'];
+      
+      // Add custom categories
+      if (typeof customCategories !== 'undefined' && Array.isArray(customCategories)) {
+        customCategories.forEach(cat => {
+          sections.push(cat.id);
+        });
+      }
+      
+      // Process each section
+      sections.forEach(section => {
+        getMarkets(section).forEach(market => {
+          // Skip if this market is toggled off
+          if (!loadMarketToggleState(market.key)) return;
+          
+          if (market.custom) {
+            // For custom markets, use the section they belong to
+            const parts = market.key.split("-");
+            const originalSection = parts[1]; // Get original section (asia, international, special, or custom category id)
+            const customId = market.id || parts.slice(2).join("-");
+            const url = getCustomMarketUrl(originalSection, customId, query);
+            if (url) urls.push(url);
+          } else if (marketUrls[market.key]) {
+            urls.push(marketUrls[market.key](query));
+          }
+        });
+      });
+      
+      // Process URLs with queue
+      urls.forEach(url => tabQueue.add(url));
+      
+      // Clear selection after search
+      selectedSearchTerms = {};
+      localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+      renderSavedSearches();
+    }
+
+    // Main Open All button handler function (defined before delegated handler)
+    function handleMainOpenAll() {
+      // Check if any search terms are selected
+      const selectedTerms = getSelectedSearchTerms();
+      
+      if (selectedTerms.length > 0) {
+        // Mark each term as clicked
+        selectedTerms.forEach(term => {
+          clickedSearches[term] = { 
+            clicked: true, 
+            category: determineSearchCategory(term) 
+          };
+        });
+        localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
+        
+        // Open each selected term in separate tabs for all markets
+        openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
+          openAllMarketsWithQuery(term);
+        });
+        
+        // Clear selection
+        selectedSearchTerms = {};
+        localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
+        
+        // Update UI
+        renderSavedSearches();
+        updateUnhighlightedCount();
+      } else {
+        // Use the current search query
+        const query = document.getElementById('query').value.trim();
+        if (!query) {
+          document.getElementById('query').focus();
+          return;
+        }
+        openAllMarketsWithQuery(query);
+      }
+    }
+
     document.addEventListener('click', function(e) {
       // --- Market button logic (support custom) ---
       const marketBtn = e.target.closest('.market-btn');
@@ -5630,41 +5429,16 @@
           urls.forEach(url => tabQueue.add(url));
         }
       }
-      // Main Open All button (works for all sections)
-      if (e.target.id === 'open-all-btn') {
-        // Check if any search terms are selected
-        const selectedTerms = getSelectedSearchTerms();
-        
-        if (selectedTerms.length > 0) {
-          // Mark each term as clicked
-          selectedTerms.forEach(term => {
-            clickedSearches[term] = { 
-              clicked: true, 
-              category: determineSearchCategory(term) 
-            };
-          });
-          localStorage.setItem(CLICKED_SEARCHES_KEY, JSON.stringify(clickedSearches));
-          
-          // Open each selected term in separate tabs for all markets
-          openSelectedTermsInSeparateTabs(selectedTerms, function(term) {
-            openAllMarketsWithQuery(term);
-          });
-          
-          // Clear selection
-          selectedSearchTerms = {};
-          localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
-          
-          // Update UI
-          renderSavedSearches();
-          updateUnhighlightedCount();
-        } else {
-          // Use the current search query
-          const query = document.getElementById('query').value.trim();
-          if (!query) {
-            document.getElementById('query').focus();
-            return;
-          }
-          openAllMarketsWithQuery(query);
+      // Main Open All button (works for all sections) - backup delegated handler
+      // Check if click is on or inside the open-all-btn
+      const openAllBtn = e.target.closest('#open-all-btn') || (e.target.id === 'open-all-btn' ? e.target : null);
+      if (openAllBtn) {
+        // Only handle if direct handler didn't already process it (check if default was prevented)
+        // The onclick handler should have already handled it, but this is a fallback
+        if (!e.defaultPrevented && typeof handleMainOpenAll === 'function') {
+          e.preventDefault();
+          e.stopPropagation();
+          handleMainOpenAll();
         }
       }
       // --- Add Custom Market Button ---
@@ -5674,10 +5448,10 @@
       }
     });
 
-    // Ensure the open all button doesn't submit the form
-    const openAllBtn = document.getElementById('open-all-btn');
-    if (openAllBtn) {
-      openAllBtn.setAttribute('type', 'button');
+    // Main Open All button handler (delegated handler above handles clicks, this is backup)
+    const openAllBtnDirect = document.getElementById('open-all-btn');
+    if (openAllBtnDirect) {
+      openAllBtnDirect.setAttribute('type', 'button');
     }
 
     // Randomize button functionality
@@ -5765,7 +5539,10 @@
       
       // Ctrl+Enter to open all
       if (e.ctrlKey && e.key === 'Enter') {
-        document.getElementById('open-all-btn').click();
+        const openAllBtn = document.getElementById('open-all-btn');
+        if (openAllBtn) {
+          openAllBtn.click();
+        }
         return;
       }
       // Escape to clear search
@@ -6091,6 +5868,84 @@
 
     // On folder or custom market change, refresh UI
     // (already handled above after relevant actions)
+    
+    // Main Open All button setup - attach handlers
+    function setupOpenAllButton() {
+      const openAllBtnSetup = document.getElementById('open-all-btn');
+      if (!openAllBtnSetup) {
+        // Retry if button doesn't exist yet (might be in a different script block)
+        setTimeout(setupOpenAllButton, 50);
+        return;
+      }
+      
+      // Ensure button doesn't submit form
+      openAllBtnSetup.setAttribute('type', 'button');
+      
+      // Remove any existing click handlers by replacing onclick
+      openAllBtnSetup.onclick = null;
+      
+      // Add direct click handler using onclick for maximum compatibility
+      openAllBtnSetup.onclick = function(e) {
+        // Prevent any default behavior and stop propagation
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        }
+        
+        // Call handler function directly - ensure it exists
+        try {
+          if (typeof handleMainOpenAll === 'function') {
+            handleMainOpenAll();
+          } else if (typeof openAllMarketsWithQuery === 'function') {
+            // Fallback: call openAllMarketsWithQuery directly if handler not available
+            const query = document.getElementById('query').value.trim();
+            if (query) {
+              openAllMarketsWithQuery(query);
+            } else {
+              document.getElementById('query').focus();
+            }
+          } else {
+            // Last resort: alert to debug
+            alert('Open All functions not available. Please refresh the page.');
+          }
+        } catch (error) {
+          console.error('Error in Open All button handler:', error);
+          alert('Error: ' + error.message);
+        }
+        return false;
+      };
+      
+      // Also add event listener as backup (bubble phase, not capture)
+      openAllBtnSetup.addEventListener('click', function(e) {
+        // Only handle if onclick didn't already process it
+        if (!e.defaultPrevented) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof handleMainOpenAll === 'function') {
+            handleMainOpenAll();
+          }
+        }
+        return false;
+      }, false); // Bubble phase, not capture
+      
+      // Touch event for mobile support
+      openAllBtnSetup.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        if (typeof handleMainOpenAll === 'function') {
+          handleMainOpenAll();
+        }
+        return false;
+      }, { passive: false });
+    }
+    
+    // Setup button - try immediately and also on DOM ready
+    setupOpenAllButton();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupOpenAllButton);
+    }
   </script>
   <script>
 (function() {
@@ -6268,35 +6123,6 @@
       renderSavedSearches();
     });
 
-    // Helper function to open all markets with a query
-    function openAllMarketsWithQuery(query) {
-      // Collect all URLs first (only enabled markets)
-      const urls = [];
-      ['asia', 'international', 'special', 'favorites'].forEach(section => {
-        getMarkets(section).forEach(market => {
-          // Skip if this market is toggled off
-          if (!loadMarketToggleState(market.key)) return;
-          
-          if (market.custom) {
-            const parts = market.key.split("-");
-            const originalSection = parts[1]; // Get original section (asia, international, special)
-            const customId = parts.slice(2).join("-");
-            const url = getCustomMarketUrl(originalSection, customId, query);
-            if (url) urls.push(url);
-          } else if (marketUrls[market.key]) {
-            urls.push(marketUrls[market.key](query));
-          }
-        });
-      });
-      
-      // Process URLs with queue
-      urls.forEach(url => tabQueue.add(url));
-      
-      // Clear selection after search
-      selectedSearchTerms = {};
-      localStorage.setItem(SELECTED_SEARCH_TERMS_KEY, JSON.stringify(selectedSearchTerms));
-      renderSavedSearches();
-    }
 
     // Load saved theme on startup (backward compatibility - no editor UI)
     const savedTheme = localStorage.getItem('themeSettings');
