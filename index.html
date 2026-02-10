@@ -2065,6 +2065,11 @@
     -webkit-overflow-scrolling: touch;
   }
   @media (max-width: 768px) {
+    .unlock-modal-bg {
+      background: rgba(0, 0, 0, 0.98) !important;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
     .unlock-modal {
       padding: 20px 15px;
       width: calc(100% - 20px);
@@ -2073,17 +2078,36 @@
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       position: relative;
+      background: rgba(20, 20, 20, 1) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+      z-index: 100000;
     }
     .unlock-modal h3 {
       font-size: 20px;
       margin-bottom: 15px;
+      color: #e3e3e3 !important;
     }
     .unlock-modal p {
       font-size: 13px;
       line-height: 1.6;
+      color: #b0b0b0 !important;
     }
     .unlock-modal form {
       width: 100%;
+    }
+    .unlock-modal * {
+      color: inherit;
+    }
+    .unlock-modal strong {
+      color: inherit !important;
+    }
+    .unlock-modal a {
+      color: #00e6d6 !important;
+    }
+    .unlock-modal code {
+      color: #e3e3e3 !important;
+      background: rgba(0, 230, 214, 0.1) !important;
     }
   }
 
@@ -2117,6 +2141,18 @@
       -webkit-appearance: none;
       appearance: none;
       border-radius: 10px;
+      background: rgba(30, 32, 34, 1) !important;
+      color: #e3e3e3 !important;
+      border: 1.5px solid #2a2d2f !important;
+    }
+    .unlock-input::placeholder {
+      color: #888 !important;
+      opacity: 1;
+    }
+    .unlock-input:focus {
+      border-color: rgba(0, 230, 214, 0.55) !important;
+      background: rgba(40, 42, 44, 1) !important;
+      color: #e3e3e3 !important;
     }
   }
   .unlock-input:focus {
@@ -2152,6 +2188,17 @@
       min-height: 44px;
       font-size: 15px;
       padding: 12px 20px;
+      background: #00e6d6 !important;
+      color: #0a0a0a !important;
+      border: none !important;
+    }
+    .unlock-cancel-btn {
+      min-height: 44px;
+      font-size: 15px;
+      padding: 12px 20px;
+      background: rgba(60, 60, 60, 1) !important;
+      color: #e3e3e3 !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
     }
   }
   .unlock-submit-btn:hover {
