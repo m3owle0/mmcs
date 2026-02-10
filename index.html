@@ -4578,6 +4578,14 @@
       saveFoldersObj(foldersObj);
     }
     let customCategories = loadCustomCategoriesFromFolders(foldersObj);
+    
+    // Ensure customMarkets is initialized for all custom categories
+    customCategories.forEach(cat => {
+      if (!customMarkets[cat.id]) {
+        customMarkets[cat.id] = [];
+      }
+    });
+    
     // Market Data
     const marketDataInitial = {
       asia: [
@@ -4819,11 +4827,31 @@
         
         sectionDiv.appendChild(headerRow);
         sectionDiv.appendChild(marketsDiv);
+        
+        // Add "Add Website" button for this custom category
+        const addWebsiteBtn = document.createElement('button');
+        addWebsiteBtn.type = 'button';
+        addWebsiteBtn.className = 'add-market-btn';
+        addWebsiteBtn.setAttribute('data-section', category.id);
+        addWebsiteBtn.textContent = `+ Add Website to ${category.name}`;
+        sectionDiv.appendChild(addWebsiteBtn);
+        
         container.appendChild(sectionDiv);
         
         // Render markets for this category
         const markets = getMarkets(category.id);
         createMarketButtons(markets, `custom-category-${category.id}-markets`, category.id);
+        
+        // Re-attach the "Add Website" button after rendering (in case it was removed)
+        const existingAddBtn = sectionDiv.querySelector('.add-market-btn');
+        if (!existingAddBtn) {
+          const addWebsiteBtn = document.createElement('button');
+          addWebsiteBtn.type = 'button';
+          addWebsiteBtn.className = 'add-market-btn';
+          addWebsiteBtn.setAttribute('data-section', category.id);
+          addWebsiteBtn.textContent = `+ Add Website to ${category.name}`;
+          sectionDiv.appendChild(addWebsiteBtn);
+        }
       });
     }
 
@@ -6141,11 +6169,26 @@
       }
       // Generate unique id
       const id = Date.now().toString(36) + '-' + Math.floor(Math.random()*99999).toString(36);
-      customMarkets[section] = customMarkets[section] || [];
+      
+      // Ensure customMarkets is initialized for this section
+      if (!customMarkets[section]) {
+        customMarkets[section] = [];
+      }
       customMarkets[section].push({ id, title, url });
+      
+      // Update foldersObj to ensure sync (make sure we're updating the same object)
       foldersObj.customMarkets = customMarkets;
       saveFoldersObj(foldersObj);
-      refreshAllMarketButtons();
+      
+      // Force re-render of custom categories to show the new website
+      renderCustomCategories();
+      
+      // Also refresh all other market buttons
+      createMarketButtons(getMarkets('asia'), "asia-markets", "asia");
+      createMarketButtons(getMarkets('international'), "international-markets", "international");
+      createMarketButtons(getMarkets('special'), "special-markets", "special");
+      renderFavorites();
+      
       hideCustomMarketModal();
     };
 
@@ -6201,11 +6244,14 @@
         const id = 'custom-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 99999).toString(36);
         customCategories.push({ id, name });
         // Initialize empty markets array for this category
-        customMarkets[id] = [];
+        if (!customMarkets[id]) {
+          customMarkets[id] = [];
+        }
       }
       
-      saveCustomCategories(customCategories);
+      // Ensure foldersObj.customMarkets is synced
       foldersObj.customMarkets = customMarkets;
+      saveCustomCategories(customCategories);
       saveFoldersObj(foldersObj);
       refreshAllMarketButtons();
       hideCustomCategoryModal();
