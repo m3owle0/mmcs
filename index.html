@@ -5988,6 +5988,40 @@
       return found.url.replace(/example/g, encodeURIComponent(q));
     }
     
+    // Helper function to extract original section from market key
+    // For favorites, we need to know which section the market came from
+    function extractOriginalSectionFromMarketKey(marketKey) {
+      if (!marketKey.startsWith("custom-")) {
+        // Built-in market - find which section it belongs to by checking marketDataInitial
+        const knownSections = ['asia', 'international', 'special'];
+        for (const sec of knownSections) {
+          if (marketDataInitial[sec] && marketDataInitial[sec].some(m => m.key === marketKey)) {
+            return sec;
+          }
+        }
+        return null;
+      }
+      
+      // Custom market - extract section from key format: "custom-" + section + "-" + id
+      const withoutPrefix = marketKey.substring(7); // Remove "custom-"
+      const parts = withoutPrefix.split("-");
+      
+      // Check if it's a built-in section (first part after "custom-")
+      const knownSections = ['asia', 'international', 'special'];
+      if (knownSections.includes(parts[0])) {
+        return parts[0];
+      }
+      
+      // It's a custom category - reconstruct the section ID
+      // "custom-custom-category-123-abc" -> section is "custom-category-123"
+      // The section is everything except the last part (which is the market ID)
+      if (parts[0] === 'custom' && parts.length >= 3) {
+        return parts.slice(0, -1).join("-");
+      }
+      
+      return null;
+    }
+    
     // Helper function to extract custom market ID and section from market key
     // Market key format: "custom-" + section + "-" + id
     // For custom categories: "custom-custom-category-123-abc" -> section is "custom-category-123", id is "abc"
@@ -6176,9 +6210,13 @@
               if (!loadMarketToggleState(market.key)) return;
               
               if (market.custom) {
-                const customId = extractCustomMarketId(market.key, section);
-                if (customId) {
-                  const url = getCustomMarketUrl(section, customId, term);
+                // For favorites, extract the original section from the market key
+                const originalSection = section === 'favorites' 
+                  ? extractOriginalSectionFromMarketKey(market.key)
+                  : section;
+                const customId = extractCustomMarketId(market.key, originalSection);
+                if (customId && originalSection) {
+                  const url = getCustomMarketUrl(originalSection, customId, term);
                   if (url) tabQueue.add(url);
                 }
               } else if (marketUrls[market.key]) {
@@ -6211,9 +6249,13 @@
             if (!loadMarketToggleState(market.key)) return;
             
             if (market.custom) {
-              const customId = extractCustomMarketId(market.key, section);
-              if (customId) {
-                const url = getCustomMarketUrl(section, customId, query);
+              // For favorites, extract the original section from the market key
+              const originalSection = section === 'favorites' 
+                ? extractOriginalSectionFromMarketKey(market.key)
+                : section;
+              const customId = extractCustomMarketId(market.key, originalSection);
+              if (customId && originalSection) {
+                const url = getCustomMarketUrl(originalSection, customId, query);
                 if (url) urls.push(url);
               }
             } else if (marketUrls[market.key]) {
@@ -7039,9 +7081,13 @@
           if (!loadMarketToggleState(market.key)) return;
           
           if (market.custom) {
-            const customId = extractCustomMarketId(market.key, sec);
-            if (customId) {
-              const url = getCustomMarketUrl(sec, customId, query);
+            // For favorites section, extract the original section from the market key
+            const originalSection = sec === 'favorites' 
+              ? extractOriginalSectionFromMarketKey(market.key)
+              : sec;
+            const customId = extractCustomMarketId(market.key, originalSection);
+            if (customId && originalSection) {
+              const url = getCustomMarketUrl(originalSection, customId, query);
               if (url) urls.push(url);
             }
           } else if (marketUrls[market.key]) {
