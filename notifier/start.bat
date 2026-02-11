@@ -26,25 +26,22 @@ if exist .env (
 )
 
 REM Set Mullvad Proxy (SOCKS5)
-REM Change the endpoint to your preferred country:
-REM - us-wireguard.mullvad.net:1080 (United States)
-REM - jp-wireguard.mullvad.net:1080 (Japan - recommended for Japanese markets)
-REM - se-wireguard.mullvad.net:1080 (Sweden)
-REM - de-wireguard.mullvad.net:1080 (Germany)
-REM - uk-wireguard.mullvad.net:1080 (United Kingdom)
-REM See all endpoints: https://mullvad.net/en/help/socks5-proxy/
-
-REM Uncomment and modify the line below to enable Mullvad proxy:
-set MULLVAD_PROXY=socks5://jp-wireguard.mullvad.net:1080
-
-REM Or use a local SOCKS5 proxy:
-REM set MULLVAD_PROXY=socks5://127.0.0.1:1080
-
-REM Or disable proxy (comment out the line above):
+REM Mullvad SOCKS5 proxy endpoints use the format: [country]-wireguard.mullvad.net
+REM However, if DNS resolution fails, try using the IP address directly or use a local proxy
+REM 
+REM Option 1: Use Mullvad's SOCKS5 endpoint (if DNS works):
+REM set MULLVAD_PROXY=socks5://jp-wireguard.mullvad.net:1080
+REM 
+REM Option 2: Use local SOCKS5 proxy (recommended if you have Mullvad app running):
+REM The Mullvad app provides a local SOCKS5 proxy on port 1080
+set MULLVAD_PROXY=socks5://127.0.0.1:1080
+REM 
+REM Option 3: Disable proxy:
 REM set MULLVAD_PROXY=
 
 if defined MULLVAD_PROXY (
     echo [Mullvad Proxy] Enabled: %MULLVAD_PROXY%
+    echo   Make sure Mullvad VPN app is running if using local proxy (127.0.0.1:1080)
 ) else (
     echo [Mullvad Proxy] Disabled (no proxy)
 )
