@@ -944,42 +944,184 @@ func cacheSearchResults(cacheKey string, items []SendicoItem) {
 }
 
 func sendDiscordNotification(webhookURL string, notification Notification, items []map[string]interface{}) error {
-	// Discord limits embeds to 10 per message, so we need to batch
+	totalItems := len(items)
+	
+	// For many items, use compact link format to avoid rate limits
+	// Discord allows up to 2000 characters in content, so we can fit many links
+	const maxItemsPerMessage = 50 // Can fit ~50 items with links in one message
+	const maxEmbeds = 10          // Discord limit for embeds
+	
+	// If we have many items, use compact link format instead of embeds
+	if totalItems > maxEmbeds {
+		return sendDiscordNotificationCompact(webhookURL, notification, items)
+	}
+	
+	// For fewer items, use embeds (nicer formatting)
+	return sendDiscordNotificationWithEmbeds(webhookURL, notification, items)
+}
+
+// sendDiscordNotificationCompact sends items as compact links in content (avoids rate limits)
+func sendDiscordNotificationCompact(webhookURL string, notification Notification, items []map[string]interface{}) error {
+	totalItems := len(items)
+	const maxItemsPerMessage = 50 // Fit many items in one message
+	const maxContentLength = 1900 // Leave buffer under 2000 char limit
+	
+	client := &http.Client{Timeout: 15 * time.Second}
+	
+	for i := 0; i < totalItems; i += maxItemsPerMessage {
+		end := i + maxItemsPerMessage
+		if end > totalItems {
+			end = totalItems
+		}
+		
+		batch := items[i:end]
+		
+		// Build compact message with links
+		var contentBuilder strings.Builder
+		if i == 0 {
+			contentBuilder.WriteString(fmt.Sprintf("🔔 **%d new item(s) found for: %s**\n\n", totalItems, notification.SearchTerm))
+		} else {
+			contentBuilder.WriteString(fmt.Sprintf("🔔 **More items for: %s** (%d-%d of %d)\n\n", notification.SearchTerm, i+1, end, totalItems))
+		}
+		
+		// Add each item as a compact link
+		for idx, item := range batch {
+			url := getString(item, "url", "")
+			title := getString(item, "title", "")
+			price := getString(item, "price", "")
+			market := getString(item, "market", "")
+			
+			if url == "" {
+				continue
+			}
+			
+			// Truncate title if too long
+			if len(title) > 60 {
+				title = title[:57] + "..."
+			}
+			
+			// Format: [Title - Price - Market](URL)
+			line := fmt.Sprintf("%d. [%s", idx+i+1, title)
+			if price != "" {
+				line += fmt.Sprintf(" - %s", price)
+			}
+			if market != "" {
+				line += fmt.Sprintf(" - %s", market)
+			}
+			line += fmt.Sprintf("](%s)\n", url)
+			
+			// Check if adding this line would exceed content limit
+			if contentBuilder.Len()+len(line) > maxContentLength {
+				contentBuilder.WriteString(fmt.Sprintf("\n... and %d more items (truncated)", len(batch)-idx))
+				break
+			}
+			
+			contentBuilder.WriteString(line)
+		}
+		
+		content := contentBuilder.String()
+		
+		payload := DiscordWebhookPayload{
+			Content: content,
+			Embeds:  nil, // No embeds for compact format
+		}
+		
+		jsonData, err := json.Marshal(payload)
+		if err != nil {
+			return fmt.Errorf("failed to marshal payload: %w", err)
+		}
+		
+		// Send with retry logic respecting Discord rate limits
+		var resp *http.Response
+		maxRetries := 3
+		for attempt := 0; attempt <= maxRetries; attempt++ {
+			resp, err = client.Post(webhookURL, "application/json", bytes.NewBuffer(jsonData))
+			if err != nil {
+				if attempt < maxRetries {
+					time.Sleep(time.Duration(attempt+1) * 500 * time.Millisecond)
+					continue
+				}
+				return fmt.Errorf("failed to send request: %w", err)
+			}
+			defer resp.Body.Close()
+			
+			// Handle rate limiting
+			if resp.StatusCode == 429 {
+				body, _ := io.ReadAll(resp.Body)
+				
+				// Parse retry_after from response
+				retryAfter := 1.0 // Default 1 second
+				var rateLimitResp struct {
+					RetryAfter float64 `json:"retry_after"`
+					Message    string  `json:"message"`
+				}
+				if json.Unmarshal(body, &rateLimitResp) == nil && rateLimitResp.RetryAfter > 0 {
+					retryAfter = rateLimitResp.RetryAfter
+				}
+				
+				if attempt < maxRetries {
+					waitTime := time.Duration(retryAfter*1000) * time.Millisecond
+					log.Printf("   ⏳ Rate limited, waiting %.2f seconds (attempt %d/%d)...", retryAfter, attempt+1, maxRetries+1)
+					time.Sleep(waitTime)
+					continue
+				}
+				
+				return fmt.Errorf("Discord rate limit exceeded after retries: %s", string(body))
+			}
+			
+			if resp.StatusCode != 200 && resp.StatusCode != 204 {
+				body, _ := io.ReadAll(resp.Body)
+				return fmt.Errorf("Discord returned status %d: %s", resp.StatusCode, string(body))
+			}
+			
+			break // Success
+		}
+		
+		// Small delay between messages to avoid rate limits
+		if end < totalItems {
+			time.Sleep(300 * time.Millisecond)
+		}
+	}
+	
+	return nil
+}
+
+// sendDiscordNotificationWithEmbeds sends items as embeds (nicer formatting for few items)
+func sendDiscordNotificationWithEmbeds(webhookURL string, notification Notification, items []map[string]interface{}) error {
 	maxEmbeds := 10
 	totalItems := len(items)
-
+	client := &http.Client{Timeout: 15 * time.Second}
+	
 	for i := 0; i < totalItems; i += maxEmbeds {
 		end := i + maxEmbeds
 		if end > totalItems {
 			end = totalItems
 		}
-
+		
 		batch := items[i:end]
 		embeds := []DiscordEmbed{}
-
+		
 		for _, item := range batch {
-			// Use item title, or fallback to search term
 			itemTitle := getString(item, "title", "")
 			if itemTitle == "" {
 				itemTitle = notification.SearchTerm
 			}
-
-			// Truncate title if too long (Discord limit is 256 chars)
+			
 			if len(itemTitle) > 200 {
 				itemTitle = itemTitle[:197] + "..."
 			}
-
+			
 			embed := DiscordEmbed{
 				Title:       itemTitle,
 				Description: getString(item, "description", ""),
 				URL:         getString(item, "url", ""),
-				Color:       3447003, // Blue color
+				Color:       3447003,
 				Timestamp:   time.Now().Format(time.RFC3339),
 				Footer: map[string]interface{}{
 					"text": fmt.Sprintf("MMCS • %s", notification.SearchTerm),
 				},
 			}
-
+			
 			if price := getString(item, "price", ""); price != "" {
 				embed.Fields = append(embed.Fields, DiscordEmbedField{
 					Name:   "Price",
@@ -987,7 +1129,7 @@ func sendDiscordNotification(webhookURL string, notification Notification, items
 					Inline: true,
 				})
 			}
-
+			
 			if market := getString(item, "market", ""); market != "" {
 				embed.Fields = append(embed.Fields, DiscordEmbedField{
 					Name:   "Market",
@@ -995,61 +1137,89 @@ func sendDiscordNotification(webhookURL string, notification Notification, items
 					Inline: true,
 				})
 			}
-
-			// Add image thumbnail if available
+			
 			if imageURL := getString(item, "image", ""); imageURL != "" {
 				embed.Image = map[string]string{
 					"url": imageURL,
 				}
 			}
-
+			
 			embeds = append(embeds, embed)
 		}
-
-		// Create content message
+		
 		var content string
 		if i == 0 {
-			// First batch
 			if totalItems > maxEmbeds {
 				content = fmt.Sprintf("🔔 **%d new item(s) found for: %s** (showing first %d)", totalItems, notification.SearchTerm, len(batch))
 			} else {
 				content = fmt.Sprintf("🔔 **%d new item(s) found for: %s**", totalItems, notification.SearchTerm)
 			}
 		} else {
-			// Subsequent batches
 			content = fmt.Sprintf("🔔 **More items for: %s** (%d-%d of %d)", notification.SearchTerm, i+1, end, totalItems)
 		}
-
+		
 		payload := DiscordWebhookPayload{
 			Content: content,
 			Embeds:  embeds,
 		}
-
+		
 		jsonData, err := json.Marshal(payload)
 		if err != nil {
 			return fmt.Errorf("failed to marshal payload: %w", err)
 		}
-
-		client := &http.Client{Timeout: 10 * time.Second}
-		resp, err := client.Post(webhookURL, "application/json", bytes.NewBuffer(jsonData))
-		if err != nil {
-			return fmt.Errorf("failed to send request: %w", err)
+		
+		// Send with retry logic respecting Discord rate limits
+		var resp *http.Response
+		maxRetries := 3
+		for attempt := 0; attempt <= maxRetries; attempt++ {
+			resp, err = client.Post(webhookURL, "application/json", bytes.NewBuffer(jsonData))
+			if err != nil {
+				if attempt < maxRetries {
+					time.Sleep(time.Duration(attempt+1) * 500 * time.Millisecond)
+					continue
+				}
+				return fmt.Errorf("failed to send request: %w", err)
+			}
+			defer resp.Body.Close()
+			
+			// Handle rate limiting
+			if resp.StatusCode == 429 {
+				body, _ := io.ReadAll(resp.Body)
+				
+				// Parse retry_after from response
+				retryAfter := 1.0
+				var rateLimitResp struct {
+					RetryAfter float64 `json:"retry_after"`
+					Message    string  `json:"message"`
+				}
+				if json.Unmarshal(body, &rateLimitResp) == nil && rateLimitResp.RetryAfter > 0 {
+					retryAfter = rateLimitResp.RetryAfter
+				}
+				
+				if attempt < maxRetries {
+					waitTime := time.Duration(retryAfter*1000) * time.Millisecond
+					log.Printf("   ⏳ Rate limited, waiting %.2f seconds (attempt %d/%d)...", retryAfter, attempt+1, maxRetries+1)
+					time.Sleep(waitTime)
+					continue
+				}
+				
+				return fmt.Errorf("Discord rate limit exceeded after retries: %s", string(body))
+			}
+			
+			if resp.StatusCode != 200 && resp.StatusCode != 204 {
+				body, _ := io.ReadAll(resp.Body)
+				return fmt.Errorf("Discord returned status %d: %s", resp.StatusCode, string(body))
+			}
+			
+			break // Success
 		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != 200 && resp.StatusCode != 204 {
-			body, _ := io.ReadAll(resp.Body)
-			return fmt.Errorf("Discord returned status %d: %s", resp.StatusCode, string(body))
-		}
-
-		// Small delay between batches to avoid Discord rate limiting
-		// Discord limit: 30 requests per 10 seconds per webhook
-		// Reduced to 500ms for faster processing while still respecting limits
+		
+		// Small delay between batches
 		if end < totalItems {
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(300 * time.Millisecond)
 		}
 	}
-
+	
 	return nil
 }
 
