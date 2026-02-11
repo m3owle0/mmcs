@@ -248,9 +248,11 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 	params.Set("search", opts.TermJP)
 	
 	// Add category filter for clothing if specified
-	if opts.CategoryID != nil {
-		params.Set("category", fmt.Sprintf("%d", *opts.CategoryID))
-	}
+	// NOTE: Temporarily disabled - may cause 403 errors if Sendico API doesn't support this parameter
+	// TODO: Test category parameter support with Sendico API
+	// if opts.CategoryID != nil {
+	// 	params.Set("category", fmt.Sprintf("%d", *opts.CategoryID))
+	// }
 	
 	// Note: Sendico API doesn't support sort/mobile parameters
 	// Recently uploaded items are typically on page 1, so we search multiple pages
@@ -287,13 +289,18 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 			break // Success
 		}
 		
-		// If HMAC refresh needed, wait and retry
+		// If HMAC refresh needed, wait and retry (but limit retries to avoid loops)
 		if err == ErrHMACRefreshNeeded {
 			if attempt < maxRetries {
-				log.Printf("   🔄 HMAC refresh needed (attempt %d/%d), retrying...", attempt+1, maxRetries+1)
-				time.Sleep(300 * time.Millisecond) // Reduced delay
-				continue
+				// Only retry once for HMAC refresh to avoid infinite loops
+				if attempt == 0 {
+					log.Printf("   🔄 HMAC refresh needed, retrying once...")
+					time.Sleep(500 * time.Millisecond)
+					continue
+				}
 			}
+			// If HMAC refresh didn't help, likely a different issue (e.g., invalid parameters)
+			return nil, fmt.Errorf("HMAC refresh didn't resolve access issue - may be invalid parameters: %w", err)
 		}
 		
 		// For other errors or max retries reached
@@ -302,7 +309,7 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 		}
 		
 		// Wait before retry for other errors (reduced delays)
-		time.Sleep(time.Duration(attempt+1) * 300 * time.Millisecond)
+		time.Sleep(time.Duration(attempt+1) * 500 * time.Millisecond)
 	}
 	
 	if resp == nil {
@@ -338,43 +345,26 @@ func (c *SendicoClient) SearchMultiplePages(ctx context.Context, shop SendicoSho
 	seenCodes := make(map[string]bool) // Deduplicate across pages
 	
 	// Apply clothing category filter for this shop (once, outside the loop)
-	if categoryID, ok := clothingCategoryIDs[shop]; ok {
-		opts.CategoryID = &categoryID
-	}
+	// NOTE: Temporarily disabled - may cause 403 errors
+	// TODO: Verify category parameter support with Sendico API
+	// if categoryID, ok := clothingCategoryIDs[shop]; ok {
+	// 	opts.CategoryID = &categoryID
+	// }
 	
 	for page := 1; page <= maxPages; page++ {
 		pageOpts := opts
 		pageOpts.Page = page
 		
-		// Search with retry logic (reduced retries for speed)
-		maxRetries := 1 // Reduced retries for faster failure
-		var items []SendicoItem
-		var err error
-		
-		for retry := 0; retry <= maxRetries; retry++ {
-			items, err = c.Search(ctx, shop, pageOpts)
-			if err == nil {
-				break // Success
+		// Search with minimal retry logic (avoid loops)
+		items, err := c.Search(ctx, shop, pageOpts)
+		if err != nil {
+			// If error on later pages, return what we have (might be last page)
+			if page > 1 {
+				log.Printf("   ⚠️  Error on page %d (may be last page): %v", page, err)
+				return allItems, nil // Return what we have so far
 			}
-			
-			// If HMAC refresh needed, wait a bit and retry
-			if err == ErrHMACRefreshNeeded {
-				if retry < maxRetries {
-					log.Printf("   🔄 HMAC refresh needed for page %d, retrying... (attempt %d/%d)", page, retry+1, maxRetries+1)
-					time.Sleep(300 * time.Millisecond) // Reduced delay
-					continue
-				}
-			}
-			
-			// For other errors or max retries reached
-			if retry == maxRetries {
-				// If error on later pages, return what we have (might be last page)
-				if page > 1 {
-					log.Printf("   ⚠️  Error on page %d after retries (may be last page): %v", page, err)
-					return allItems, nil // Return what we have so far
-				}
-				return nil, err
-			}
+			// For first page, return error
+			return nil, err
 		}
 		
 		// If no items returned, we've reached the end
@@ -434,13 +424,14 @@ func (c *SendicoClient) BulkSearchSinglePage(ctx context.Context, shops []Sendic
 				time.Sleep(requestDelay)
 			}
 			
-			// Search only page 1 with clothing category filter
+			// Search only page 1
 			pageOpts := opts
 			pageOpts.Page = 1
-			// Apply clothing category filter for this shop
-			if categoryID, ok := clothingCategoryIDs[shop]; ok {
-				pageOpts.CategoryID = &categoryID
-			}
+			// NOTE: Category filter temporarily disabled to avoid 403 errors
+			// TODO: Verify category parameter support with Sendico API
+			// if categoryID, ok := clothingCategoryIDs[shop]; ok {
+			// 	pageOpts.CategoryID = &categoryID
+			// }
 			results, err := c.Search(ctx, shop, pageOpts)
 			if err != nil {
 				// Check if it's a rate limit error
