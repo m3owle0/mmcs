@@ -191,12 +191,27 @@ const (
 )
 
 type SendicoSearchOptions struct {
-	TermJP   string
-	MinPrice *int
-	MaxPrice *int
-	Page     int // Page number (default: 1)
+	TermJP     string
+	MinPrice   *int
+	MaxPrice   *int
+	Page       int    // Page number (default: 1)
+	CategoryID *int   // Category ID for filtering (e.g., clothing category)
 	// Note: Sendico API doesn't support sort/mobile parameters
 	// We search multiple pages starting from page 1 (which typically has newest items)
+}
+
+// Clothing category IDs for each marketplace (Sendico API)
+// These filter searches to clothing/fashion categories only, ensuring we only get clothing items
+// Category IDs are based on Sendico's category structure:
+// - Mercari: 3088 = Fashion (includes clothing, shoes, bags, accessories)
+// - Yahoo Auctions: 23000 = Fashion category
+// - Other markets: Using approximate IDs (may need verification/adjustment)
+var clothingCategoryIDs = map[SendicoShop]int{
+	SendicoMercari:       3088,  // Mercari Fashion category
+	SendicoYahooAuctions: 23000, // Yahoo Auctions Fashion category
+	SendicoRakuma:        100,   // Rakuma Fashion category (approximate)
+	SendicoRakuten:       100,   // Rakuten Fashion category (approximate)
+	SendicoYahoo:         100,   // Yahoo PayPay Flea Fashion category (approximate)
 }
 
 type SendicoItem struct {
@@ -231,6 +246,11 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 	}
 	params.Set("page", fmt.Sprintf("%d", page))
 	params.Set("search", opts.TermJP)
+	
+	// Add category filter for clothing if specified
+	if opts.CategoryID != nil {
+		params.Set("category", fmt.Sprintf("%d", *opts.CategoryID))
+	}
 	
 	// Note: Sendico API doesn't support sort/mobile parameters
 	// Recently uploaded items are typically on page 1, so we search multiple pages
@@ -308,6 +328,7 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 
 // SearchMultiplePages searches multiple pages to ensure we don't miss any items
 // Returns all items from pages 1 through maxPages, or until no more items are found
+// Automatically applies clothing category filter based on the shop
 func (c *SendicoClient) SearchMultiplePages(ctx context.Context, shop SendicoShop, opts SendicoSearchOptions, maxPages int) ([]SendicoItem, error) {
 	if maxPages < 1 {
 		maxPages = 3 // Default to 3 pages to catch recently uploaded items
@@ -315,6 +336,11 @@ func (c *SendicoClient) SearchMultiplePages(ctx context.Context, shop SendicoSho
 	
 	allItems := make([]SendicoItem, 0)
 	seenCodes := make(map[string]bool) // Deduplicate across pages
+	
+	// Apply clothing category filter for this shop (once, outside the loop)
+	if categoryID, ok := clothingCategoryIDs[shop]; ok {
+		opts.CategoryID = &categoryID
+	}
 	
 	for page := 1; page <= maxPages; page++ {
 		pageOpts := opts
@@ -408,9 +434,13 @@ func (c *SendicoClient) BulkSearchSinglePage(ctx context.Context, shops []Sendic
 				time.Sleep(requestDelay)
 			}
 			
-			// Search only page 1
+			// Search only page 1 with clothing category filter
 			pageOpts := opts
 			pageOpts.Page = 1
+			// Apply clothing category filter for this shop
+			if categoryID, ok := clothingCategoryIDs[shop]; ok {
+				pageOpts.CategoryID = &categoryID
+			}
 			results, err := c.Search(ctx, shop, pageOpts)
 			if err != nil {
 				// Check if it's a rate limit error

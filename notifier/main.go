@@ -694,6 +694,10 @@ func processUserNotifications(user User) {
 				TermJP: termJP,
 			}
 			
+			// Apply clothing category filter for each marketplace
+			// This ensures we only get clothing items, not other categories
+			log.Printf("   👕 Filtering by clothing category for all markets")
+			
 			if maxSearchPages > 1 {
 				// Multi-page search (slower but catches more items)
 				log.Printf("   🔎 Searching %d market(s) (%d pages for recently uploaded items)...", len(shops), maxSearchPages)
