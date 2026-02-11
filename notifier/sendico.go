@@ -17,6 +17,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
+	"golang.org/x/net/proxy"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -47,28 +48,48 @@ func NewSendicoClient() (*SendicoClient, error) {
 	
 	var httpClient *http.Client
 	if proxyURL != "" {
-		// Configure HTTP client with Mullvad proxy
-		proxy, err := url.Parse(proxyURL)
+		// Configure HTTP client with Mullvad proxy (supports SOCKS5 and HTTP proxies)
+		proxyURLParsed, err := url.Parse(proxyURL)
 		if err != nil {
 			return nil, fmt.Errorf("invalid proxy URL: %w", err)
 		}
 		
-		transport := &http.Transport{
-			Proxy: http.ProxyURL(proxy),
+		var transport *http.Transport
+		
+		// Check if it's a SOCKS5 proxy (Mullvad uses SOCKS5)
+		if proxyURLParsed.Scheme == "socks5" || proxyURLParsed.Scheme == "socks5h" {
+			// SOCKS5 proxy (Mullvad standard)
+			dialer, err := proxy.SOCKS5("tcp", proxyURLParsed.Host, nil, proxy.Direct)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create SOCKS5 dialer: %w", err)
+			}
+			
+			transport = &http.Transport{
+				Dial: dialer.Dial,
+			}
+			
+			log.Printf("🌐 Using SOCKS5 proxy: %s", maskProxyURL(proxyURL))
+		} else {
+			// HTTP/HTTPS proxy
+			transport = &http.Transport{
+				Proxy: http.ProxyURL(proxyURLParsed),
+			}
+			
+			log.Printf("🌐 Using HTTP proxy: %s", maskProxyURL(proxyURL))
 		}
 		
 		httpClient = &http.Client{
 			Transport: transport,
 			Timeout:   30 * time.Second,
 		}
-		
-		log.Printf("🌐 Using proxy: %s", maskProxyURL(proxyURL))
 	} else {
 		// Use default client (no proxy)
 		httpClient = &http.Client{
 			Timeout: 30 * time.Second,
 		}
 		log.Printf("🌐 No proxy configured (set MULLVAD_PROXY environment variable to use Mullvad VPN)")
+		log.Printf("   Example: MULLVAD_PROXY=socks5://127.0.0.1:1080")
+		log.Printf("   Or get Mullvad SOCKS5 endpoint from: https://mullvad.net/en/help/socks5-proxy/")
 	}
 	
 	client := &SendicoClient{
