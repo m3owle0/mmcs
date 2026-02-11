@@ -271,7 +271,7 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 		if err == ErrHMACRefreshNeeded {
 			if attempt < maxRetries {
 				log.Printf("   🔄 HMAC refresh needed (attempt %d/%d), retrying...", attempt+1, maxRetries+1)
-				time.Sleep(500 * time.Millisecond)
+				time.Sleep(300 * time.Millisecond) // Reduced delay
 				continue
 			}
 		}
@@ -281,8 +281,8 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 			return nil, fmt.Errorf("failed after %d attempts: %w", maxRetries+1, err)
 		}
 		
-		// Wait before retry for other errors
-		time.Sleep(time.Duration(attempt+1) * 500 * time.Millisecond)
+		// Wait before retry for other errors (reduced delays)
+		time.Sleep(time.Duration(attempt+1) * 300 * time.Millisecond)
 	}
 	
 	if resp == nil {
@@ -320,8 +320,8 @@ func (c *SendicoClient) SearchMultiplePages(ctx context.Context, shop SendicoSho
 		pageOpts := opts
 		pageOpts.Page = page
 		
-		// Retry logic for HMAC refresh errors
-		maxRetries := 2
+		// Search with retry logic (reduced retries for speed)
+		maxRetries := 1 // Reduced retries for faster failure
 		var items []SendicoItem
 		var err error
 		
@@ -335,7 +335,7 @@ func (c *SendicoClient) SearchMultiplePages(ctx context.Context, shop SendicoSho
 			if err == ErrHMACRefreshNeeded {
 				if retry < maxRetries {
 					log.Printf("   🔄 HMAC refresh needed for page %d, retrying... (attempt %d/%d)", page, retry+1, maxRetries+1)
-					time.Sleep(500 * time.Millisecond) // Wait before retry
+					time.Sleep(300 * time.Millisecond) // Reduced delay
 					continue
 				}
 			}
@@ -370,9 +370,9 @@ func (c *SendicoClient) SearchMultiplePages(ctx context.Context, shop SendicoSho
 			// Still continue to next page to be safe
 		}
 		
-		// Small delay between pages to avoid rate limiting
-		if page < maxPages {
-			time.Sleep(300 * time.Millisecond)
+		// Minimal delay between pages (only if searching multiple pages)
+		if page < maxPages && maxPages > 1 {
+			time.Sleep(200 * time.Millisecond) // Reduced delay
 		}
 	}
 	
@@ -380,7 +380,57 @@ func (c *SendicoClient) SearchMultiplePages(ctx context.Context, shop SendicoSho
 }
 
 func (c *SendicoClient) BulkSearch(ctx context.Context, shops []SendicoShop, opts SendicoSearchOptions) ([]SendicoItem, error) {
-	return c.BulkSearchMultiplePages(ctx, shops, opts, 3) // Default to 3 pages
+	// Use single page search for speed (original behavior)
+	return c.BulkSearchSinglePage(ctx, shops, opts)
+}
+
+// BulkSearchSinglePage searches only page 1 for fastest performance
+func (c *SendicoClient) BulkSearchSinglePage(ctx context.Context, shops []SendicoShop, opts SendicoSearchOptions) ([]SendicoItem, error) {
+	items := make([]SendicoItem, 0)
+	itemsMu := sync.Mutex{}
+
+	// Optimized concurrency for speed
+	maxConcurrent := 5 // Increased concurrency for faster searches
+	requestDelay := 200 * time.Millisecond // Reduced delay for faster processing
+	sem := make(chan struct{}, maxConcurrent)
+	g := new(errgroup.Group)
+	
+	for i, shop := range shops {
+		shop := shop
+		i := i
+		g.Go(func() error {
+			// Acquire semaphore
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			
+			// Minimal delay between requests
+			if i > 0 {
+				time.Sleep(requestDelay)
+			}
+			
+			// Search only page 1
+			pageOpts := opts
+			pageOpts.Page = 1
+			results, err := c.Search(ctx, shop, pageOpts)
+			if err != nil {
+				// Check if it's a rate limit error
+				if errStr := err.Error(); strings.Contains(errStr, "429") || strings.Contains(errStr, "rate limited") {
+					log.Printf("   ❌ Rate limited searching %s: %v", shop, err)
+				} else {
+					log.Printf("   ⚠️  Error searching %s: %v", shop, err)
+				}
+				return nil // Continue with other shops
+			}
+
+			itemsMu.Lock()
+			defer itemsMu.Unlock()
+			items = append(items, results...)
+			return nil
+		})
+	}
+
+	_ = g.Wait() // Ignore errors, we log them above
+	return items, nil
 }
 
 // BulkSearchMultiplePages searches multiple pages across multiple shops
@@ -389,8 +439,8 @@ func (c *SendicoClient) BulkSearchMultiplePages(ctx context.Context, shops []Sen
 	itemsMu := sync.Mutex{}
 
 	// Optimized concurrency for multiple users - balance between speed and rate limits
-	maxConcurrent := 3 // Keep conservative to avoid rate limiting
-	requestDelay := 800 * time.Millisecond // Slightly reduced delay for better throughput
+	maxConcurrent := 5 // Increased for faster multi-page searches
+	requestDelay := 300 * time.Millisecond // Reduced delay for faster processing
 	sem := make(chan struct{}, maxConcurrent)
 	g := new(errgroup.Group)
 	

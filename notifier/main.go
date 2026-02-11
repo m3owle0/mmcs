@@ -109,7 +109,9 @@ var (
 	searchCacheMu sync.RWMutex
 	
 	// Pages to search per query (to catch recently uploaded items)
-	maxSearchPages = 3 // Search 3 pages to ensure we don't miss recently uploaded items
+	// Set to 1 for fastest performance (page 1 typically has newest items)
+	// Set to 2-3 if you want to catch more recently uploaded items (slower)
+	maxSearchPages = 1 // Default to 1 page for speed (can be increased if needed)
 
 	// Supported markets - only these markets will be processed by the notifier
 	// This matches the marketUrls object in index.html
@@ -687,14 +689,20 @@ func processUserNotifications(user User) {
 		if items == nil {
 			// Not in cache, perform search
 			// Note: Sendico API returns items sorted by relevance/date (page 1 typically has newest)
-			// We search multiple pages to catch recently uploaded items
-			log.Printf("   🔎 Searching %d market(s) (multi-page for recently uploaded items)...", len(shops))
+			var err error
 			searchOpts := SendicoSearchOptions{
 				TermJP: termJP,
 			}
 			
-			var err error
-			items, err = sendicoClient.BulkSearchMultiplePages(ctx, shops, searchOpts, maxSearchPages)
+			if maxSearchPages > 1 {
+				// Multi-page search (slower but catches more items)
+				log.Printf("   🔎 Searching %d market(s) (%d pages for recently uploaded items)...", len(shops), maxSearchPages)
+				items, err = sendicoClient.BulkSearchMultiplePages(ctx, shops, searchOpts, maxSearchPages)
+			} else {
+				// Single page search (fastest - original behavior)
+				log.Printf("   🔎 Searching %d market(s)...", len(shops))
+				items, err = sendicoClient.BulkSearch(ctx, shops, searchOpts)
+			}
 			if err != nil {
 				log.Printf("   ❌ Search error: %v", err)
 				continue
