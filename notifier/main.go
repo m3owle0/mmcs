@@ -727,11 +727,22 @@ func processUserNotifications(user User) {
 			continue
 		}
 
-		log.Printf("   ✨ %d new item(s) found!", len(newItems))
+		// Filter to only clothing items (client-side filtering)
+		clothingItems := filterClothingItems(newItems)
+		if len(clothingItems) < len(newItems) {
+			log.Printf("   👕 Filtered out %d non-clothing item(s), %d clothing item(s) remaining", len(newItems)-len(clothingItems), len(clothingItems))
+		}
+		
+		if len(clothingItems) == 0 {
+			log.Printf("   ℹ️  No clothing items found after filtering")
+			continue
+		}
+
+		log.Printf("   ✨ %d new clothing item(s) found!", len(clothingItems))
 
 		// Convert to notification format
-		notificationItems := make([]map[string]interface{}, 0, len(newItems))
-		for _, item := range newItems {
+		notificationItems := make([]map[string]interface{}, 0, len(clothingItems))
+		for _, item := range clothingItems {
 			marketName := getMarketNameFromShop(item.Shop)
 			notificationItems = append(notificationItems, map[string]interface{}{
 				"title":       item.Name,
@@ -815,6 +826,107 @@ func filterSendicoMarkets(markets []string) []string {
 		}
 	}
 	return result
+}
+
+// filterClothingItems filters out non-clothing items based on name and labels
+// Uses Japanese and English clothing keywords to identify clothing items
+func filterClothingItems(items []SendicoItem) []SendicoItem {
+	clothingItems := []SendicoItem{}
+	
+	// Japanese clothing keywords (common terms)
+	clothingKeywordsJP := []string{
+		"服", "衣", "ファッション", "コーデ", "アパレル", "ウェア", "シャツ", "パンツ", "スカート",
+		"ドレス", "ジャケット", "コート", "ニット", "セーター", "カーディガン", "パーカー",
+		"フーディー", "Tシャツ", "ブラウス", "ワンピース", "ズボン", "ジーンズ", "ショートパンツ",
+		"スーツ", "ベスト", "カーディガン", "ニット", "トレーナー", "スウェット", "パーカー",
+		"レギンス", "タイツ", "ストッキング", "ソックス", "靴下", "靴", "スニーカー",
+		"サンダル", "ブーツ", "パンプス", "ヒール", "バッグ", "かばん", "ハンドバッグ",
+		"トートバッグ", "ショルダーバッグ", "リュック", "アクセサリー", "時計", "腕時計",
+		"ネックレス", "ピアス", "イヤリング", "リング", "指輪", "ブレスレット", "バングル",
+		"帽子", "キャップ", "ハット", "ニット帽", "ビーニー", "ベルト", "サングラス",
+		"マフラー", "スカーフ", "ストール", "手袋", "グローブ", "レインコート", "アウター",
+		"インナー", "下着", "ランジェリー", "ブラ", "パンツ", "パジャマ", "ルームウェア",
+		"水着", "ビキニ", "ワンピース", "サンダル", "スリッパ", "ルームシューズ",
+	}
+	
+	// English clothing keywords (for international items)
+	clothingKeywordsEN := []string{
+		"clothing", "apparel", "fashion", "wear", "shirt", "pants", "skirt", "dress",
+		"jacket", "coat", "sweater", "cardigan", "hoodie", "t-shirt", "blouse",
+		"dress", "jeans", "shorts", "suit", "vest", "tank", "top", "bottom",
+		"leggings", "tights", "socks", "shoes", "sneakers", "sandals", "boots",
+		"pumps", "heels", "bag", "handbag", "tote", "backpack", "accessory",
+		"watch", "necklace", "earrings", "ring", "bracelet", "hat", "cap",
+		"belt", "sunglasses", "scarf", "gloves", "underwear", "lingerie", "bra",
+		"pajamas", "swimwear", "bikini", "outerwear", "innerwear",
+	}
+	
+	// Non-clothing keywords to exclude
+	excludeKeywordsJP := []string{
+		"家電", "電化製品", "スマホ", "スマートフォン", "iPhone", "Android", "PC", "パソコン",
+		"ノートPC", "タブレット", "ゲーム", "ゲーム機", "Nintendo", "PlayStation", "Xbox",
+		"本", "書籍", "CD", "DVD", "ブルーレイ", "フィギュア", "おもちゃ", "玩具",
+		"家具", "インテリア", "家", "車", "自動車", "バイク", "自転車", "食品", "飲料",
+		"化粧品", "コスメ", "スキンケア", "薬", "サプリメント", "健康食品",
+	}
+	
+	excludeKeywordsEN := []string{
+		"electronics", "phone", "smartphone", "laptop", "computer", "tablet", "game",
+		"console", "book", "cd", "dvd", "blu-ray", "figure", "toy", "furniture",
+		"car", "vehicle", "bike", "bicycle", "food", "drink", "cosmetic", "makeup",
+		"skincare", "medicine", "supplement", "health",
+	}
+	
+	// Combine all keywords
+	allClothingKeywords := append(clothingKeywordsJP, clothingKeywordsEN...)
+	allExcludeKeywords := append(excludeKeywordsJP, excludeKeywordsEN...)
+	
+	for _, item := range items {
+		itemName := strings.ToLower(item.Name)
+		itemLabels := strings.Join(item.Labels, " ")
+		itemText := strings.ToLower(itemName + " " + itemLabels)
+		
+		// Check for exclusion keywords first (higher priority)
+		isExcluded := false
+		for _, keyword := range allExcludeKeywords {
+			if strings.Contains(itemText, strings.ToLower(keyword)) {
+				isExcluded = true
+				break
+			}
+		}
+		
+		if isExcluded {
+			continue // Skip non-clothing items
+		}
+		
+		// Check for clothing keywords
+		isClothing := false
+		for _, keyword := range allClothingKeywords {
+			if strings.Contains(itemText, strings.ToLower(keyword)) {
+				isClothing = true
+				break
+			}
+		}
+		
+		// If no explicit clothing keywords found, but also no exclusion keywords,
+		// include it (better to show more than miss items)
+		// But for PayPay and Rakuten specifically, be more strict
+		if !isClothing {
+			// For PayPay (Yahoo) and Rakuten, require at least one clothing keyword
+			// These markets tend to have more non-clothing items mixed in
+			shopStr := string(item.Shop)
+			if shopStr == "yahoo" || shopStr == "rakuten" {
+				continue // Skip if no clothing keywords found
+			}
+			// For other markets, include if no exclusion keywords
+		}
+		
+		if isClothing || !isExcluded {
+			clothingItems = append(clothingItems, item)
+		}
+	}
+	
+	return clothingItems
 }
 
 // filterSeenItems filters out items that have already been seen
