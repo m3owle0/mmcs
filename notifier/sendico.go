@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -34,8 +35,44 @@ type SendicoClient struct {
 }
 
 func NewSendicoClient() (*SendicoClient, error) {
+	// Check for Mullvad VPN proxy configuration
+	proxyURL := os.Getenv("MULLVAD_PROXY")
+	if proxyURL == "" {
+		// Try alternative environment variable names
+		proxyURL = os.Getenv("HTTP_PROXY")
+		if proxyURL == "" {
+			proxyURL = os.Getenv("HTTPS_PROXY")
+		}
+	}
+	
+	var httpClient *http.Client
+	if proxyURL != "" {
+		// Configure HTTP client with Mullvad proxy
+		proxy, err := url.Parse(proxyURL)
+		if err != nil {
+			return nil, fmt.Errorf("invalid proxy URL: %w", err)
+		}
+		
+		transport := &http.Transport{
+			Proxy: http.ProxyURL(proxy),
+		}
+		
+		httpClient = &http.Client{
+			Transport: transport,
+			Timeout:   30 * time.Second,
+		}
+		
+		log.Printf("🌐 Using proxy: %s", maskProxyURL(proxyURL))
+	} else {
+		// Use default client (no proxy)
+		httpClient = &http.Client{
+			Timeout: 30 * time.Second,
+		}
+		log.Printf("🌐 No proxy configured (set MULLVAD_PROXY environment variable to use Mullvad VPN)")
+	}
+	
 	client := &SendicoClient{
-		httpClient: http.DefaultClient,
+		httpClient: httpClient,
 		baseURL:    SendicoBaseURL,
 	}
 
@@ -45,6 +82,18 @@ func NewSendicoClient() (*SendicoClient, error) {
 	}
 
 	return client, nil
+}
+
+// maskProxyURL masks proxy URL for security in logs
+func maskProxyURL(url string) string {
+	if len(url) < 20 {
+		return "***"
+	}
+	// Show first part and last part, mask middle
+	if len(url) > 40 {
+		return url[:15] + "..." + url[len(url)-15:]
+	}
+	return url[:10] + "..."
 }
 
 func (c *SendicoClient) FindHMAC(ctx context.Context) error {
@@ -405,9 +454,9 @@ func (c *SendicoClient) BulkSearchSinglePage(ctx context.Context, shops []Sendic
 	items := make([]SendicoItem, 0)
 	itemsMu := sync.Mutex{}
 
-	// Optimized concurrency for speed
-	maxConcurrent := 5 // Increased concurrency for faster searches
-	requestDelay := 200 * time.Millisecond // Reduced delay for faster processing
+	// Optimized concurrency for maximum resource usage
+	maxConcurrent := 20 // Significantly increased for faster searches
+	requestDelay := 100 * time.Millisecond // Reduced delay for faster processing
 	sem := make(chan struct{}, maxConcurrent)
 	g := new(errgroup.Group)
 	
@@ -459,9 +508,9 @@ func (c *SendicoClient) BulkSearchMultiplePages(ctx context.Context, shops []Sen
 	items := make([]SendicoItem, 0)
 	itemsMu := sync.Mutex{}
 
-	// Optimized concurrency for multiple users - balance between speed and rate limits
-	maxConcurrent := 5 // Increased for faster multi-page searches
-	requestDelay := 300 * time.Millisecond // Reduced delay for faster processing
+	// Optimized concurrency for maximum resource usage
+	maxConcurrent := 20 // Significantly increased for faster multi-page searches
+	requestDelay := 100 * time.Millisecond // Reduced delay for faster processing
 	sem := make(chan struct{}, maxConcurrent)
 	g := new(errgroup.Group)
 	

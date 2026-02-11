@@ -101,9 +101,16 @@ var (
 	translationCache   = make(map[string]string)
 	translationCacheMu sync.RWMutex
 
-	// Concurrency limits - optimized for multiple users
-	maxConcurrentUsers    = 15 // Increased to 15 for better multi-user throughput
-	maxConcurrentSearches = 5  // Max 5 concurrent Sendico searches
+	// Concurrency limits - optimized for maximum resource usage
+	maxConcurrentUsers    = 50  // Increased significantly for better throughput
+	maxConcurrentSearches = 20  // Increased for faster searches
+	maxConcurrentWebhooks = 30  // Concurrent webhook sends
+	
+	// Webhook deduplication - track what was sent to which webhook
+	// Key: "webhookURL:itemURL", Value: timestamp when sent
+	webhookSentItems   = make(map[string]time.Time)
+	webhookSentItemsMu sync.RWMutex
+	webhookSentItemsTTL = 24 * time.Hour // Keep for 24 hours
 	
 	// Search batching - avoid duplicate searches across users
 	searchCache   = make(map[string]*cachedSearchResult) // Key: "termJP:markets"
@@ -766,8 +773,15 @@ func processUserNotifications(user User) {
 			}
 		}
 
-		// Send notification to each webhook
-		log.Printf("   ✅ Sending notification to %d webhook(s)...", len(webhooksToUse))
+		// Filter items to avoid duplicates per webhook
+		uniqueItemsByWebhook := filterDuplicateWebhookItems(webhooksToUse, notificationItems)
+		
+		// Send notification to each webhook in parallel
+		log.Printf("   ✅ Sending notification to %d webhook(s) (parallel)...", len(webhooksToUse))
+		
+		webhookSem := make(chan struct{}, maxConcurrentWebhooks)
+		var wg sync.WaitGroup
+		
 		for i, webhookURL := range webhooksToUse {
 			webhookURL = strings.TrimSpace(webhookURL)
 			if webhookURL == "" || !strings.HasPrefix(webhookURL, "https://discord.com/api/webhooks/") {
@@ -775,12 +789,31 @@ func processUserNotifications(user User) {
 				continue
 			}
 			
-			if err := sendDiscordNotification(webhookURL, notif, notificationItems); err != nil {
-				log.Printf("   ❌ Error sending to webhook %d/%d: %v", i+1, len(webhooksToUse), err)
-			} else {
-				log.Printf("   ✅ Notification sent to webhook %d/%d!", i+1, len(webhooksToUse))
+			// Get unique items for this webhook
+			itemsForWebhook := uniqueItemsByWebhook[webhookURL]
+			if len(itemsForWebhook) == 0 {
+				log.Printf("   ⏭️  Skipping webhook %d/%d - all items already sent", i+1, len(webhooksToUse))
+				continue
 			}
+			
+			wg.Add(1)
+			go func(idx int, url string, items []map[string]interface{}) {
+				defer wg.Done()
+				
+				webhookSem <- struct{}{}
+				defer func() { <-webhookSem }()
+				
+				if err := sendDiscordNotification(url, notif, items); err != nil {
+					log.Printf("   ❌ Error sending to webhook %d/%d: %v", idx+1, len(webhooksToUse), err)
+				} else {
+					log.Printf("   ✅ Notification sent to webhook %d/%d (%d items)!", idx+1, len(webhooksToUse), len(items))
+					// Mark items as sent to this webhook
+					markWebhookItemsSent(url, items)
+				}
+			}(i, webhookURL, itemsForWebhook)
 		}
+		
+		wg.Wait()
 	}
 }
 
@@ -833,48 +866,132 @@ func filterSendicoMarkets(markets []string) []string {
 func filterClothingItems(items []SendicoItem) []SendicoItem {
 	clothingItems := []SendicoItem{}
 	
-	// Japanese clothing keywords (common terms)
+	// Japanese clothing keywords (comprehensive list)
 	clothingKeywordsJP := []string{
-		"服", "衣", "ファッション", "コーデ", "アパレル", "ウェア", "シャツ", "パンツ", "スカート",
-		"ドレス", "ジャケット", "コート", "ニット", "セーター", "カーディガン", "パーカー",
-		"フーディー", "Tシャツ", "ブラウス", "ワンピース", "ズボン", "ジーンズ", "ショートパンツ",
-		"スーツ", "ベスト", "カーディガン", "ニット", "トレーナー", "スウェット", "パーカー",
-		"レギンス", "タイツ", "ストッキング", "ソックス", "靴下", "靴", "スニーカー",
-		"サンダル", "ブーツ", "パンプス", "ヒール", "バッグ", "かばん", "ハンドバッグ",
-		"トートバッグ", "ショルダーバッグ", "リュック", "アクセサリー", "時計", "腕時計",
-		"ネックレス", "ピアス", "イヤリング", "リング", "指輪", "ブレスレット", "バングル",
-		"帽子", "キャップ", "ハット", "ニット帽", "ビーニー", "ベルト", "サングラス",
-		"マフラー", "スカーフ", "ストール", "手袋", "グローブ", "レインコート", "アウター",
-		"インナー", "下着", "ランジェリー", "ブラ", "パンツ", "パジャマ", "ルームウェア",
-		"水着", "ビキニ", "ワンピース", "サンダル", "スリッパ", "ルームシューズ",
+		// General clothing terms
+		"服", "衣", "ファッション", "コーデ", "アパレル", "ウェア", "着物", "和服",
+		// Tops
+		"シャツ", "Tシャツ", "ブラウス", "トップス", "ニット", "セーター", "カーディガン",
+		"パーカー", "フーディー", "トレーナー", "スウェット", "タンクトップ", "キャミソール",
+		"チュニック", "ブラウス", "ワイシャツ", "ポロシャツ", "タートルネック", "ハイネック",
+		// Bottoms
+		"パンツ", "ズボン", "ジーンズ", "ショートパンツ", "ハーフパンツ", "スカート",
+		"ミニスカート", "ロングスカート", "パンツスカート", "キュロット", "レギンス",
+		"タイツ", "スパッツ", "スキニー", "ワイドパンツ", "テーパードパンツ",
+		// Dresses & One-pieces
+		"ドレス", "ワンピース", "オーバーオール", "サロペット", "ジャンパースカート",
+		// Outerwear
+		"ジャケット", "コート", "アウター", "ダウン", "パーカー", "ブルゾン", "ベスト",
+		"レインコート", "トレンチコート", "ピーコート", "ダッフルコート", "ウールコート",
+		"ナイロンジャケット", "デニムジャケット", "レザージャケット",
+		// Shoes
+		"靴", "スニーカー", "サンダル", "ブーツ", "パンプス", "ヒール", "フラット",
+		"ローファー", "オックスフォード", "モカシン", "スリッパ", "ルームシューズ",
+		"スリッポン", "コンバース", "バレエシューズ", "エスパドリーユ",
+		// Bags & Accessories
+		"バッグ", "かばん", "ハンドバッグ", "トートバッグ", "ショルダーバッグ",
+		"リュック", "バックパック", "メッセンジャーバッグ", "クラッチバッグ",
+		"アクセサリー", "時計", "腕時計", "ネックレス", "ピアス", "イヤリング",
+		"リング", "指輪", "ブレスレット", "バングル", "アンクレット",
+		"帽子", "キャップ", "ハット", "ニット帽", "ビーニー", "ベレー帽",
+		"ベルト", "サングラス", "マフラー", "スカーフ", "ストール",
+		"手袋", "グローブ", "レッグウォーマー", "アームウォーマー",
+		// Underwear & Sleepwear
+		"インナー", "下着", "ランジェリー", "ブラ", "ブラジャー", "パンティー",
+		"ショーツ", "パジャマ", "ルームウェア", "ナイトウェア", "ガウン",
+		// Swimwear
+		"水着", "ビキニ", "ワンピース水着", "ラッシュガード",
+		// Socks & Legwear
+		"ソックス", "靴下", "ストッキング", "タイツ", "レギンス",
 	}
 	
-	// English clothing keywords (for international items)
+	// English clothing keywords (comprehensive list)
 	clothingKeywordsEN := []string{
-		"clothing", "apparel", "fashion", "wear", "shirt", "pants", "skirt", "dress",
-		"jacket", "coat", "sweater", "cardigan", "hoodie", "t-shirt", "blouse",
-		"dress", "jeans", "shorts", "suit", "vest", "tank", "top", "bottom",
-		"leggings", "tights", "socks", "shoes", "sneakers", "sandals", "boots",
-		"pumps", "heels", "bag", "handbag", "tote", "backpack", "accessory",
-		"watch", "necklace", "earrings", "ring", "bracelet", "hat", "cap",
-		"belt", "sunglasses", "scarf", "gloves", "underwear", "lingerie", "bra",
-		"pajamas", "swimwear", "bikini", "outerwear", "innerwear",
+		// General
+		"clothing", "apparel", "fashion", "wear", "garment", "attire", "outfit",
+		// Tops
+		"shirt", "t-shirt", "tshirt", "blouse", "top", "tank", "tank top",
+		"sweater", "cardigan", "hoodie", "hoody", "pullover", "jumper",
+		"polo", "henley", "tunic", "cami", "camisole", "crop top",
+		// Bottoms
+		"pants", "trousers", "jeans", "shorts", "skirt", "mini skirt",
+		"maxi skirt", "leggings", "tights", "joggers", "sweatpants",
+		"chinos", "cargo", "culottes", "palazzo", "wide leg",
+		// Dresses
+		"dress", "sundress", "maxi dress", "midi dress", "mini dress",
+		"jumpsuit", "romper", "overall", "dungarees",
+		// Outerwear
+		"jacket", "coat", "blazer", "cardigan", "vest", "waistcoat",
+		"parka", "bomber", "denim jacket", "leather jacket", "trench",
+		"peacoat", "duffle", "puffer", "down jacket",
+		// Shoes
+		"shoes", "sneakers", "sneaker", "sandals", "boots", "boot",
+		"pumps", "heels", "flats", "loafers", "oxfords", "moccasins",
+		"slip-on", "ballet flats", "espadrilles", "slippers",
+		// Bags & Accessories
+		"bag", "handbag", "tote", "backpack", "rucksack", "messenger",
+		"clutch", "crossbody", "shoulder bag", "accessory", "accessories",
+		"watch", "necklace", "earrings", "ring", "bracelet", "bangle",
+		"anklet", "hat", "cap", "beanie", "beret", "belt", "sunglasses",
+		"scarf", "gloves", "mittens",
+		// Underwear & Sleepwear
+		"underwear", "lingerie", "bra", "panties", "briefs", "boxers",
+		"pajamas", "pyjamas", "nightwear", "nightgown", "robe",
+		// Swimwear
+		"swimwear", "swimsuit", "bikini", "one-piece", "rashguard",
+		// Socks & Legwear
+		"socks", "stockings", "tights", "leggings", "knee-highs",
 	}
 	
-	// Non-clothing keywords to exclude
+	// Non-clothing keywords to exclude (comprehensive list)
 	excludeKeywordsJP := []string{
+		// Electronics
 		"家電", "電化製品", "スマホ", "スマートフォン", "iPhone", "Android", "PC", "パソコン",
-		"ノートPC", "タブレット", "ゲーム", "ゲーム機", "Nintendo", "PlayStation", "Xbox",
-		"本", "書籍", "CD", "DVD", "ブルーレイ", "フィギュア", "おもちゃ", "玩具",
-		"家具", "インテリア", "家", "車", "自動車", "バイク", "自転車", "食品", "飲料",
-		"化粧品", "コスメ", "スキンケア", "薬", "サプリメント", "健康食品",
+		"ノートPC", "タブレット", "iPad", "MacBook", "Windows", "Linux",
+		// Gaming
+		"ゲーム", "ゲーム機", "Nintendo", "PlayStation", "PS4", "PS5", "Xbox", "Switch",
+		"コントローラー", "ゲームソフト", "アミibo",
+		// Media
+		"本", "書籍", "雑誌", "漫画", "CD", "DVD", "ブルーレイ", "レコード", "カセット",
+		// Collectibles
+		"フィギュア", "おもちゃ", "玩具", "プラモデル", "模型", "カード", "トレカ",
+		// Furniture & Home
+		"家具", "インテリア", "家", "テーブル", "椅子", "ソファ", "ベッド", "机",
+		"照明", "ランプ", "カーテン", "カーペット", "マット",
+		// Vehicles
+		"車", "自動車", "バイク", "自転車", "スクーター", "原付", "タイヤ", "ホイール",
+		// Food & Drink
+		"食品", "飲料", "お菓子", "チョコレート", "コーヒー", "お茶", "ビール",
+		// Cosmetics & Health
+		"化粧品", "コスメ", "スキンケア", "シャンプー", "リンス", "ボディソープ",
+		"薬", "サプリメント", "健康食品", "プロテイン", "ビタミン",
+		// Other
+		"ペット用品", "ペットフード", "工具", "DIY", "建材", "園芸", "植物",
 	}
 	
 	excludeKeywordsEN := []string{
-		"electronics", "phone", "smartphone", "laptop", "computer", "tablet", "game",
-		"console", "book", "cd", "dvd", "blu-ray", "figure", "toy", "furniture",
-		"car", "vehicle", "bike", "bicycle", "food", "drink", "cosmetic", "makeup",
-		"skincare", "medicine", "supplement", "health",
+		// Electronics
+		"electronics", "phone", "smartphone", "iphone", "android", "laptop", "computer",
+		"tablet", "ipad", "macbook", "windows", "linux", "monitor", "keyboard", "mouse",
+		// Gaming
+		"game", "console", "nintendo", "playstation", "xbox", "switch", "controller",
+		"gaming", "pc game", "video game",
+		// Media
+		"book", "magazine", "comic", "manga", "cd", "dvd", "blu-ray", "record", "vinyl",
+		// Collectibles
+		"figure", "toy", "plush", "plushie", "model kit", "card", "trading card",
+		// Furniture & Home
+		"furniture", "table", "chair", "sofa", "couch", "bed", "desk", "lamp",
+		"lighting", "curtain", "carpet", "rug", "mat",
+		// Vehicles
+		"car", "vehicle", "bike", "bicycle", "scooter", "tire", "wheel", "motorcycle",
+		// Food & Drink
+		"food", "drink", "snack", "chocolate", "coffee", "tea", "beer", "wine",
+		// Cosmetics & Health
+		"cosmetic", "makeup", "skincare", "shampoo", "conditioner", "soap", "body wash",
+		"medicine", "supplement", "vitamin", "protein", "health",
+		// Other
+		"pet", "pet food", "tool", "diy", "hardware", "garden", "plant",
 	}
 	
 	// Combine all keywords
@@ -908,25 +1025,84 @@ func filterClothingItems(items []SendicoItem) []SendicoItem {
 			}
 		}
 		
-		// If no explicit clothing keywords found, but also no exclusion keywords,
-		// include it (better to show more than miss items)
-		// But for PayPay and Rakuten specifically, be more strict
+		// Stricter filtering: require clothing keywords for all markets
+		// This ensures we only get actual clothing items
 		if !isClothing {
-			// For PayPay (Yahoo) and Rakuten, require at least one clothing keyword
-			// These markets tend to have more non-clothing items mixed in
-			shopStr := string(item.Shop)
-			if shopStr == "yahoo" || shopStr == "rakuten" {
-				continue // Skip if no clothing keywords found
-			}
-			// For other markets, include if no exclusion keywords
+			// Skip if no clothing keywords found (too risky to include)
+			continue
 		}
 		
-		if isClothing || !isExcluded {
-			clothingItems = append(clothingItems, item)
+		// Double-check: even if clothing keyword found, exclude if exclusion keywords present
+		if isExcluded {
+			continue // Skip non-clothing items even if they have clothing keywords
 		}
+		
+		clothingItems = append(clothingItems, item)
 	}
 	
 	return clothingItems
+}
+
+// filterDuplicateWebhookItems filters out items that were already sent to each webhook
+func filterDuplicateWebhookItems(webhooks []string, items []map[string]interface{}) map[string][]map[string]interface{} {
+	result := make(map[string][]map[string]interface{})
+	now := time.Now()
+	
+	webhookSentItemsMu.RLock()
+	defer webhookSentItemsMu.RUnlock()
+	
+	// Clean up expired entries periodically
+	if len(webhookSentItems) > 50000 {
+		expiredKeys := make([]string, 0)
+		for key, timestamp := range webhookSentItems {
+			if now.Sub(timestamp) > webhookSentItemsTTL {
+				expiredKeys = append(expiredKeys, key)
+			}
+		}
+		for _, key := range expiredKeys {
+			delete(webhookSentItems, key)
+		}
+		if len(expiredKeys) > 0 {
+			log.Printf("   🧹 Cleaned up %d expired webhook sent items", len(expiredKeys))
+		}
+	}
+	
+	// Initialize result map
+	for _, webhook := range webhooks {
+		result[webhook] = make([]map[string]interface{}, 0)
+	}
+	
+	// Filter items per webhook
+	for _, item := range items {
+		itemURL := getString(item, "url", "")
+		if itemURL == "" {
+			continue
+		}
+		
+		for _, webhook := range webhooks {
+			key := fmt.Sprintf("%s:%s", webhook, itemURL)
+			if _, alreadySent := webhookSentItems[key]; !alreadySent {
+				result[webhook] = append(result[webhook], item)
+			}
+		}
+	}
+	
+	return result
+}
+
+// markWebhookItemsSent marks items as sent to a webhook
+func markWebhookItemsSent(webhookURL string, items []map[string]interface{}) {
+	webhookSentItemsMu.Lock()
+	defer webhookSentItemsMu.Unlock()
+	
+	now := time.Now()
+	for _, item := range items {
+		itemURL := getString(item, "url", "")
+		if itemURL != "" {
+			key := fmt.Sprintf("%s:%s", webhookURL, itemURL)
+			webhookSentItems[key] = now
+		}
+	}
 }
 
 // filterSeenItems filters out items that have already been seen
