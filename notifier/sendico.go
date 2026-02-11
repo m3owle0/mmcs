@@ -194,6 +194,9 @@ type SendicoSearchOptions struct {
 	TermJP   string
 	MinPrice *int
 	MaxPrice *int
+	Page     int    // Page number (default: 1)
+	Sort     string // Sort order: "newest", "oldest", "price_asc", "price_desc" (default: "newest" for recently uploaded)
+	Mobile   bool   // Mobile-specific search (if supported)
 }
 
 type SendicoItem struct {
@@ -220,8 +223,27 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 	if opts.MinPrice != nil {
 		params.Set("min_price", fmt.Sprintf("%d", *opts.MinPrice))
 	}
-	params.Set("page", "1")
+	
+	// Page number (default to 1)
+	page := opts.Page
+	if page < 1 {
+		page = 1
+	}
+	params.Set("page", fmt.Sprintf("%d", page))
 	params.Set("search", opts.TermJP)
+	
+	// Add sort parameter for recently uploaded items (newest first)
+	if opts.Sort != "" {
+		params.Set("sort", opts.Sort)
+	} else {
+		// Default to newest/recently uploaded
+		params.Set("sort", "newest")
+	}
+	
+	// Add mobile parameter if specified
+	if opts.Mobile {
+		params.Set("mobile", "1")
+	}
 
 	q := path.Query()
 	for pair := params.Oldest(); pair != nil; pair = pair.Next() {
@@ -283,14 +305,70 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 	return response.Data.Items, nil
 }
 
+// SearchMultiplePages searches multiple pages to ensure we don't miss any items
+// Returns all items from pages 1 through maxPages, or until no more items are found
+func (c *SendicoClient) SearchMultiplePages(ctx context.Context, shop SendicoShop, opts SendicoSearchOptions, maxPages int) ([]SendicoItem, error) {
+	if maxPages < 1 {
+		maxPages = 3 // Default to 3 pages to catch recently uploaded items
+	}
+	
+	allItems := make([]SendicoItem, 0)
+	seenCodes := make(map[string]bool) // Deduplicate across pages
+	
+	for page := 1; page <= maxPages; page++ {
+		pageOpts := opts
+		pageOpts.Page = page
+		
+		items, err := c.Search(ctx, shop, pageOpts)
+		if err != nil {
+			// If error on later pages, return what we have (might be last page)
+			if page > 1 {
+				log.Printf("   ⚠️  Error on page %d (may be last page): %v", page, err)
+				break
+			}
+			return nil, err
+		}
+		
+		// If no items returned, we've reached the end
+		if len(items) == 0 {
+			break
+		}
+		
+		// Deduplicate items across pages
+		for _, item := range items {
+			if !seenCodes[item.Code] {
+				seenCodes[item.Code] = true
+				allItems = append(allItems, item)
+			}
+		}
+		
+		// If we got fewer items than expected, might be last page
+		// But continue to next page to be sure (some APIs return partial pages)
+		if len(items) < 20 { // Assuming ~20 items per page
+			// Still continue to next page to be safe
+		}
+		
+		// Small delay between pages to avoid rate limiting
+		if page < maxPages {
+			time.Sleep(300 * time.Millisecond)
+		}
+	}
+	
+	return allItems, nil
+}
+
 func (c *SendicoClient) BulkSearch(ctx context.Context, shops []SendicoShop, opts SendicoSearchOptions) ([]SendicoItem, error) {
+	return c.BulkSearchMultiplePages(ctx, shops, opts, 3) // Default to 3 pages
+}
+
+// BulkSearchMultiplePages searches multiple pages across multiple shops
+func (c *SendicoClient) BulkSearchMultiplePages(ctx context.Context, shops []SendicoShop, opts SendicoSearchOptions, maxPages int) ([]SendicoItem, error) {
 	items := make([]SendicoItem, 0)
 	itemsMu := sync.Mutex{}
 
-	// Reduced concurrency and increased delay to avoid rate limiting
-	// Sendico API appears to have strict rate limits, especially for Rakuten
-	maxConcurrent := 3 // Reduced from 5 to 3
-	requestDelay := 1 * time.Second // Increased from 200ms to 1s between requests
+	// Optimized concurrency for multiple users - balance between speed and rate limits
+	maxConcurrent := 3 // Keep conservative to avoid rate limiting
+	requestDelay := 800 * time.Millisecond // Slightly reduced delay for better throughput
 	sem := make(chan struct{}, maxConcurrent)
 	g := new(errgroup.Group)
 	
@@ -302,12 +380,13 @@ func (c *SendicoClient) BulkSearch(ctx context.Context, shops []SendicoShop, opt
 			sem <- struct{}{}
 			defer func() { <-sem }()
 			
-			// Increased delay between requests to respect rate limits
+			// Delay between requests to respect rate limits
 			if i > 0 {
 				time.Sleep(requestDelay)
 			}
 			
-			results, err := c.Search(ctx, shop, opts)
+			// Search multiple pages to ensure we don't miss recently uploaded items
+			results, err := c.SearchMultiplePages(ctx, shop, opts, maxPages)
 			if err != nil {
 				// Check if it's a rate limit error
 				if errStr := err.Error(); strings.Contains(errStr, "429") || strings.Contains(errStr, "rate limited") {

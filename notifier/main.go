@@ -25,7 +25,15 @@ type Notification struct {
 	ID         string   `json:"id"`
 	SearchTerm string   `json:"searchTerm"`
 	Markets    []string `json:"markets"`
+	Webhooks   []string `json:"webhooks,omitempty"` // Per-notification webhooks
 	CreatedAt  string   `json:"createdAt"`
+}
+
+// cachedSearchResult stores search results to avoid duplicate API calls across users
+type cachedSearchResult struct {
+	Items      []SendicoItem
+	Timestamp  time.Time
+	ExpiresAt  time.Time
 }
 
 type User struct {
@@ -82,17 +90,26 @@ var (
 		"yahoo-auctions":    SendicoYahooAuctions,
 	}
 
-	// Item tracking (simple in-memory - consider database for production)
-	seenItems   = make(map[string]bool)
+	// Item tracking (in-memory with TTL to prevent memory bloat)
+	// Key: "notificationID:shop:code", Value: timestamp when first seen
+	seenItems   = make(map[string]time.Time)
 	seenItemsMu sync.RWMutex
+	seenItemsTTL = 7 * 24 * time.Hour // Keep seen items for 7 days (prevents re-notification)
 
 	// Translation cache to avoid duplicate API calls (many users search same terms)
 	translationCache   = make(map[string]string)
 	translationCacheMu sync.RWMutex
 
-	// Concurrency limits
-	maxConcurrentUsers    = 10 // Process 10 users in parallel
+	// Concurrency limits - optimized for multiple users
+	maxConcurrentUsers    = 15 // Increased to 15 for better multi-user throughput
 	maxConcurrentSearches = 5  // Max 5 concurrent Sendico searches
+	
+	// Search batching - avoid duplicate searches across users
+	searchCache   = make(map[string]*cachedSearchResult) // Key: "termJP:markets"
+	searchCacheMu sync.RWMutex
+	
+	// Pages to search per query (to catch recently uploaded items)
+	maxSearchPages = 3 // Search 3 pages to ensure we don't miss recently uploaded items
 
 	// Supported markets - only these markets will be processed by the notifier
 	// This matches the marketUrls object in index.html
@@ -260,6 +277,27 @@ func processAllNotifications() {
 	// Warn if processing took longer than poll interval
 	if duration > pollInterval {
 		log.Printf("⚠️  WARNING: Processing took longer than poll interval! Consider reducing user count or increasing interval.")
+	}
+	
+	// Clean up search cache after each cycle
+	cleanupSearchCache()
+}
+
+// cleanupSearchCache removes expired entries from search cache
+func cleanupSearchCache() {
+	searchCacheMu.Lock()
+	defer searchCacheMu.Unlock()
+	
+	now := time.Now()
+	expiredCount := 0
+	for key, cached := range searchCache {
+		if now.After(cached.ExpiresAt) {
+			delete(searchCache, key)
+			expiredCount++
+		}
+	}
+	if expiredCount > 0 {
+		log.Printf("🧹 Cleaned up %d expired search cache entries", expiredCount)
 	}
 }
 
@@ -461,7 +499,7 @@ func fetchActiveSubscribers() ([]User, error) {
 		return nil, err
 	}
 	
-	// Filter to only users with webhook URLs (handle both NULL and empty string)
+	// Filter to only users with webhook URLs OR notifications with webhooks
 	users := make([]User, 0, len(allUsers))
 	for i := range allUsers {
 		webhookURL := strings.TrimSpace(allUsers[i].DiscordWebhookURL)
@@ -481,19 +519,48 @@ func fetchActiveSubscribers() ([]User, error) {
 			allUsers[i].DiscordWebhookURL = webhookURL
 		}
 		
-		// Validate webhook URL format
-		if webhookURL != "" && len(webhookURL) > 20 && strings.HasPrefix(webhookURL, "https://discord.com/api/webhooks/") {
-			users = append(users, allUsers[i])
-			log.Printf("   ✓ Including user %s (%s) - webhook: %s", allUsers[i].Email, allUsers[i].Username, maskWebhookURL(webhookURL))
-		} else {
-			log.Printf("   ⚠️  Excluding user %s (%s) - webhook URL is empty/invalid (length: %d, starts with: %s)", 
-				allUsers[i].Email, allUsers[i].Username, len(webhookURL), 
-				func() string {
-					if len(webhookURL) > 30 {
-						return webhookURL[:30] + "..."
+		// Check if user has global webhook
+		hasGlobalWebhook := webhookURL != "" && len(webhookURL) > 20 && strings.HasPrefix(webhookURL, "https://discord.com/api/webhooks/")
+		
+		// Check if user has notifications with per-notification webhooks
+		hasNotificationWebhooks := false
+		if len(allUsers[i].DiscordNotifications) > 0 {
+			// Try to parse notifications to check for webhooks
+			var notifications []Notification
+			if err := json.Unmarshal(allUsers[i].DiscordNotifications, &notifications); err == nil {
+				for _, notif := range notifications {
+					if len(notif.Webhooks) > 0 {
+						hasNotificationWebhooks = true
+						break
 					}
-					return webhookURL
-				}())
+				}
+			} else {
+				// Try as string first
+				var str string
+				if err2 := json.Unmarshal(allUsers[i].DiscordNotifications, &str); err2 == nil {
+					if err3 := json.Unmarshal([]byte(str), &notifications); err3 == nil {
+						for _, notif := range notifications {
+							if len(notif.Webhooks) > 0 {
+								hasNotificationWebhooks = true
+								break
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// Include user if they have either global webhook OR notification webhooks
+		if hasGlobalWebhook || hasNotificationWebhooks {
+			users = append(users, allUsers[i])
+			if hasGlobalWebhook {
+				log.Printf("   ✓ Including user %s (%s) - global webhook: %s", allUsers[i].Email, allUsers[i].Username, maskWebhookURL(webhookURL))
+			} else {
+				log.Printf("   ✓ Including user %s (%s) - has notification webhooks", allUsers[i].Email, allUsers[i].Username)
+			}
+		} else {
+			log.Printf("   ⚠️  Excluding user %s (%s) - no webhooks configured", 
+				allUsers[i].Email, allUsers[i].Username)
 		}
 	}
 	
@@ -610,16 +677,35 @@ func processUserNotifications(user User) {
 			shops = append(shops, sendicoMarkets[marketKey])
 		}
 
-		log.Printf("   🔎 Searching %d market(s)...", len(shops))
-		items, err := sendicoClient.BulkSearch(ctx, shops, SendicoSearchOptions{
-			TermJP: termJP,
-		})
-		if err != nil {
-			log.Printf("   ❌ Search error: %v", err)
-			continue
+		// Create cache key for this search (term + markets)
+		marketsKey := strings.Join(sendicoMarketsList, ",")
+		cacheKey := fmt.Sprintf("%s:%s", termJP, marketsKey)
+		
+		// Check if we have cached results for this exact search (across all users)
+		items := getCachedSearchResults(cacheKey)
+		
+		if items == nil {
+			// Not in cache, perform search
+			log.Printf("   🔎 Searching %d market(s) (recently uploaded, mobile-optimized)...", len(shops))
+			searchOpts := SendicoSearchOptions{
+				TermJP: termJP,
+				Sort:   "newest", // Prioritize recently uploaded items
+				Mobile: true,     // Mobile-specific search for better clothing results
+			}
+			
+			var err error
+			items, err = sendicoClient.BulkSearchMultiplePages(ctx, shops, searchOpts, maxSearchPages)
+			if err != nil {
+				log.Printf("   ❌ Search error: %v", err)
+				continue
+			}
+			
+			// Cache the results for 30 seconds (to share across users in same cycle)
+			cacheSearchResults(cacheKey, items)
+			log.Printf("   📦 Found %d item(s) across %d page(s)", len(items), maxSearchPages)
+		} else {
+			log.Printf("   📦 Using cached results: %d item(s) (shared across users)", len(items))
 		}
-
-		log.Printf("   📦 Found %d item(s)", len(items))
 
 		// Filter out already-seen items
 		newItems := filterSeenItems(items, notif.ID)
@@ -644,12 +730,32 @@ func processUserNotifications(user User) {
 			})
 		}
 
-		// Send notification
-		log.Printf("   ✅ Sending notification...")
-		if err := sendDiscordNotification(user.DiscordWebhookURL, notif, notificationItems); err != nil {
-			log.Printf("   ❌ Error: %v", err)
-		} else {
-			log.Printf("   ✅ Notification sent!")
+		// Determine which webhooks to use
+		webhooksToUse := notif.Webhooks
+		if len(webhooksToUse) == 0 {
+			// Fallback to global webhook if no per-notification webhooks
+			if user.DiscordWebhookURL != "" {
+				webhooksToUse = []string{user.DiscordWebhookURL}
+			} else {
+				log.Printf("   ⚠️  No webhooks configured for this notification")
+				continue
+			}
+		}
+
+		// Send notification to each webhook
+		log.Printf("   ✅ Sending notification to %d webhook(s)...", len(webhooksToUse))
+		for i, webhookURL := range webhooksToUse {
+			webhookURL = strings.TrimSpace(webhookURL)
+			if webhookURL == "" || !strings.HasPrefix(webhookURL, "https://discord.com/api/webhooks/") {
+				log.Printf("   ⚠️  Skipping invalid webhook %d/%d", i+1, len(webhooksToUse))
+				continue
+			}
+			
+			if err := sendDiscordNotification(webhookURL, notif, notificationItems); err != nil {
+				log.Printf("   ❌ Error sending to webhook %d/%d: %v", i+1, len(webhooksToUse), err)
+			} else {
+				log.Printf("   ✅ Notification sent to webhook %d/%d!", i+1, len(webhooksToUse))
+			}
 		}
 	}
 }
@@ -699,19 +805,48 @@ func filterSendicoMarkets(markets []string) []string {
 }
 
 // filterSeenItems filters out items that have already been seen
+// Uses TTL-based tracking to prevent memory bloat while ensuring we don't miss items
 func filterSeenItems(items []SendicoItem, notificationID string) []SendicoItem {
 	newItems := []SendicoItem{}
+	now := time.Now()
 
 	seenItemsMu.Lock()
 	defer seenItemsMu.Unlock()
+
+	// Clean up expired entries periodically (every 1000 items checked)
+	if len(seenItems) > 10000 {
+		expiredKeys := make([]string, 0)
+		for key, timestamp := range seenItems {
+			if now.Sub(timestamp) > seenItemsTTL {
+				expiredKeys = append(expiredKeys, key)
+			}
+		}
+		for _, key := range expiredKeys {
+			delete(seenItems, key)
+		}
+		if len(expiredKeys) > 0 {
+			log.Printf("   🧹 Cleaned up %d expired seen items", len(expiredKeys))
+		}
+	}
 
 	for _, item := range items {
 		// Create unique key: notificationID:shop:code
 		key := fmt.Sprintf("%s:%s:%s", notificationID, item.Shop, item.Code)
 
-		if !seenItems[key] {
-			seenItems[key] = true
+		seenTime, exists := seenItems[key]
+		if !exists {
+			// New item - mark as seen
+			seenItems[key] = now
 			newItems = append(newItems, item)
+		} else {
+			// Item was seen before - check if TTL expired (shouldn't happen often)
+			if now.Sub(seenTime) > seenItemsTTL {
+				// TTL expired, treat as new (very rare case)
+				seenItems[key] = now
+				newItems = append(newItems, item)
+				log.Printf("   ⚠️  Item %s expired from cache, treating as new", item.Code)
+			}
+			// Otherwise, skip (already seen)
 		}
 	}
 
@@ -753,6 +888,49 @@ func cacheTranslation(term, translation string) {
 		// For now, just clear if too large (simple approach)
 		if len(translationCache) > 1200 {
 			translationCache = make(map[string]string)
+		}
+	}
+}
+
+// Search result caching functions (for batching across users)
+func getCachedSearchResults(cacheKey string) []SendicoItem {
+	searchCacheMu.RLock()
+	defer searchCacheMu.RUnlock()
+	
+	cached, exists := searchCache[cacheKey]
+	if !exists {
+		return nil
+	}
+	
+	// Check if cache is still valid (30 seconds)
+	if time.Now().After(cached.ExpiresAt) {
+		return nil
+	}
+	
+	return cached.Items
+}
+
+func cacheSearchResults(cacheKey string, items []SendicoItem) {
+	searchCacheMu.Lock()
+	defer searchCacheMu.Unlock()
+	
+	// Create a copy of items to avoid race conditions
+	itemsCopy := make([]SendicoItem, len(items))
+	copy(itemsCopy, items)
+	
+	searchCache[cacheKey] = &cachedSearchResult{
+		Items:     itemsCopy,
+		Timestamp: time.Now(),
+		ExpiresAt: time.Now().Add(30 * time.Second), // Cache for 30 seconds
+	}
+	
+	// Clean up expired entries periodically
+	if len(searchCache) > 100 {
+		now := time.Now()
+		for key, cached := range searchCache {
+			if now.After(cached.ExpiresAt) {
+				delete(searchCache, key)
+			}
 		}
 	}
 }
