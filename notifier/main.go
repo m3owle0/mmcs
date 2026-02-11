@@ -686,11 +686,11 @@ func processUserNotifications(user User) {
 		
 		if items == nil {
 			// Not in cache, perform search
-			log.Printf("   🔎 Searching %d market(s) (recently uploaded, mobile-optimized)...", len(shops))
+			// Note: Sendico API returns items sorted by relevance/date (page 1 typically has newest)
+			// We search multiple pages to catch recently uploaded items
+			log.Printf("   🔎 Searching %d market(s) (multi-page for recently uploaded items)...", len(shops))
 			searchOpts := SendicoSearchOptions{
 				TermJP: termJP,
-				Sort:   "newest", // Prioritize recently uploaded items
-				Mobile: true,     // Mobile-specific search for better clothing results
 			}
 			
 			var err error

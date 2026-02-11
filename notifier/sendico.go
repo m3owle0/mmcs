@@ -194,9 +194,9 @@ type SendicoSearchOptions struct {
 	TermJP   string
 	MinPrice *int
 	MaxPrice *int
-	Page     int    // Page number (default: 1)
-	Sort     string // Sort order: "newest", "oldest", "price_asc", "price_desc" (default: "newest" for recently uploaded)
-	Mobile   bool   // Mobile-specific search (if supported)
+	Page     int // Page number (default: 1)
+	// Note: Sendico API doesn't support sort/mobile parameters
+	// We search multiple pages starting from page 1 (which typically has newest items)
 }
 
 type SendicoItem struct {
@@ -232,18 +232,9 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 	params.Set("page", fmt.Sprintf("%d", page))
 	params.Set("search", opts.TermJP)
 	
-	// Add sort parameter for recently uploaded items (newest first)
-	if opts.Sort != "" {
-		params.Set("sort", opts.Sort)
-	} else {
-		// Default to newest/recently uploaded
-		params.Set("sort", "newest")
-	}
-	
-	// Add mobile parameter if specified
-	if opts.Mobile {
-		params.Set("mobile", "1")
-	}
+	// Note: Sendico API doesn't support sort/mobile parameters
+	// Recently uploaded items are typically on page 1, so we search multiple pages
+	// to ensure we catch all recently uploaded items
 
 	q := path.Query()
 	for pair := params.Oldest(); pair != nil; pair = pair.Next() {
@@ -251,41 +242,51 @@ func (c *SendicoClient) Search(ctx context.Context, shop SendicoShop, opts Sendi
 	}
 	path.RawQuery = q.Encode()
 
-	hmac, err := buildHMAC(HMACInput{
-		Secret:  c.HMACSecret(),
-		Path:    path.Path,
-		Payload: params,
-		Nonce:   "",
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.req(ctx, http.MethodGet, path.String(), nil, hmac, func(req *http.Request) {
-		req.Header.Set("Content-Type", "application/json")
-	})
-	if err != nil {
-		// If HMAC was refreshed, rebuild HMAC and retry once
-		if err == ErrHMACRefreshNeeded {
-			hmac, err = buildHMAC(HMACInput{
-				Secret:  c.HMACSecret(),
-				Path:    path.Path,
-				Payload: params,
-				Nonce:   "",
-			})
-			if err != nil {
-				return nil, err
-			}
-			// Retry with new HMAC
-			resp, err = c.req(ctx, http.MethodGet, path.String(), nil, hmac, func(req *http.Request) {
-				req.Header.Set("Content-Type", "application/json")
-			})
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, err
+	// Retry logic with HMAC refresh handling
+	maxRetries := 3
+	var resp *http.Response
+	var err error
+	
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		// Build HMAC for each attempt (in case secret was refreshed)
+		hmac, hmacErr := buildHMAC(HMACInput{
+			Secret:  c.HMACSecret(),
+			Path:    path.Path,
+			Payload: params,
+			Nonce:   "",
+		})
+		if hmacErr != nil {
+			return nil, hmacErr
 		}
+		
+		resp, err = c.req(ctx, http.MethodGet, path.String(), nil, hmac, func(req *http.Request) {
+			req.Header.Set("Content-Type", "application/json")
+		})
+		
+		if err == nil {
+			break // Success
+		}
+		
+		// If HMAC refresh needed, wait and retry
+		if err == ErrHMACRefreshNeeded {
+			if attempt < maxRetries {
+				log.Printf("   🔄 HMAC refresh needed (attempt %d/%d), retrying...", attempt+1, maxRetries+1)
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
+		}
+		
+		// For other errors or max retries reached
+		if attempt == maxRetries {
+			return nil, fmt.Errorf("failed after %d attempts: %w", maxRetries+1, err)
+		}
+		
+		// Wait before retry for other errors
+		time.Sleep(time.Duration(attempt+1) * 500 * time.Millisecond)
+	}
+	
+	if resp == nil {
+		return nil, fmt.Errorf("no response after retries")
 	}
 	defer resp.Body.Close()
 
@@ -319,14 +320,35 @@ func (c *SendicoClient) SearchMultiplePages(ctx context.Context, shop SendicoSho
 		pageOpts := opts
 		pageOpts.Page = page
 		
-		items, err := c.Search(ctx, shop, pageOpts)
-		if err != nil {
-			// If error on later pages, return what we have (might be last page)
-			if page > 1 {
-				log.Printf("   ⚠️  Error on page %d (may be last page): %v", page, err)
-				break
+		// Retry logic for HMAC refresh errors
+		maxRetries := 2
+		var items []SendicoItem
+		var err error
+		
+		for retry := 0; retry <= maxRetries; retry++ {
+			items, err = c.Search(ctx, shop, pageOpts)
+			if err == nil {
+				break // Success
 			}
-			return nil, err
+			
+			// If HMAC refresh needed, wait a bit and retry
+			if err == ErrHMACRefreshNeeded {
+				if retry < maxRetries {
+					log.Printf("   🔄 HMAC refresh needed for page %d, retrying... (attempt %d/%d)", page, retry+1, maxRetries+1)
+					time.Sleep(500 * time.Millisecond) // Wait before retry
+					continue
+				}
+			}
+			
+			// For other errors or max retries reached
+			if retry == maxRetries {
+				// If error on later pages, return what we have (might be last page)
+				if page > 1 {
+					log.Printf("   ⚠️  Error on page %d after retries (may be last page): %v", page, err)
+					return allItems, nil // Return what we have so far
+				}
+				return nil, err
+			}
 		}
 		
 		// If no items returned, we've reached the end
