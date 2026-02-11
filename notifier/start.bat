@@ -25,6 +25,31 @@ if exist .env (
     for /f "usebackq tokens=*" %%a in (".env") do set %%a
 )
 
+REM Set Mullvad Proxy (SOCKS5)
+REM Change the endpoint to your preferred country:
+REM - us-wireguard.mullvad.net:1080 (United States)
+REM - jp-wireguard.mullvad.net:1080 (Japan - recommended for Japanese markets)
+REM - se-wireguard.mullvad.net:1080 (Sweden)
+REM - de-wireguard.mullvad.net:1080 (Germany)
+REM - uk-wireguard.mullvad.net:1080 (United Kingdom)
+REM See all endpoints: https://mullvad.net/en/help/socks5-proxy/
+
+REM Uncomment and modify the line below to enable Mullvad proxy:
+set MULLVAD_PROXY=socks5://jp-wireguard.mullvad.net:1080
+
+REM Or use a local SOCKS5 proxy:
+REM set MULLVAD_PROXY=socks5://127.0.0.1:1080
+
+REM Or disable proxy (comment out the line above):
+REM set MULLVAD_PROXY=
+
+if defined MULLVAD_PROXY (
+    echo [Mullvad Proxy] Enabled: %MULLVAD_PROXY%
+) else (
+    echo [Mullvad Proxy] Disabled (no proxy)
+)
+echo.
+
 REM Set default Supabase Anon Key (if not set via environment)
 if "%SUPABASE_SERVICE_ROLE_KEY%"=="" (
     if "%SUPABASE_ANON_KEY%"=="" (
