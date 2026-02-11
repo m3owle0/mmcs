@@ -71,16 +71,18 @@ func NewSendicoClient() (*SendicoClient, error) {
 					}
 				} else {
 					// Test if proxy is actually available (for local proxies)
-					if proxyURLParsed.Host == "127.0.0.1:1080" || proxyURLParsed.Host == "localhost:1080" {
+					if proxyURLParsed.Host == "127.0.0.1:1080" || proxyURLParsed.Host == "localhost:1080" || 
+					   proxyURLParsed.Host == "10.64.0.1:1080" || proxyURLParsed.Host == "10.8.0.1:1080" {
 						// Try to connect to verify proxy is available
 						testConn, testErr := dialer.Dial("tcp", "sendico.com:443")
 						if testErr != nil {
 							log.Printf("⚠️  SOCKS5 proxy at %s is not available", proxyURLParsed.Host)
 							log.Printf("   Error: %v", testErr)
-							log.Printf("   Make sure:")
-							log.Printf("   1. Mullvad VPN is connected")
-							log.Printf("   2. Mullvad app → Settings → Local SOCKS5 proxy is enabled")
-							log.Printf("   3. The proxy is running on port 1080")
+							log.Printf("   This usually means Mullvad VPN is not connected")
+							log.Printf("   Solution:")
+							log.Printf("   1. Connect to Mullvad VPN first")
+							log.Printf("   2. The proxy should work automatically when VPN is connected")
+							log.Printf("   3. No need to find proxy setting - just connect VPN")
 							log.Printf("   Falling back to direct connection...")
 							httpClient = &http.Client{
 								Timeout: 30 * time.Second,

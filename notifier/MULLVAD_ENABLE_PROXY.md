@@ -1,19 +1,39 @@
-# How to Enable Mullvad Local SOCKS5 Proxy
+# How to Use Mullvad SOCKS5 Proxy
 
-The notifier uses Mullvad's local SOCKS5 proxy (`127.0.0.1:1080`) when the VPN is connected. Here's how to enable it:
+**Important**: Mullvad's SOCKS5 proxy is **automatically available** when you're connected to Mullvad VPN. There's **no setting to enable** - it just works when VPN is connected!
+
+## How It Works
+
+When Mullvad VPN is connected, the SOCKS5 proxy is automatically available at:
+- **WireGuard**: `10.64.0.1:1080` (internal VPN network IP)
+- **OpenVPN**: `10.8.0.1:1080` (internal VPN network IP)
 
 ## Step-by-Step Instructions
 
 ### 1. Connect to Mullvad VPN
 - Open the Mullvad VPN app
-- Click "Connect" to establish a VPN connection
-- Wait until you see "Connected" status
+- Click **"Connect"** to establish a VPN connection
+- Wait until you see **"Connected"** status
+- **That's it!** The proxy is now available automatically
 
-### 2. Enable Local SOCKS5 Proxy
-- In the Mullvad app, go to **Settings** (gear icon)
-- Scroll down to find **"Local SOCKS5 proxy"** section
-- Toggle **"Enable local SOCKS5 proxy"** to **ON**
-- The proxy will be available at `127.0.0.1:1080`
+### 2. Configure the Notifier
+
+The notifier is already configured to use the proxy. Just make sure:
+
+**Option A: Use Internal VPN IP (Recommended)**
+- Update `start.bat` to use: `socks5://10.64.0.1:1080` (for WireGuard)
+- Or: `socks5://10.8.0.1:1080` (for OpenVPN)
+- This works automatically when VPN is connected
+
+**Option B: Use Localhost (if available)**
+- Some Mullvad setups expose proxy on `127.0.0.1:1080`
+- Try this if the internal IP doesn't work
+- Set: `socks5://127.0.0.1:1080`
+
+### 3. Verify It's Working
+- Run the notifier with VPN connected
+- Check logs for: `🌐 Using SOCKS5 proxy: socks5://10.64.0.1:1080 (verified)`
+- If you see "proxy is not available", make sure VPN is connected first
 
 ### 3. Verify Proxy is Working
 - The notifier will automatically detect if the proxy is available

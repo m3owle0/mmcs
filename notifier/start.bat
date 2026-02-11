@@ -26,27 +26,27 @@ if exist .env (
 )
 
 REM Set Mullvad Proxy (SOCKS5)
-REM The Mullvad app provides a local SOCKS5 proxy on port 1080 when VPN is connected
+REM IMPORTANT: Mullvad's SOCKS5 proxy is AUTOMATICALLY available when VPN is connected!
+REM There's NO setting to enable - just connect to Mullvad VPN and it works.
 REM 
-REM IMPORTANT: To use Mullvad proxy:
-REM 1. Connect to Mullvad VPN first
-REM 2. In Mullvad app: Settings → Local SOCKS5 proxy → Enable
-REM 3. The proxy will be available at 127.0.0.1:1080
+REM Option 1: Use Mullvad's internal proxy IP (RECOMMENDED):
+REM When connected via WireGuard, use: 10.64.0.1:1080
+REM When connected via OpenVPN, use: 10.8.0.1:1080
+set MULLVAD_PROXY=socks5://10.64.0.1:1080
 REM 
-REM Option 1: Use local SOCKS5 proxy (recommended - works when Mullvad VPN is connected):
-REM Uncomment the line below to enable:
-set MULLVAD_PROXY=socks5://127.0.0.1:1080
+REM Option 2: Try localhost proxy (if internal IP doesn't work):
+REM Some setups expose proxy on localhost:
+REM set MULLVAD_PROXY=socks5://127.0.0.1:1080
 REM 
-REM Option 2: Disable proxy (works without VPN):
+REM Option 3: Disable proxy (works without VPN):
 REM Comment out the line above or set:
 REM set MULLVAD_PROXY=
 
 if defined MULLVAD_PROXY (
     echo [Mullvad Proxy] Enabled: %MULLVAD_PROXY%
-    echo   Note: Proxy will only work if:
-    echo   - Mullvad VPN is connected
-    echo   - Local SOCKS5 proxy is enabled in Mullvad app settings
-    echo   - If proxy unavailable, will fallback to direct connection
+    echo   IMPORTANT: Just connect to Mullvad VPN - proxy works automatically!
+    echo   No need to find any proxy setting in the app.
+    echo   If proxy unavailable, will automatically fallback to direct connection
 ) else (
     echo [Mullvad Proxy] Disabled (direct connection, no VPN)
 )
